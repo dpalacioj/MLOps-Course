@@ -40,10 +40,12 @@ Antes de comenzar, asegurate de:
        --backend-store-uri sqlite:///mlflow.db \
        --default-artifact-root ./mlruns \
        --host 127.0.0.1 \
-       --port 5000
+       --port 5001
    ```
 
-3. **Verificar** que puedes acceder a `http://127.0.0.1:5000` en tu navegador.
+   > **Nota:** El puerto 5000 esta ocupado por macOS (AirPlay/AirDrop), por eso usamos 5001.
+
+3. **Verificar** que puedes acceder a `http://127.0.0.1:5001` en tu navegador.
 
 ---
 
@@ -70,7 +72,7 @@ Busca la celda marcada con `# TODO 1` y completa:
 import mlflow
 
 # Conectar al servidor MLflow
-mlflow.set_tracking_uri("http://127.0.0.1:5000")
+mlflow.set_tracking_uri("http://127.0.0.1:5001")
 
 # Crear/seleccionar un experimento
 mlflow.set_experiment("nyc-taxi-ejercicio-01")
@@ -136,7 +138,7 @@ graficas PNG, modelos serializados, etc. MLflow los guarda asociados al run.
 
 ### Paso 7: Verificar en la UI
 
-1. Abre `http://127.0.0.1:5000` en tu navegador.
+1. Abre `http://127.0.0.1:5001` en tu navegador.
 2. Busca el experimento **"nyc-taxi-ejercicio-01"** en la barra lateral.
 3. Haz clic en tu run y verifica que aparezcan:
    - Los 3 tags en la seccion "Tags"
