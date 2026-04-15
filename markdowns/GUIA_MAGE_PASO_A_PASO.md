@@ -225,6 +225,8 @@ chmod +x setup_and_run.sh
 
 **Ahora abre tu navegador** y ve a: `http://localhost:6789`
 
+> **Nota:** Si ves una pantalla de login, haz hard refresh con `Cmd+Shift+R` (Mac) o `Ctrl+Shift+R` (Windows). La autenticacion esta desactivada.
+
 ---
 
 ## PASO 2: Explorar la interfaz de Mage
@@ -506,9 +508,10 @@ Tienes **dos formas** de ejecutar el pipeline:
 ### Opcion A: Desde la interfaz web (recomendada para aprender)
 
 1. En el navegador (`http://localhost:6789`), haz clic en el pipeline **nyc_taxi_training**
-2. Veras los 4 bloques conectados
-3. Haz clic en el boton **"Run pipeline"** (triangulo de play)
-4. Observa como cada bloque se ejecuta en orden:
+2. Veras los 4 bloques conectados. Haz clic en el icono de **rayo** (barra lateral izquierda) para ir a **Triggers**
+3. Haz clic en el boton **"Run@once"** (arriba a la izquierda)
+4. Aparecera un dialogo "Run pipeline now" — **deja los campos vacios** y haz clic en **"Run now"**
+5. Observa como cada bloque se ejecuta en orden:
    - Verde = completado
    - Amarillo = ejecutando
    - Rojo = error
@@ -587,7 +590,9 @@ Despues de ejecutar el pipeline, MLflow tiene todos los resultados guardados. Pa
 **Abrir otra terminal** (sin cerrar Mage) y ejecutar:
 
 ```bash
-cd 03-Orchestration/Mage-pipelines/nyc_taxi_project/
+cd 03-Orchestration/Mage-pipelines/
+source .venv-mage/bin/activate
+cd nyc_taxi_project/
 mlflow ui --port 5001
 ```
 
@@ -625,7 +630,8 @@ Si quieres verificar que toda la logica funciona **sin depender de la interfaz d
 
 ```bash
 cd 03-Orchestration/Mage-pipelines/
-uv run python test_blocks.py
+source .venv-mage/bin/activate
+python test_blocks.py
 ```
 
 Esto ejecuta la misma logica de los 4 bloques de forma independiente:
@@ -845,11 +851,12 @@ flowchart LR
  │  → ./setup_and_run.sh --run                                    │
  │                                                                  │
  │  "Quiero ver mis modelos guardados"                             │
+ │  → source .venv-mage/bin/activate                              │
  │  → cd nyc_taxi_project/ && mlflow ui --port 5001               │
  │  → Abrir http://localhost:5001                                  │
  │                                                                  │
  │  "Quiero probar la logica sin Mage"                             │
- │  → uv run python test_blocks.py                                │
+ │  → source .venv-mage/bin/activate && python test_blocks.py     │
  │                                                                  │
  │  "Quiero detener Mage"                                         │
  │  → Ctrl+C en la terminal donde lo arrancaste                   │
