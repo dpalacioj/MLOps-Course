@@ -249,3 +249,7 @@ settings_local.py
 03-Orchestrarion/mlruns/
 
 *.html
+02-Experiment-Tracking/exercises/ejercicio_02_model_registry_solucion.ipynb
+03-Orchestration/Prefect-pipelines/ejercicio_solucion/ejercicio_resuelto.ipynb
+
+03-Orchestration/Prefect-pipelines/ejercicio_solucion/

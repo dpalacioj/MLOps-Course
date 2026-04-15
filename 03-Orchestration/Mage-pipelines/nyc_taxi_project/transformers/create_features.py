@@ -16,8 +16,8 @@ if 'test' not in globals():
     from mage_ai.data_preparation.decorators import test
 
 import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from mage_ai.data_preparation.repo_manager import get_repo_path
+sys.path.append(get_repo_path())
 from utils.constants import CATEGORICAL_FEATURES, TARGET_COLUMN
 
 
@@ -81,10 +81,9 @@ def create_features(df: pd.DataFrame, *args, **kwargs) -> Tuple:
 
 
 @test
-def test_output(output, *args) -> None:
+def test_output(X_train, y_train, X_val, y_val, dv, *args) -> None:
     """Verifica que las matrices de features se crearon correctamente."""
-    assert output is not None, 'El output es None'
-    X_train, y_train, X_val, y_val, dv = output
+    assert X_train is not None, 'X_train es None'
     assert X_train.shape[0] > 0, 'X_train esta vacio'
     assert X_train.shape[0] == len(y_train), 'X_train y y_train no coinciden'
     assert X_val.shape[0] == len(y_val), 'X_val y y_val no coinciden'

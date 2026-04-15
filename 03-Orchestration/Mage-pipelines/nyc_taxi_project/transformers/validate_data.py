@@ -13,8 +13,8 @@ if 'test' not in globals():
     from mage_ai.data_preparation.decorators import test
 
 import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from mage_ai.data_preparation.repo_manager import get_repo_path
+sys.path.append(get_repo_path())
 from utils.constants import MIN_RECORDS, NULL_THRESHOLD
 
 

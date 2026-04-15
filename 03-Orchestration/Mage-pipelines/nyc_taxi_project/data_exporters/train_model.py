@@ -24,7 +24,8 @@ if 'test' not in globals():
 
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from mage_ai.data_preparation.repo_manager import get_repo_path
+sys.path.append(get_repo_path())
 from utils.constants import (
     OPTUNA_TRIALS, NUM_BOOST_ROUNDS, EARLY_STOPPING_ROUNDS,
     MLFLOW_EXPERIMENT_NAME, MLFLOW_DEFAULT_URI

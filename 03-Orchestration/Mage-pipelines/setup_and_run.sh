@@ -47,6 +47,10 @@ echo "[3/3] Iniciando Mage..."
 # Activar el entorno
 source "$SCRIPT_DIR/.venv-mage/bin/activate"
 
+# Desactivar autenticacion (Mage 0.9.71+ la activa por defecto).
+# Mage solo acepta "false"/"False" — el valor "0" NO funciona.
+export REQUIRE_USER_AUTHENTICATION=false
+
 if [ "$1" == "--run" ]; then
     echo "      Ejecutando pipeline sin UI..."
     cd "$PROJECT_DIR"
@@ -62,8 +66,15 @@ else
     echo ""
     echo "      Abriendo Mage UI en http://localhost:6789"
     echo "      Pipeline: nyc_taxi_training"
+    echo ""
+    echo "      NOTA: Mage pedira crear una cuenta la primera vez."
+    echo "      Es local (no se envia a ningun servidor)."
+    echo "      Usa cualquier email/password, por ejemplo:"
+    echo "        Email:    admin@admin.com"
+    echo "        Password: admin123"
+    echo ""
     echo "      Presiona Ctrl+C para detener"
     echo ""
     cd "$PROJECT_DIR"
-    mage start "$PROJECT_DIR"
+    REQUIRE_USER_AUTHENTICATION=false mage start "$PROJECT_DIR"
 fi
