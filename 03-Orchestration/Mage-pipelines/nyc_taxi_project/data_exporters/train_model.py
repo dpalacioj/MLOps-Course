@@ -42,22 +42,20 @@ def _setup_mlflow():
 
 
 @data_exporter
-def train_and_export_model(data: Tuple, *args, **kwargs) -> dict:
+def train_and_export_model(X_train, y_train, X_val, y_val, dv, *args, **kwargs) -> dict:
     """
     Optimiza hiperparametros con Optuna y entrena modelo final con XGBoost.
 
-    Recibe la tupla (X_train, y_train, X_val, y_val, dv) del bloque anterior.
+    Recibe los 5 outputs del bloque create_features como argumentos separados
+    (Mage desempaqueta las tuplas automaticamente).
+
     1. Ejecuta N trials de Optuna, cada uno logueado como nested run en MLflow
     2. Entrena modelo final con los mejores hiperparametros
     3. Guarda modelo y preprocesador
 
-    Args:
-        data: Tupla con matrices de features, targets y DictVectorizer.
-
     Returns:
         Diccionario con resultados del entrenamiento.
     """
-    X_train, y_train, X_val, y_val, dv = data
 
     _setup_mlflow()
 
