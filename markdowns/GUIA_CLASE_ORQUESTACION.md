@@ -123,13 +123,13 @@ Antes de empezar, esta es la lista completa de **todo** lo que hay en `03-Orches
 
 ### Diagrama: El Problema
 
-![01 - El Problema](03-Orchestration/diagrams/01_el_problema.png)
+![01 - El Problema](../03-Orchestration/diagrams/01_el_problema.png)
 
 **Guion:** "A la izquierda: lo que hacen hoy. Scripts sueltos, ejecucion manual, si falla nadie se entera. A la derecha: con un orquestador. El mismo codigo, pero ahora tiene estado, logs, reintentos, y un dashboard donde ven todo."
 
 ### Diagrama: Los 5 Pilares
 
-![02 - Los 5 Pilares](03-Orchestration/diagrams/02_cinco_pilares.png)
+![02 - Los 5 Pilares](../03-Orchestration/diagrams/02_cinco_pilares.png)
 
 **Guion:** "La orquestacion resuelve 5 cosas. Estos 5 pilares aplican a CUALQUIER herramienta: Prefect, Airflow, Mage, Dagster. La herramienta cambia, el concepto no."
 
@@ -203,7 +203,7 @@ Es exactamente el mismo codigo pero con `@flow()` (con parentesis). No cambia na
 
 ### Diagrama: Flow y Task
 
-![03 - Flow y Task](03-Orchestration/diagrams/03_flow_y_task.png)
+![03 - Flow y Task](../03-Orchestration/diagrams/03_flow_y_task.png)
 
 **Guion:** "A la izquierda: su codigo Python normal con decoradores. A la derecha: lo que Prefect 've'. El `@flow` es el contenedor, los `@task` son los pasos dentro. Prefect sabe que `cargar_datos` va antes que `entrenar` porque uno le pasa datos al otro."
 
@@ -261,7 +261,7 @@ Successfully wrote temp
 
 ### Diagrama: Grafo de Dependencias
 
-![04 - Grafo de Dependencias](03-Orchestration/diagrams/04_grafo_dependencias.png)
+![04 - Grafo de Dependencias](../03-Orchestration/diagrams/04_grafo_dependencias.png)
 
 **Guion:** "Este es el pipeline completo que vamos a construir al final de la clase. Cada caja es un `@task`. Las flechas son datos que pasan de uno a otro. Prefect ejecuta los tasks en el orden correcto automaticamente."
 
@@ -274,7 +274,7 @@ Successfully wrote temp
 
 ### Diagrama: Reintentos
 
-![06 - Reintentos](03-Orchestration/diagrams/06_reintentos.png)
+![06 - Reintentos](../03-Orchestration/diagrams/06_reintentos.png)
 
 **Guion:** "Sin retries: tu pipeline falla a las 3am y te enteras a las 9am. Con retries: Prefect reintenta automaticamente, esperando entre cada intento para no saturar el servicio."
 
@@ -319,7 +319,7 @@ Success! Status: 200
 
 ### Diagrama: Estados de Ejecucion
 
-![05 - Estados de Ejecucion](03-Orchestration/diagrams/05_estados_ejecucion.png)
+![05 - Estados de Ejecucion](../03-Orchestration/diagrams/05_estados_ejecucion.png)
 
 **Guion:** "Cada task pasa por estos estados. El camino feliz es SCHEDULED -> PENDING -> RUNNING -> COMPLETED. Si falla, va a FAILED. Si tiene retries, pasa a RETRYING y vuelve a RUNNING."
 
@@ -390,7 +390,7 @@ Updated profile 'default'.
 
 ### Diagrama: Arquitectura de Prefect
 
-![09 - Arquitectura](03-Orchestration/diagrams/09_arquitectura.png)
+![09 - Arquitectura](../03-Orchestration/diagrams/09_arquitectura.png)
 
 **Guion:** "Lo que acaban de levantar es el Prefect Server. Tiene 3 partes: la API (recibe datos de su codigo), la base de datos (guarda estado), y el dashboard (lo que ven en el navegador). Su codigo se comunica con el server via API REST. El comando `config set` le dijo a su codigo donde esta el server."
 
@@ -487,7 +487,7 @@ To trigger a run for this flow, use the following command:
 
 ### Diagrama: Deployment y Cron
 
-![08 - Deployment](03-Orchestration/diagrams/08_deployment.png)
+![08 - Deployment](../03-Orchestration/diagrams/08_deployment.png)
 
 **Guion:** "Hay 4 niveles para ejecutar un flow. Empezamos en el nivel 1 (manual) y ahora llegamos al nivel 3: cron. Una expresion cron define CUANDO se ejecuta automaticamente."
 
@@ -771,13 +771,13 @@ Este es el bloque principal. Todo lo anterior fue preparacion para esto.
 
 ### Diagrama: Pipeline ML Completo
 
-![10 - Pipeline ML Completo](03-Orchestration/diagrams/10_pipeline_ml_completo.png)
+![10 - Pipeline ML Completo](../03-Orchestration/diagrams/10_pipeline_ml_completo.png)
 
 **Guion:** "Este es el pipeline completo. 6 pasos, cada uno es un `@task`. Descarga datos reales de taxis de NYC, los valida, crea features, optimiza hiperparametros con Optuna (20 trials), entrena con XGBoost, y registra todo en MLflow. Veamoslo por dentro."
 
 ### Diagrama: Prefect + MLflow
 
-![11 - Prefect + MLflow](03-Orchestration/diagrams/11_prefect_mlflow.png)
+![11 - Prefect + MLflow](../03-Orchestration/diagrams/11_prefect_mlflow.png)
 
 **Guion:** "Prefect y MLflow hacen cosas diferentes. Prefect dice CUANDO y COMO correr el pipeline. MLflow dice QUE resultados produjo. Son complementarios."
 
@@ -838,7 +838,7 @@ def read_dataframe(year: int, month: int):
 
 ### Diagrama: Caching
 
-![07 - Caching](03-Orchestration/diagrams/07_caching.png)
+![07 - Caching](../03-Orchestration/diagrams/07_caching.png)
 
 **Guion:** "La primera vez descarga los datos (45 seg). La segunda vez, si los parametros no cambiaron, usa el cache y tarda 0 segundos. Esto ahorra mucho tiempo en desarrollo."
 
@@ -1115,7 +1115,7 @@ Dejar correr 1-2 ciclos para que vean los runs automaticos aparecer en el dashbo
 
 ### Diagrama: Panorama de Orquestadores
 
-![12 - Panorama de Orquestadores](03-Orchestration/diagrams/12_panorama_orquestadores.png)
+![12 - Panorama de Orquestadores](../03-Orchestration/diagrams/12_panorama_orquestadores.png)
 
 **Guion:** "Prefect no es la unica opcion. Mage es un orquestador visual tipo notebook. Implementamos el MISMO pipeline de NYC Taxi en Mage para que vean la diferencia de filosofia."
 
