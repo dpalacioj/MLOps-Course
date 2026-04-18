@@ -5,6 +5,7 @@
 Aprende a llevar tus modelos de machine learning desde el desarrollo hasta producción de manera profesional, escalable y reproducible.
 
 ## 👩‍🏫 Instructora
+...,,,
 
 ### 🌟 **[María Camila Durango](https://www.linkedin.com/in/mar%C3%ADa-camila-durango-999224202/)**
 
