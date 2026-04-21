@@ -244,3 +244,5 @@ settings_local.py
 #models/
 03-Orchestrarion/mlruns/
 
+markdowns/GUIA_VISUAL.md
+03-Orchestration/Prefect-pipelines/ejercicio_solucion/ejercicio_resuelto.ipynb

@@ -2,6 +2,87 @@
 
 Sistema de predicciones por lotes para duración de viajes de taxis NYC usando el modelo entrenado con Prefect + MLflow.
 
+---
+
+## ⚠️ Prerrequisito: Servidor de Prefect
+
+Prefect 3.x necesita un **backend** para guardar el estado de los flows, logs y artefactos. Si intentas correr cualquier flow sin uno, verás este error:
+
+```
+ValueError: No Prefect API URL provided. Please set PREFECT_API_URL
+to the address of a running Prefect server.
+```
+
+Tienes dos formas de solucionarlo. Elige **una**:
+
+### **Opción A (recomendada): Servidor local con UI**
+
+Abre **otra terminal** y déjala corriendo:
+
+```bash
+prefect server start
+```
+
+Esto levanta la UI de Prefect en [http://127.0.0.1:4200](http://127.0.0.1:4200) — ahí verás flows, tasks, logs y artefactos de cada corrida.
+
+En **la terminal donde vas a correr los flows**, apunta Prefect al servidor:
+
+```bash
+prefect config set PREFECT_API_URL=http://127.0.0.1:4200/api
+```
+
+Solo necesitas hacerlo **una vez**: Prefect guarda la configuración en `~/.prefect/profiles.toml`.
+
+### **Opción B (sin UI): Modo efímero**
+
+Si no te interesa la UI y solo quieres que el flow corra:
+
+```bash
+prefect config set PREFECT_SERVER_ALLOW_EPHEMERAL_MODE=true
+```
+
+**Desventaja:** no hay UI, no hay historial visual, no puedes navegar artefactos después. Pero no necesitas mantener una terminal extra abierta.
+
+### ¿Cuál elegir? Depende de qué comando vas a correr
+
+| Comando | Qué hace | Opción A (servidor) | Opción B (efímero) |
+|---------|----------|---------------------|--------------------|
+| `uv run python src/prefect_flows.py` | Corre el flow **una sola vez** | ✅ Funciona | ✅ Funciona |
+| `uv run python deploy_batch.py` (`.serve()`) | Deja un deployment **programado con cron** | ✅ **Única opción válida** | ❌ **NO funciona** |
+
+**Razón técnica:** `.serve()` deja un proceso vivo que espera el schedule (cron). Para registrar el deployment y que alguien pueda dispararlo, **necesita un servidor real persistente**. El modo efímero solo crea un server en memoria para una sola corrida — no sirve para schedules.
+
+**Si vas a usar `deploy_batch.py`, forzosamente usa Opción A.**
+
+### Verificar que quedó bien
+
+```bash
+prefect config view
+```
+
+Debes ver ya sea `PREFECT_API_URL='http://127.0.0.1:4200/api'` (Opción A) o `PREFECT_SERVER_ALLOW_EPHEMERAL_MODE='true'` (Opción B).
+
+### ⚠️ Error común: mezclar las dos opciones
+
+Si probaste la Opción B primero y después arrancaste un servidor sin hacer `prefect config set PREFECT_API_URL=...`, te vas a topar con este error al correr `.serve()`:
+
+```
+WARNING | prefect.runner - Cannot schedule flows on an ephemeral server
+[...]
+ValueError: No Prefect API URL provided.
+```
+
+Traducción: tu servidor está corriendo pero tu script no sabe dónde está.
+
+**Solución:**
+```bash
+prefect config set PREFECT_API_URL=http://127.0.0.1:4200/api
+prefect config unset PREFECT_SERVER_ALLOW_EPHEMERAL_MODE
+prefect config view   # verifica
+```
+
+---
+
 ## 📋 Paso a Paso
 
 ### **Paso 1: Copiar Modelo del Pipeline**

@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-opacity="0.12"/>
+    </filter>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fffbeb"/>
+      <stop offset="100%" style="stop-color:#fef3c7"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="900" height="600" rx="16" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="450" y="42" text-anchor="middle" font-size="22" font-weight="bold" fill="#1e293b">De tu computador a la nube (AWS EC2)</text>
+  <text x="450" y="66" text-anchor="middle" font-size="14" fill="#64748b">Mismo Docker, pero accesible para todo el mundo</text>
+
+  <!-- LEFT: Local -->
+  <rect x="40" y="95" width="380" height="330" rx="14" fill="#ffffff" stroke="#3B82F6" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="40" y="95" width="380" height="44" rx="14" fill="#3B82F6"/>
+  <rect x="40" y="125" width="380" height="14" fill="#3B82F6"/>
+  <text x="230" y="124" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">Despliegue Local (tu laptop)</text>
+
+  <text x="230" y="172" text-anchor="middle" font-size="50">💻</text>
+
+  <!-- Local characteristics -->
+  <rect x="65" y="198" width="330" height="30" rx="6" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+  <text x="80" y="218" font-size="12" fill="#1e40af">Solo tu puedes acceder (localhost)</text>
+  <text x="370" y="218" text-anchor="end" font-size="14">🔒</text>
+
+  <rect x="65" y="236" width="330" height="30" rx="6" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+  <text x="80" y="256" font-size="12" fill="#1e40af">Si apagas tu laptop, la API muere</text>
+  <text x="370" y="256" text-anchor="end" font-size="14">💤</text>
+
+  <rect x="65" y="274" width="330" height="30" rx="6" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+  <text x="80" y="294" font-size="12" fill="#1e40af">Perfecto para desarrollo y pruebas</text>
+  <text x="370" y="294" text-anchor="end" font-size="14">🧪</text>
+
+  <rect x="65" y="312" width="330" height="30" rx="6" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+  <text x="80" y="332" font-size="12" fill="#1e40af">Gratis (tu propia maquina)</text>
+  <text x="370" y="332" text-anchor="end" font-size="14">💚</text>
+
+  <!-- URL -->
+  <rect x="100" y="362" width="260" height="36" rx="8" fill="#1e1e2e"/>
+  <text x="230" y="385" text-anchor="middle" font-size="13" fill="#89b4fa" font-family="monospace">http://localhost:8000</text>
+
+  <!-- Arrow -->
+  <text x="450" y="260" text-anchor="middle" font-size="36">➡️</text>
+  <text x="450" y="290" text-anchor="middle" font-size="12" fill="#64748b" font-weight="bold">Mismo Docker</text>
+  <text x="450" y="306" text-anchor="middle" font-size="12" fill="#64748b" font-weight="bold">diferente lugar</text>
+
+  <!-- RIGHT: Cloud -->
+  <rect x="480" y="95" width="390" height="330" rx="14" fill="#ffffff" stroke="#F59E0B" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="480" y="95" width="390" height="44" rx="14" fill="#F59E0B"/>
+  <rect x="480" y="125" width="390" height="14" fill="#F59E0B"/>
+  <text x="675" y="124" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">Despliegue en Nube (AWS EC2)</text>
+
+  <text x="675" y="172" text-anchor="middle" font-size="50">☁️</text>
+
+  <!-- Cloud characteristics -->
+  <rect x="505" y="198" width="340" height="30" rx="6" fill="#FFFBEB" stroke="#FCD34D" stroke-width="1"/>
+  <text x="520" y="218" font-size="12" fill="#92400e">Cualquiera con la IP puede acceder</text>
+  <text x="820" y="218" text-anchor="end" font-size="14">🌍</text>
+
+  <rect x="505" y="236" width="340" height="30" rx="6" fill="#FFFBEB" stroke="#FCD34D" stroke-width="1"/>
+  <text x="520" y="256" font-size="12" fill="#92400e">Funciona 24/7 (siempre encendido)</text>
+  <text x="820" y="256" text-anchor="end" font-size="14">⚡</text>
+
+  <rect x="505" y="274" width="340" height="30" rx="6" fill="#FFFBEB" stroke="#FCD34D" stroke-width="1"/>
+  <text x="520" y="294" font-size="12" fill="#92400e">Listo para produccion real</text>
+  <text x="820" y="294" text-anchor="end" font-size="14">🏭</text>
+
+  <rect x="505" y="312" width="340" height="30" rx="6" fill="#FFFBEB" stroke="#FCD34D" stroke-width="1"/>
+  <text x="520" y="332" font-size="12" fill="#92400e">Tiene un costo mensual (AWS)</text>
+  <text x="820" y="332" text-anchor="end" font-size="14">💰</text>
+
+  <!-- URL -->
+  <rect x="530" y="362" width="290" height="36" rx="8" fill="#1e1e2e"/>
+  <text x="675" y="385" text-anchor="middle" font-size="12" fill="#f9e2af" font-family="monospace">http://ec2-54-123-45-67:9696</text>
+
+  <!-- Bottom: Steps to deploy -->
+  <rect x="40" y="445" width="820" height="140" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="450" y="476" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e293b">Pasos para subir tu API a AWS EC2</text>
+
+  <!-- Step circles -->
+  <circle cx="110" cy="525" r="32" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+  <text x="110" y="520" text-anchor="middle" font-size="22">🔑</text>
+  <text x="110" y="540" text-anchor="middle" font-size="9" font-weight="bold" fill="#92400e">SSH</text>
+  <text x="110" y="570" text-anchor="middle" font-size="10" fill="#64748b">Conectarte al</text>
+  <text x="110" y="582" text-anchor="middle" font-size="10" fill="#64748b">servidor remoto</text>
+
+  <line x1="147" y1="525" x2="208" y2="525" stroke="#d1d5db" stroke-width="2" stroke-dasharray="5,3"/>
+
+  <circle cx="240" cy="525" r="32" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+  <text x="240" y="520" text-anchor="middle" font-size="22">📦</text>
+  <text x="240" y="540" text-anchor="middle" font-size="9" font-weight="bold" fill="#92400e">Docker</text>
+  <text x="240" y="570" text-anchor="middle" font-size="10" fill="#64748b">Instalar Docker</text>
+  <text x="240" y="582" text-anchor="middle" font-size="10" fill="#64748b">en el servidor</text>
+
+  <line x1="277" y1="525" x2="338" y2="525" stroke="#d1d5db" stroke-width="2" stroke-dasharray="5,3"/>
+
+  <circle cx="370" cy="525" r="32" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+  <text x="370" y="520" text-anchor="middle" font-size="22">📋</text>
+  <text x="370" y="540" text-anchor="middle" font-size="9" font-weight="bold" fill="#92400e">Clonar</text>
+  <text x="370" y="570" text-anchor="middle" font-size="10" fill="#64748b">Descargar tu</text>
+  <text x="370" y="582" text-anchor="middle" font-size="10" fill="#64748b">codigo (git clone)</text>
+
+  <line x1="407" y1="525" x2="468" y2="525" stroke="#d1d5db" stroke-width="2" stroke-dasharray="5,3"/>
+
+  <circle cx="500" cy="525" r="32" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+  <text x="500" y="520" text-anchor="middle" font-size="22">🏗️</text>
+  <text x="500" y="540" text-anchor="middle" font-size="9" font-weight="bold" fill="#92400e">Build</text>
+  <text x="500" y="570" text-anchor="middle" font-size="10" fill="#64748b">Construir la</text>
+  <text x="500" y="582" text-anchor="middle" font-size="10" fill="#64748b">imagen Docker</text>
+
+  <line x1="537" y1="525" x2="598" y2="525" stroke="#d1d5db" stroke-width="2" stroke-dasharray="5,3"/>
+
+  <circle cx="630" cy="525" r="32" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+  <text x="630" y="520" text-anchor="middle" font-size="22">🚀</text>
+  <text x="630" y="540" text-anchor="middle" font-size="9" font-weight="bold" fill="#92400e">Run</text>
+  <text x="630" y="570" text-anchor="middle" font-size="10" fill="#64748b">Ejecutar el</text>
+  <text x="630" y="582" text-anchor="middle" font-size="10" fill="#64748b">contenedor</text>
+
+  <line x1="667" y1="525" x2="728" y2="525" stroke="#d1d5db" stroke-width="2" stroke-dasharray="5,3"/>
+
+  <circle cx="760" cy="525" r="32" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+  <text x="760" y="520" text-anchor="middle" font-size="22">🔓</text>
+  <text x="760" y="540" text-anchor="middle" font-size="9" font-weight="bold" fill="#92400e">Puertos</text>
+  <text x="760" y="570" text-anchor="middle" font-size="10" fill="#64748b">Abrir el puerto</text>
+  <text x="760" y="582" text-anchor="middle" font-size="10" fill="#64748b">en Security Group</text>
+</svg>

@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-opacity="0.12"/>
+    </filter>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fef2f2"/>
+      <stop offset="100%" style="stop-color:#fff1f2"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="900" height="600" rx="16" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="450" y="42" text-anchor="middle" font-size="22" font-weight="bold" fill="#1e293b">El Problema: "En mi computador funciona..."</text>
+  <text x="450" y="66" text-anchor="middle" font-size="13" fill="#64748b">Por que necesitamos una forma estandar de empaquetar aplicaciones</text>
+
+  <!-- Developer 1 - Works -->
+  <rect x="40" y="100" width="250" height="320" rx="14" fill="#ffffff" stroke="#10B981" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="40" y="100" width="250" height="40" rx="14" fill="#10B981"/>
+  <rect x="40" y="126" width="250" height="14" fill="#10B981"/>
+  <text x="165" y="126" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">Computador de Ana</text>
+
+  <text x="165" y="172" text-anchor="middle" font-size="40">👩‍💻</text>
+  <text x="165" y="200" text-anchor="middle" font-size="12" font-weight="600" fill="#10B981">"A mi me funciona perfecto"</text>
+
+  <!-- Ana's setup -->
+  <rect x="60" y="218" width="210" height="28" rx="6" fill="#ecfdf5" stroke="#10B981" stroke-width="1"/>
+  <text x="74" y="237" font-size="11" fill="#065f46">Python 3.11.2</text>
+  <text x="240" y="237" text-anchor="end" font-size="14">✅</text>
+
+  <rect x="60" y="252" width="210" height="28" rx="6" fill="#ecfdf5" stroke="#10B981" stroke-width="1"/>
+  <text x="74" y="271" font-size="11" fill="#065f46">scikit-learn 1.5.2</text>
+  <text x="240" y="271" text-anchor="end" font-size="14">✅</text>
+
+  <rect x="60" y="286" width="210" height="28" rx="6" fill="#ecfdf5" stroke="#10B981" stroke-width="1"/>
+  <text x="74" y="305" font-size="11" fill="#065f46">xgboost 2.1.2</text>
+  <text x="240" y="305" text-anchor="end" font-size="14">✅</text>
+
+  <rect x="60" y="320" width="210" height="28" rx="6" fill="#ecfdf5" stroke="#10B981" stroke-width="1"/>
+  <text x="74" y="339" font-size="11" fill="#065f46">macOS Ventura</text>
+  <text x="240" y="339" text-anchor="end" font-size="14">✅</text>
+
+  <rect x="60" y="360" width="210" height="40" rx="8" fill="#10B981"/>
+  <text x="165" y="385" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">Prediccion: 12.5 min ✅</text>
+
+  <!-- Arrow -->
+  <text x="335" y="245" text-anchor="middle" font-size="28">📤</text>
+  <text x="335" y="270" text-anchor="middle" font-size="11" fill="#64748b">Ana le envia</text>
+  <text x="335" y="284" text-anchor="middle" font-size="11" fill="#64748b">el codigo a Luis</text>
+
+  <!-- Developer 2 - Fails -->
+  <rect x="370" y="100" width="250" height="320" rx="14" fill="#ffffff" stroke="#EF4444" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="370" y="100" width="250" height="40" rx="14" fill="#EF4444"/>
+  <rect x="370" y="126" width="250" height="14" fill="#EF4444"/>
+  <text x="495" y="126" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">Computador de Luis</text>
+
+  <text x="495" y="172" text-anchor="middle" font-size="40">👨‍💻</text>
+  <text x="495" y="200" text-anchor="middle" font-size="12" font-weight="600" fill="#EF4444">"A mi no me funciona!"</text>
+
+  <!-- Luis's setup -->
+  <rect x="390" y="218" width="210" height="28" rx="6" fill="#fef2f2" stroke="#EF4444" stroke-width="1"/>
+  <text x="404" y="237" font-size="11" fill="#991b1b">Python 3.9.7</text>
+  <text x="570" y="237" text-anchor="end" font-size="14">❌</text>
+
+  <rect x="390" y="252" width="210" height="28" rx="6" fill="#fef2f2" stroke="#EF4444" stroke-width="1"/>
+  <text x="404" y="271" font-size="11" fill="#991b1b">scikit-learn 1.2.0</text>
+  <text x="570" y="271" text-anchor="end" font-size="14">❌</text>
+
+  <rect x="390" y="286" width="210" height="28" rx="6" fill="#fef2f2" stroke="#EF4444" stroke-width="1"/>
+  <text x="404" y="305" font-size="11" fill="#991b1b">xgboost no instalado</text>
+  <text x="570" y="305" text-anchor="end" font-size="14">❌</text>
+
+  <rect x="390" y="320" width="210" height="28" rx="6" fill="#fef2f2" stroke="#EF4444" stroke-width="1"/>
+  <text x="404" y="339" font-size="11" fill="#991b1b">Windows 11</text>
+  <text x="570" y="339" text-anchor="end" font-size="14">⚠️</text>
+
+  <rect x="390" y="360" width="210" height="40" rx="8" fill="#EF4444"/>
+  <text x="495" y="385" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">ERROR: ModuleNotFound ❌</text>
+
+  <!-- Server - Also fails -->
+  <rect x="660" y="100" width="210" height="320" rx="14" fill="#ffffff" stroke="#F59E0B" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="660" y="100" width="210" height="40" rx="14" fill="#F59E0B"/>
+  <rect x="660" y="126" width="210" height="14" fill="#F59E0B"/>
+  <text x="765" y="126" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">Servidor de Produccion</text>
+
+  <text x="765" y="172" text-anchor="middle" font-size="40">🖥️</text>
+  <text x="765" y="200" text-anchor="middle" font-size="12" font-weight="600" fill="#F59E0B">"Tampoco funciona aqui"</text>
+
+  <rect x="680" y="218" width="170" height="28" rx="6" fill="#fffbeb" stroke="#F59E0B" stroke-width="1"/>
+  <text x="694" y="237" font-size="11" fill="#92400e">Python 3.8.10</text>
+  <text x="822" y="237" text-anchor="end" font-size="14">❌</text>
+
+  <rect x="680" y="252" width="170" height="28" rx="6" fill="#fffbeb" stroke="#F59E0B" stroke-width="1"/>
+  <text x="694" y="271" font-size="11" fill="#92400e">Ubuntu 20.04</text>
+  <text x="822" y="271" text-anchor="end" font-size="14">⚠️</text>
+
+  <rect x="680" y="286" width="170" height="28" rx="6" fill="#fffbeb" stroke="#F59E0B" stroke-width="1"/>
+  <text x="694" y="305" font-size="11" fill="#92400e">Librerias viejas</text>
+  <text x="822" y="305" text-anchor="end" font-size="14">❌</text>
+
+  <rect x="680" y="360" width="170" height="40" rx="8" fill="#F59E0B"/>
+  <text x="765" y="385" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">CRASH en produccion ❌</text>
+
+  <!-- Bottom: The problems listed -->
+  <rect x="40" y="450" width="820" height="130" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="450" y="480" text-anchor="middle" font-size="16" font-weight="bold" fill="#EF4444">Problemas comunes sin Docker</text>
+
+  <text x="100" y="510" font-size="13" fill="#1e293b">🔴  Versiones de Python diferentes</text>
+  <text x="100" y="534" font-size="13" fill="#1e293b">🔴  Librerias faltantes o incompatibles</text>
+  <text x="100" y="558" font-size="13" fill="#1e293b">🔴  Sistema operativo diferente</text>
+
+  <text x="500" y="510" font-size="13" fill="#1e293b">🔴  Configuraciones especificas de cada maquina</text>
+  <text x="500" y="534" font-size="13" fill="#1e293b">🔴  Imposible reproducir el entorno exacto</text>
+  <text x="500" y="558" font-size="13" fill="#1e293b">🔴  Horas perdidas instalando dependencias</text>
+</svg>

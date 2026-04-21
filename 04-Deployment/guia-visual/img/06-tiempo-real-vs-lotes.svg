@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-opacity="0.12"/>
+    </filter>
+    <linearGradient id="bgLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f5f3ff"/>
+      <stop offset="100%" style="stop-color:#ede9fe"/>
+    </linearGradient>
+    <linearGradient id="bgRight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ecfdf5"/>
+      <stop offset="100%" style="stop-color:#d1fae5"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="900" height="620" rx="16" fill="#f8fafc"/>
+
+  <!-- Title -->
+  <text x="450" y="42" text-anchor="middle" font-size="22" font-weight="bold" fill="#1e293b">Dos formas de servir predicciones</text>
+  <text x="450" y="66" text-anchor="middle" font-size="14" fill="#64748b">Tiempo real (una a una) vs. por lotes (miles a la vez)</text>
+
+  <!-- LEFT: Real-time -->
+  <rect x="30" y="90" width="410" height="400" rx="14" fill="url(#bgLeft)" stroke="#8B5CF6" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="30" y="90" width="410" height="44" rx="14" fill="#8B5CF6"/>
+  <rect x="30" y="120" width="410" height="14" fill="#8B5CF6"/>
+  <text x="235" y="118" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">Tiempo Real (web-service/)</text>
+
+  <!-- Analogy -->
+  <rect x="55" y="148" width="360" height="38" rx="8" fill="#FEF3C7" stroke="#FCD34D" stroke-width="1"/>
+  <text x="235" y="172" text-anchor="middle" font-size="12" fill="#92400e">Analogia: Un doctor que atiende pacientes uno por uno en consultorio</text>
+
+  <!-- Flow diagram -->
+  <text x="100" y="218" text-anchor="middle" font-size="32">👤</text>
+  <text x="100" y="244" text-anchor="middle" font-size="10" fill="#64748b">Usuario</text>
+  <text x="100" y="256" text-anchor="middle" font-size="10" fill="#64748b">pide 1 viaje</text>
+
+  <line x1="135" y1="218" x2="175" y2="218" stroke="#8B5CF6" stroke-width="2"/>
+  <polygon points="175,213 185,218 175,223" fill="#8B5CF6"/>
+
+  <rect x="190" y="200" width="90" height="40" rx="8" fill="#ffffff" stroke="#8B5CF6" stroke-width="1.5"/>
+  <text x="235" y="216" text-anchor="middle" font-size="20">🧠</text>
+  <text x="235" y="234" text-anchor="middle" font-size="9" fill="#5b21b6">API + Modelo</text>
+
+  <line x1="285" y1="218" x2="325" y2="218" stroke="#10B981" stroke-width="2"/>
+  <polygon points="325,213 335,218 325,223" fill="#10B981"/>
+
+  <text x="370" y="218" text-anchor="middle" font-size="32">📱</text>
+  <text x="370" y="244" text-anchor="middle" font-size="10" fill="#64748b">Respuesta</text>
+  <text x="370" y="256" text-anchor="middle" font-size="10" fill="#64748b">inmediata</text>
+
+  <!-- Characteristics -->
+  <rect x="55" y="278" width="360" height="30" rx="6" fill="#ffffff" stroke="#DDD6FE" stroke-width="1"/>
+  <text x="75" y="298" font-size="12" fill="#5b21b6">⚡ Respuesta en milisegundos</text>
+
+  <rect x="55" y="314" width="360" height="30" rx="6" fill="#ffffff" stroke="#DDD6FE" stroke-width="1"/>
+  <text x="75" y="334" font-size="12" fill="#5b21b6">👤 Un usuario a la vez (o pocos)</text>
+
+  <rect x="55" y="350" width="360" height="30" rx="6" fill="#ffffff" stroke="#DDD6FE" stroke-width="1"/>
+  <text x="75" y="370" font-size="12" fill="#5b21b6">🌐 Necesita servidor encendido 24/7</text>
+
+  <rect x="55" y="386" width="360" height="30" rx="6" fill="#ffffff" stroke="#DDD6FE" stroke-width="1"/>
+  <text x="75" y="406" font-size="12" fill="#5b21b6">🚕 Ejemplo: "Cuanto tardara mi taxi?"</text>
+
+  <!-- Use cases -->
+  <rect x="55" y="428" width="360" height="46" rx="8" fill="#8B5CF6"/>
+  <text x="235" y="448" text-anchor="middle" font-size="11" font-weight="bold" fill="#ffffff">Ideal para: apps moviles, paginas web,</text>
+  <text x="235" y="464" text-anchor="middle" font-size="11" font-weight="bold" fill="#ffffff">chatbots, cualquier cosa interactiva</text>
+
+  <!-- VS circle -->
+  <circle cx="450" cy="320" r="28" fill="#1e293b"/>
+  <text x="450" y="326" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">VS</text>
+
+  <!-- RIGHT: Batch -->
+  <rect x="460" y="90" width="410" height="400" rx="14" fill="url(#bgRight)" stroke="#10B981" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="460" y="90" width="410" height="44" rx="14" fill="#10B981"/>
+  <rect x="460" y="120" width="410" height="14" fill="#10B981"/>
+  <text x="665" y="118" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">Por Lotes (batch-deploy/)</text>
+
+  <!-- Analogy -->
+  <rect x="485" y="148" width="360" height="38" rx="8" fill="#FEF3C7" stroke="#FCD34D" stroke-width="1"/>
+  <text x="665" y="172" text-anchor="middle" font-size="12" fill="#92400e">Analogia: Un laboratorio que analiza 1000 muestras de sangre cada noche</text>
+
+  <!-- Flow diagram -->
+  <text x="530" y="218" text-anchor="middle" font-size="32">⏰</text>
+  <text x="530" y="244" text-anchor="middle" font-size="10" fill="#64748b">Cron/Prefect</text>
+  <text x="530" y="256" text-anchor="middle" font-size="10" fill="#64748b">cada 2 horas</text>
+
+  <line x1="565" y1="218" x2="605" y2="218" stroke="#10B981" stroke-width="2"/>
+  <polygon points="605,213 615,218 605,223" fill="#10B981"/>
+
+  <rect x="620" y="200" width="90" height="40" rx="8" fill="#ffffff" stroke="#10B981" stroke-width="1.5"/>
+  <text x="665" y="216" text-anchor="middle" font-size="20">🧠</text>
+  <text x="665" y="234" text-anchor="middle" font-size="9" fill="#047857">Modelo</text>
+
+  <line x1="715" y1="218" x2="755" y2="218" stroke="#10B981" stroke-width="2"/>
+  <polygon points="755,213 765,218 755,223" fill="#10B981"/>
+
+  <text x="800" y="218" text-anchor="middle" font-size="32">🗄️</text>
+  <text x="800" y="244" text-anchor="middle" font-size="10" fill="#64748b">1000 resultados</text>
+  <text x="800" y="256" text-anchor="middle" font-size="10" fill="#64748b">→ base de datos</text>
+
+  <!-- Characteristics -->
+  <rect x="485" y="278" width="360" height="30" rx="6" fill="#ffffff" stroke="#A7F3D0" stroke-width="1"/>
+  <text x="505" y="298" font-size="12" fill="#047857">📊 Procesa miles de predicciones a la vez</text>
+
+  <rect x="485" y="314" width="360" height="30" rx="6" fill="#ffffff" stroke="#A7F3D0" stroke-width="1"/>
+  <text x="505" y="334" font-size="12" fill="#047857">⏰ Se ejecuta automaticamente (cada hora)</text>
+
+  <rect x="485" y="350" width="360" height="30" rx="6" fill="#ffffff" stroke="#A7F3D0" stroke-width="1"/>
+  <text x="505" y="370" font-size="12" fill="#047857">🗄️ Resultados guardados en SQLite</text>
+
+  <rect x="485" y="386" width="360" height="30" rx="6" fill="#ffffff" stroke="#A7F3D0" stroke-width="1"/>
+  <text x="505" y="406" font-size="12" fill="#047857">🚕 Ejemplo: "Predecir demanda de la proxima hora"</text>
+
+  <!-- Use cases -->
+  <rect x="485" y="428" width="360" height="46" rx="8" fill="#10B981"/>
+  <text x="665" y="448" text-anchor="middle" font-size="11" font-weight="bold" fill="#ffffff">Ideal para: reportes, scoring masivo,</text>
+  <text x="665" y="464" text-anchor="middle" font-size="11" font-weight="bold" fill="#ffffff">ETL pipelines, predicciones nocturnas</text>
+
+  <!-- Bottom: When to use each -->
+  <rect x="30" y="510" width="840" height="95" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="450" y="538" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e293b">Como elegir?</text>
+
+  <rect x="55" y="550" width="370" height="38" rx="8" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1"/>
+  <text x="240" y="574" text-anchor="middle" font-size="12" fill="#5b21b6">Necesito la respuesta YA → Tiempo real</text>
+
+  <rect x="475" y="550" width="370" height="38" rx="8" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1"/>
+  <text x="660" y="574" text-anchor="middle" font-size="12" fill="#047857">Puedo esperar y son muchos datos → Lotes</text>
+</svg>

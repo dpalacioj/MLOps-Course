@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 880" font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-opacity="0.12"/>
+    </filter>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ecfeff"/>
+      <stop offset="100%" style="stop-color:#cffafe"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="900" height="880" rx="16" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="450" y="40" text-anchor="middle" font-size="22" font-weight="bold" fill="#1e293b">Sintaxis basica de FastAPI y decoradores</text>
+  <text x="450" y="64" text-anchor="middle" font-size="14" fill="#64748b">Entendiendo como se escribe una API paso a paso</text>
+
+  <!-- ============================================ -->
+  <!-- SECTION 1: What is a decorator? -->
+  <!-- ============================================ -->
+  <rect x="40" y="85" width="820" height="235" rx="14" fill="#ffffff" stroke="#F59E0B" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="40" y="85" width="820" height="40" rx="14" fill="#F59E0B"/>
+  <rect x="40" y="111" width="820" height="14" fill="#F59E0B"/>
+  <text x="450" y="111" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">Que es un decorador? (el simbolo @)</text>
+
+  <!-- Analogy -->
+  <rect x="60" y="138" width="790" height="44" rx="8" fill="#FEF3C7" stroke="#FCD34D" stroke-width="1"/>
+  <text x="455" y="157" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">Analogia: Etiquetas en un edificio</text>
+  <text x="455" y="174" text-anchor="middle" font-size="11" fill="#78350f">Imagina que cada puerta de un edificio tiene una etiqueta que dice que pasa cuando la abres. El decorador es esa etiqueta.</text>
+
+  <!-- Left: Without decorator -->
+  <rect x="60" y="194" width="360" height="110" rx="10" fill="#fef2f2" stroke="#FECACA" stroke-width="1"/>
+  <text x="240" y="216" text-anchor="middle" font-size="12" font-weight="bold" fill="#991b1b">Sin decorador (funcion normal)</text>
+
+  <rect x="78" y="228" width="324" height="60" rx="6" fill="#1e1e2e"/>
+  <text x="90" y="248" font-size="11" fill="#cdd6f4" font-family="monospace">def saludar():</text>
+  <text x="90" y="268" font-size="11" fill="#a6e3a1" font-family="monospace">    return "Hola mundo"</text>
+  <text x="90" y="282" font-size="9" fill="#6c7086" font-family="monospace"># Solo una funcion, nadie sabe cuando llamarla</text>
+
+  <!-- Right: With decorator -->
+  <rect x="480" y="194" width="360" height="110" rx="10" fill="#ecfdf5" stroke="#A7F3D0" stroke-width="1"/>
+  <text x="660" y="216" text-anchor="middle" font-size="12" font-weight="bold" fill="#065f46">Con decorador (conectada a una ruta)</text>
+
+  <rect x="498" y="228" width="324" height="60" rx="6" fill="#1e1e2e"/>
+  <text x="510" y="248" font-size="11" fill="#f9e2af" font-family="monospace">@app.get("/saludo")</text>
+  <text x="510" y="264" font-size="11" fill="#cdd6f4" font-family="monospace">def saludar():</text>
+  <text x="510" y="280" font-size="11" fill="#a6e3a1" font-family="monospace">    return "Hola mundo"</text>
+
+  <!-- Arrow between them -->
+  <text x="450" y="256" text-anchor="middle" font-size="20">➡️</text>
+
+  <!-- ============================================ -->
+  <!-- SECTION 2: Decorator breakdown -->
+  <!-- ============================================ -->
+  <rect x="40" y="335" width="820" height="175" rx="14" fill="#ffffff" stroke="#0891b2" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="40" y="335" width="820" height="40" rx="14" fill="#0891b2"/>
+  <rect x="40" y="361" width="820" height="14" fill="#0891b2"/>
+  <text x="450" y="361" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">Anatomia de un decorador de FastAPI</text>
+
+  <!-- Big code block with annotations -->
+  <rect x="180" y="392" width="540" height="36" rx="8" fill="#1e1e2e"/>
+  <text x="200" y="416" font-size="16" fill="#f9e2af" font-family="monospace">@app.get("/predict")</text>
+
+  <!-- Annotation arrows -->
+  <!-- @ symbol -->
+  <line x1="208" y1="432" x2="208" y2="460" stroke="#EF4444" stroke-width="2"/>
+  <rect x="148" y="462" width="120" height="34" rx="6" fill="#FEF2F2" stroke="#FECACA" stroke-width="1"/>
+  <text x="208" y="478" text-anchor="middle" font-size="10" font-weight="bold" fill="#991b1b">@</text>
+  <text x="208" y="491" text-anchor="middle" font-size="9" fill="#991b1b">Simbolo decorador</text>
+
+  <!-- app -->
+  <line x1="290" y1="432" x2="290" y2="460" stroke="#8B5CF6" stroke-width="2"/>
+  <rect x="240" y="462" width="100" height="34" rx="6" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1"/>
+  <text x="290" y="478" text-anchor="middle" font-size="10" font-weight="bold" fill="#5b21b6">app</text>
+  <text x="290" y="491" text-anchor="middle" font-size="9" fill="#5b21b6">Tu aplicacion FastAPI</text>
+
+  <!-- .get -->
+  <line x1="398" y1="432" x2="398" y2="460" stroke="#059669" stroke-width="2"/>
+  <rect x="348" y="462" width="100" height="34" rx="6" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1"/>
+  <text x="398" y="478" text-anchor="middle" font-size="10" font-weight="bold" fill="#047857">.get</text>
+  <text x="398" y="491" text-anchor="middle" font-size="9" fill="#047857">Metodo HTTP (GET)</text>
+
+  <!-- "/predict" -->
+  <line x1="540" y1="432" x2="540" y2="460" stroke="#F59E0B" stroke-width="2"/>
+  <rect x="470" y="462" width="140" height="34" rx="6" fill="#FFFBEB" stroke="#FCD34D" stroke-width="1"/>
+  <text x="540" y="478" text-anchor="middle" font-size="10" font-weight="bold" fill="#92400e">"/predict"</text>
+  <text x="540" y="491" text-anchor="middle" font-size="9" fill="#92400e">La ruta / URL</text>
+
+  <!-- ============================================ -->
+  <!-- SECTION 3: Complete example - minimal API -->
+  <!-- ============================================ -->
+  <rect x="40" y="525" width="490" height="340" rx="14" fill="#ffffff" stroke="#0891b2" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="40" y="525" width="490" height="40" rx="14" fill="#0891b2"/>
+  <rect x="40" y="551" width="490" height="14" fill="#0891b2"/>
+  <text x="285" y="551" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">Ejemplo completo: API minima</text>
+
+  <!-- Code block -->
+  <rect x="58" y="580" width="454" height="268" rx="8" fill="#1e1e2e"/>
+
+  <!-- Line 1: import -->
+  <text x="68" y="600" font-size="9" fill="#6c7086" font-family="monospace">1</text>
+  <text x="90" y="600" font-size="12" fill="#89b4fa" font-family="monospace">from</text>
+  <text x="126" y="600" font-size="12" fill="#cdd6f4" font-family="monospace"> fastapi </text>
+  <text x="196" y="600" font-size="12" fill="#89b4fa" font-family="monospace">import</text>
+  <text x="252" y="600" font-size="12" fill="#a6e3a1" font-family="monospace"> FastAPI</text>
+
+  <!-- Line 2: blank -->
+  <text x="68" y="622" font-size="9" fill="#6c7086" font-family="monospace">2</text>
+
+  <!-- Line 3: create app -->
+  <text x="68" y="644" font-size="9" fill="#6c7086" font-family="monospace">3</text>
+  <text x="90" y="644" font-size="12" fill="#cdd6f4" font-family="monospace">app = FastAPI()</text>
+  <!-- annotation -->
+  <text x="260" y="644" font-size="10" fill="#f9e2af" font-family="monospace"> # Crear la app</text>
+
+  <!-- Line 4: blank -->
+  <text x="68" y="666" font-size="9" fill="#6c7086" font-family="monospace">4</text>
+
+  <!-- Line 5: decorator GET -->
+  <text x="68" y="688" font-size="9" fill="#6c7086" font-family="monospace">5</text>
+  <text x="90" y="688" font-size="12" fill="#f9e2af" font-family="monospace">@app.get("/")</text>
+  <!-- annotation -->
+  <text x="240" y="688" font-size="10" fill="#f9e2af" font-family="monospace"> # Cuando visiten /</text>
+
+  <!-- Line 6: def -->
+  <text x="68" y="710" font-size="9" fill="#6c7086" font-family="monospace">6</text>
+  <text x="90" y="710" font-size="12" fill="#89b4fa" font-family="monospace">def</text>
+  <text x="118" y="710" font-size="12" fill="#cdd6f4" font-family="monospace"> inicio():</text>
+
+  <!-- Line 7: return -->
+  <text x="68" y="732" font-size="9" fill="#6c7086" font-family="monospace">7</text>
+  <text x="90" y="732" font-size="12" fill="#89b4fa" font-family="monospace">    return</text>
+  <text x="148" y="732" font-size="12" fill="#a6e3a1" font-family="monospace"> {"mensaje": "Hola!"}</text>
+
+  <!-- Line 8: blank -->
+  <text x="68" y="754" font-size="9" fill="#6c7086" font-family="monospace">8</text>
+
+  <!-- Line 9: decorator POST -->
+  <text x="68" y="776" font-size="9" fill="#6c7086" font-family="monospace">9</text>
+  <text x="90" y="776" font-size="12" fill="#f9e2af" font-family="monospace">@app.post("/predict")</text>
+  <!-- annotation -->
+  <text x="310" y="776" font-size="10" fill="#f9e2af" font-family="monospace"> # Recibir datos</text>
+
+  <!-- Line 10: def predict -->
+  <text x="64" y="798" font-size="9" fill="#6c7086" font-family="monospace">10</text>
+  <text x="90" y="798" font-size="12" fill="#89b4fa" font-family="monospace">def</text>
+  <text x="118" y="798" font-size="12" fill="#cdd6f4" font-family="monospace"> predecir(datos: dict):</text>
+
+  <!-- Line 11: return -->
+  <text x="64" y="820" font-size="9" fill="#6c7086" font-family="monospace">11</text>
+  <text x="90" y="820" font-size="12" fill="#89b4fa" font-family="monospace">    return</text>
+  <text x="148" y="820" font-size="12" fill="#a6e3a1" font-family="monospace"> {"prediccion": 12.5}</text>
+
+  <!-- ============================================ -->
+  <!-- RIGHT: HTTP Methods explained -->
+  <!-- ============================================ -->
+  <rect x="555" y="525" width="305" height="340" rx="14" fill="#ffffff" stroke="#6366F1" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="555" y="525" width="305" height="40" rx="14" fill="#6366F1"/>
+  <rect x="555" y="551" width="305" height="14" fill="#6366F1"/>
+  <text x="707" y="551" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">Metodos HTTP: GET vs POST</text>
+
+  <!-- GET -->
+  <rect x="575" y="580" width="265" height="118" rx="10" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5"/>
+  <rect x="575" y="580" width="265" height="30" rx="10" fill="#3B82F6"/>
+  <rect x="575" y="597" width="265" height="13" fill="#3B82F6"/>
+  <text x="707" y="600" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">GET  — Pedir informacion</text>
+
+  <text x="707" y="632" text-anchor="middle" font-size="28">📖</text>
+
+  <text x="590" y="660" font-size="11" fill="#1e293b">Consultar, leer, obtener datos</text>
+  <text x="590" y="678" font-size="10" fill="#64748b">Ejemplo: ver la pagina principal,</text>
+  <text x="590" y="693" font-size="10" fill="#64748b">revisar si el servidor esta vivo</text>
+
+  <!-- POST -->
+  <rect x="575" y="710" width="265" height="138" rx="10" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1.5"/>
+  <rect x="575" y="710" width="265" height="30" rx="10" fill="#8B5CF6"/>
+  <rect x="575" y="727" width="265" height="13" fill="#8B5CF6"/>
+  <text x="707" y="730" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">POST  — Enviar datos</text>
+
+  <text x="707" y="766" text-anchor="middle" font-size="28">📮</text>
+
+  <text x="590" y="794" font-size="11" fill="#1e293b">Enviar datos para procesar</text>
+  <text x="590" y="812" font-size="10" fill="#64748b">Ejemplo: enviar datos del viaje</text>
+  <text x="590" y="827" font-size="10" fill="#64748b">para obtener una prediccion.</text>
+  <text x="590" y="844" font-size="10" fill="#8B5CF6" font-weight="600">El cuerpo lleva los datos (JSON)</text>
+</svg>

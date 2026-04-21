@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-opacity="0.15"/>
+    </filter>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f4ff"/>
+      <stop offset="100%" style="stop-color:#e8eeff"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="520" rx="16" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="450" y="48" text-anchor="middle" font-size="24" font-weight="bold" fill="#1e293b">Ruta de Aprendizaje: Despliegue de Modelos ML</text>
+  <text x="450" y="72" text-anchor="middle" font-size="14" fill="#64748b">De tu computador al mundo real, paso a paso</text>
+
+  <!-- Step 1 -->
+  <rect x="40" y="110" width="180" height="200" rx="14" fill="#ffffff" stroke="#3B82F6" stroke-width="2.5" filter="url(#shadow)"/>
+  <rect x="40" y="110" width="180" height="44" rx="14" fill="#3B82F6"/>
+  <rect x="40" y="136" width="180" height="18" fill="#3B82F6"/>
+  <text x="130" y="139" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">Paso 1</text>
+  <text x="130" y="178" text-anchor="middle" font-size="36">📦</text>
+  <text x="130" y="215" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e293b">Aprender Docker</text>
+  <text x="130" y="238" text-anchor="middle" font-size="11" fill="#64748b">Empaquetar apps</text>
+  <text x="130" y="254" text-anchor="middle" font-size="11" fill="#64748b">en contenedores</text>
+  <text x="130" y="278" text-anchor="middle" font-size="11" fill="#3B82F6" font-weight="600">intro-dockers/</text>
+  <text x="130" y="298" text-anchor="middle" font-size="20">🐱</text>
+
+  <!-- Arrow 1→2 -->
+  <line x1="225" y1="210" x2="270" y2="210" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 2 -->
+  <rect x="275" y="110" width="180" height="200" rx="14" fill="#ffffff" stroke="#8B5CF6" stroke-width="2.5" filter="url(#shadow)"/>
+  <rect x="275" y="110" width="180" height="44" rx="14" fill="#8B5CF6"/>
+  <rect x="275" y="136" width="180" height="18" fill="#8B5CF6"/>
+  <text x="365" y="139" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">Paso 2</text>
+  <text x="365" y="178" text-anchor="middle" font-size="36">🌐</text>
+  <text x="365" y="215" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e293b">API de Predicción</text>
+  <text x="365" y="238" text-anchor="middle" font-size="11" fill="#64748b">Servir el modelo</text>
+  <text x="365" y="254" text-anchor="middle" font-size="11" fill="#64748b">como servicio web</text>
+  <text x="365" y="278" text-anchor="middle" font-size="11" fill="#8B5CF6" font-weight="600">web-service/</text>
+  <text x="365" y="298" text-anchor="middle" font-size="20">🚕</text>
+
+  <!-- Arrow 2→3 -->
+  <line x1="460" y1="210" x2="505" y2="210" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 3 -->
+  <rect x="510" y="110" width="180" height="200" rx="14" fill="#ffffff" stroke="#F59E0B" stroke-width="2.5" filter="url(#shadow)"/>
+  <rect x="510" y="110" width="180" height="44" rx="14" fill="#F59E0B"/>
+  <rect x="510" y="136" width="180" height="18" fill="#F59E0B"/>
+  <text x="600" y="139" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">Paso 3</text>
+  <text x="600" y="178" text-anchor="middle" font-size="36">☁️</text>
+  <text x="600" y="215" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e293b">Subir a la Nube</text>
+  <text x="600" y="238" text-anchor="middle" font-size="11" fill="#64748b">Desplegar en</text>
+  <text x="600" y="254" text-anchor="middle" font-size="11" fill="#64748b">AWS EC2</text>
+  <text x="600" y="278" text-anchor="middle" font-size="11" fill="#F59E0B" font-weight="600">web-service-aws/</text>
+  <text x="600" y="298" text-anchor="middle" font-size="20">🏗️</text>
+
+  <!-- Arrow 3→4 -->
+  <line x1="695" y1="210" x2="740" y2="210" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 4 -->
+  <rect x="680" y="110" width="180" height="200" rx="14" fill="#ffffff" stroke="#10B981" stroke-width="2.5" filter="url(#shadow)"/>
+  <rect x="680" y="110" width="180" height="44" rx="14" fill="#10B981"/>
+  <rect x="680" y="136" width="180" height="18" fill="#10B981"/>
+  <text x="770" y="139" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">Paso 4</text>
+  <text x="770" y="178" text-anchor="middle" font-size="36">⚙️</text>
+  <text x="770" y="215" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e293b">Predicción por Lotes</text>
+  <text x="770" y="238" text-anchor="middle" font-size="11" fill="#64748b">Automatizar miles</text>
+  <text x="770" y="254" text-anchor="middle" font-size="11" fill="#64748b">de predicciones</text>
+  <text x="770" y="278" text-anchor="middle" font-size="11" fill="#10B981" font-weight="600">batch-deploy/</text>
+  <text x="770" y="298" text-anchor="middle" font-size="20">📊</text>
+
+  <!-- Bottom bar: skills acquired -->
+  <rect x="40" y="370" width="820" height="130" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="450" y="398" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e293b">Lo que aprenderás en cada paso</text>
+
+  <circle cx="90" cy="438" r="22" fill="#EFF6FF"/>
+  <text x="90" y="444" text-anchor="middle" font-size="20">📦</text>
+  <text x="90" y="476" text-anchor="middle" font-size="10" fill="#3B82F6" font-weight="600">Docker</text>
+  <text x="90" y="489" text-anchor="middle" font-size="9" fill="#64748b">Contenedores</text>
+
+  <circle cx="220" cy="438" r="22" fill="#F5F3FF"/>
+  <text x="220" y="444" text-anchor="middle" font-size="20">🔌</text>
+  <text x="220" y="476" text-anchor="middle" font-size="10" fill="#8B5CF6" font-weight="600">APIs REST</text>
+  <text x="220" y="489" text-anchor="middle" font-size="9" fill="#64748b">FastAPI + Pydantic</text>
+
+  <circle cx="360" cy="438" r="22" fill="#F5F3FF"/>
+  <text x="360" y="444" text-anchor="middle" font-size="20">🧠</text>
+  <text x="360" y="476" text-anchor="middle" font-size="10" fill="#8B5CF6" font-weight="600">Modelo ML</text>
+  <text x="360" y="489" text-anchor="middle" font-size="9" fill="#64748b">XGBoost + MLflow</text>
+
+  <circle cx="500" cy="438" r="22" fill="#FFFBEB"/>
+  <text x="500" y="444" text-anchor="middle" font-size="20">☁️</text>
+  <text x="500" y="476" text-anchor="middle" font-size="10" fill="#F59E0B" font-weight="600">Nube</text>
+  <text x="500" y="489" text-anchor="middle" font-size="9" fill="#64748b">AWS EC2</text>
+
+  <circle cx="640" cy="438" r="22" fill="#ECFDF5"/>
+  <text x="640" y="444" text-anchor="middle" font-size="20">🔄</text>
+  <text x="640" y="476" text-anchor="middle" font-size="10" fill="#10B981" font-weight="600">Orquestación</text>
+  <text x="640" y="489" text-anchor="middle" font-size="9" fill="#64748b">Prefect + Cron</text>
+
+  <circle cx="780" cy="438" r="22" fill="#ECFDF5"/>
+  <text x="780" y="444" text-anchor="middle" font-size="20">🗄️</text>
+  <text x="780" y="476" text-anchor="middle" font-size="10" fill="#10B981" font-weight="600">Base de Datos</text>
+  <text x="780" y="489" text-anchor="middle" font-size="9" fill="#64748b">SQLite + SQLAlchemy</text>
+</svg>

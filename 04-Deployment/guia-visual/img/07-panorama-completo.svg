@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-opacity="0.12"/>
+    </filter>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8fafc"/>
+      <stop offset="100%" style="stop-color:#f1f5f9"/>
+    </linearGradient>
+    <marker id="arrowDark" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="700" rx="16" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="450" y="42" text-anchor="middle" font-size="22" font-weight="bold" fill="#1e293b">Panorama completo: del entrenamiento al despliegue</text>
+  <text x="450" y="66" text-anchor="middle" font-size="14" fill="#64748b">Como se conecta todo lo que has aprendido en el curso</text>
+
+  <!-- ROW 1: Previous modules -->
+  <text x="40" y="105" font-size="13" font-weight="bold" fill="#94a3b8">MODULOS ANTERIORES</text>
+
+  <!-- Module 02 -->
+  <rect x="40" y="118" width="180" height="90" rx="12" fill="#ffffff" stroke="#6366F1" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="130" y="146" text-anchor="middle" font-size="24">🔬</text>
+  <text x="130" y="168" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e293b">02 - Experimentos</text>
+  <text x="130" y="184" text-anchor="middle" font-size="10" fill="#64748b">MLflow tracking</text>
+  <text x="130" y="198" text-anchor="middle" font-size="10" fill="#64748b">Comparar modelos</text>
+
+  <line x1="225" y1="163" x2="265" y2="163" stroke="#475569" stroke-width="2" marker-end="url(#arrowDark)"/>
+
+  <!-- Module 03 -->
+  <rect x="270" y="118" width="180" height="90" rx="12" fill="#ffffff" stroke="#6366F1" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="360" y="146" text-anchor="middle" font-size="24">🔄</text>
+  <text x="360" y="168" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e293b">03 - Orquestacion</text>
+  <text x="360" y="184" text-anchor="middle" font-size="10" fill="#64748b">Prefect pipelines</text>
+  <text x="360" y="198" text-anchor="middle" font-size="10" fill="#64748b">Entrenar y registrar</text>
+
+  <!-- Output: Model -->
+  <line x1="455" y1="163" x2="495" y2="163" stroke="#475569" stroke-width="2" marker-end="url(#arrowDark)"/>
+
+  <rect x="500" y="120" width="160" height="86" rx="12" fill="#F59E0B" filter="url(#shadow)"/>
+  <text x="580" y="152" text-anchor="middle" font-size="28">🧠</text>
+  <text x="580" y="176" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">Modelo Entrenado</text>
+  <text x="580" y="194" text-anchor="middle" font-size="10" fill="#fffbeb">XGBoost + DictVectorizer</text>
+
+  <!-- Arrow down from model -->
+  <line x1="580" y1="210" x2="580" y2="250" stroke="#475569" stroke-width="2" marker-end="url(#arrowDark)"/>
+
+  <!-- copy_model.py label -->
+  <rect x="520" y="228" width="120" height="22" rx="4" fill="#FEF3C7" stroke="#FCD34D" stroke-width="1"/>
+  <text x="580" y="244" text-anchor="middle" font-size="10" fill="#92400e" font-family="monospace">copy_model.py</text>
+
+  <!-- ROW 2: Module 04 header -->
+  <rect x="30" y="262" width="845" height="425" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="50" y="290" font-size="14" font-weight="bold" fill="#1e293b">MODULO 04 - DESPLIEGUE</text>
+  <text x="830" y="290" text-anchor="end" font-size="11" fill="#64748b">Llevar tu modelo al mundo real</text>
+
+  <!-- Step 1: Docker Basics -->
+  <rect x="50" y="305" width="180" height="120" rx="10" fill="#EFF6FF" stroke="#3B82F6" stroke-width="2"/>
+  <circle cx="72" cy="322" r="11" fill="#3B82F6"/>
+  <text x="72" y="327" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">1</text>
+  <text x="90" y="327" font-size="11" font-weight="bold" fill="#1e40af">Docker Basico</text>
+  <text x="140" y="360" text-anchor="middle" font-size="28">📦🐱</text>
+  <text x="140" y="386" text-anchor="middle" font-size="10" fill="#3B82F6" font-weight="600">intro-dockers/</text>
+  <text x="140" y="402" text-anchor="middle" font-size="9" fill="#64748b">Dockerfile, build, run</text>
+  <text x="140" y="414" text-anchor="middle" font-size="9" fill="#64748b">App de gatitos</text>
+
+  <line x1="235" y1="365" x2="270" y2="365" stroke="#475569" stroke-width="2" marker-end="url(#arrowDark)"/>
+
+  <!-- Step 2: Web Service -->
+  <rect x="275" y="305" width="180" height="120" rx="10" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="2"/>
+  <circle cx="297" cy="322" r="11" fill="#8B5CF6"/>
+  <text x="297" y="327" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">2</text>
+  <text x="315" y="327" font-size="11" font-weight="bold" fill="#5b21b6">API Prediccion</text>
+  <text x="365" y="360" text-anchor="middle" font-size="28">🌐🚕</text>
+  <text x="365" y="386" text-anchor="middle" font-size="10" fill="#8B5CF6" font-weight="600">web-service/</text>
+  <text x="365" y="402" text-anchor="middle" font-size="9" fill="#64748b">FastAPI + Docker</text>
+  <text x="365" y="414" text-anchor="middle" font-size="9" fill="#64748b">Swagger + Pydantic</text>
+
+  <line x1="460" y1="365" x2="495" y2="365" stroke="#475569" stroke-width="2" marker-end="url(#arrowDark)"/>
+
+  <!-- Step 3: AWS -->
+  <rect x="500" y="305" width="160" height="120" rx="10" fill="#FFFBEB" stroke="#F59E0B" stroke-width="2"/>
+  <circle cx="522" cy="322" r="11" fill="#F59E0B"/>
+  <text x="522" y="327" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">3</text>
+  <text x="540" y="327" font-size="11" font-weight="bold" fill="#92400e">Nube AWS</text>
+  <text x="580" y="360" text-anchor="middle" font-size="28">☁️🏗️</text>
+  <text x="580" y="386" text-anchor="middle" font-size="10" fill="#F59E0B" font-weight="600">web-service-aws/</text>
+  <text x="580" y="402" text-anchor="middle" font-size="9" fill="#64748b">EC2 + Docker</text>
+  <text x="580" y="414" text-anchor="middle" font-size="9" fill="#64748b">Flask + Gunicorn</text>
+
+  <line x1="665" y1="365" x2="695" y2="365" stroke="#475569" stroke-width="2" marker-end="url(#arrowDark)"/>
+
+  <!-- Step 4: Batch -->
+  <rect x="700" y="305" width="155" height="120" rx="10" fill="#ECFDF5" stroke="#10B981" stroke-width="2"/>
+  <circle cx="722" cy="322" r="11" fill="#10B981"/>
+  <text x="722" y="327" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">4</text>
+  <text x="740" y="327" font-size="11" font-weight="bold" fill="#047857">Lotes</text>
+  <text x="777" y="360" text-anchor="middle" font-size="28">⚙️📊</text>
+  <text x="777" y="386" text-anchor="middle" font-size="10" fill="#10B981" font-weight="600">batch-deploy/</text>
+  <text x="777" y="402" text-anchor="middle" font-size="9" fill="#64748b">Prefect + Cron</text>
+  <text x="777" y="414" text-anchor="middle" font-size="9" fill="#64748b">SQLite + Artefactos</text>
+
+  <!-- Skill bars at bottom -->
+  <text x="50" y="460" font-size="12" font-weight="bold" fill="#64748b">HABILIDADES ACUMULADAS</text>
+
+  <!-- Skill bar: Docker -->
+  <text x="50" y="486" font-size="11" fill="#1e293b">Docker</text>
+  <rect x="130" y="474" width="720" height="18" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+  <rect x="130" y="474" width="720" height="18" rx="4" fill="#3B82F6" opacity="0.8"/>
+  <text x="490" y="488" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">Usado en TODOS los pasos</text>
+
+  <!-- Skill bar: APIs -->
+  <text x="50" y="514" font-size="11" fill="#1e293b">APIs REST</text>
+  <rect x="130" y="502" width="720" height="18" rx="4" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1"/>
+  <rect x="130" y="502" width="385" height="18" rx="4" fill="#8B5CF6" opacity="0.8"/>
+  <text x="322" y="516" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">Pasos 2 y 3</text>
+
+  <!-- Skill bar: Cloud -->
+  <text x="50" y="542" font-size="11" fill="#1e293b">Nube</text>
+  <rect x="130" y="530" width="720" height="18" rx="4" fill="#FFFBEB" stroke="#FCD34D" stroke-width="1"/>
+  <rect x="475" y="530" width="195" height="18" rx="4" fill="#F59E0B" opacity="0.8"/>
+  <text x="572" y="544" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">Paso 3</text>
+
+  <!-- Skill bar: Orchestration -->
+  <text x="50" y="570" font-size="11" fill="#1e293b">Orquestacion</text>
+  <rect x="130" y="558" width="720" height="18" rx="4" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1"/>
+  <rect x="700" y="558" width="150" height="18" rx="4" fill="#10B981" opacity="0.8"/>
+  <text x="775" y="572" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">Paso 4</text>
+
+  <!-- Skill bar: Databases -->
+  <text x="50" y="598" font-size="11" fill="#1e293b">Base de datos</text>
+  <rect x="130" y="586" width="720" height="18" rx="4" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1"/>
+  <rect x="700" y="586" width="150" height="18" rx="4" fill="#10B981" opacity="0.8"/>
+  <text x="775" y="600" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="bold">Paso 4</text>
+
+  <!-- Bottom insight -->
+  <rect x="50" y="620" width="805" height="55" rx="10" fill="#FEF3C7" stroke="#FCD34D" stroke-width="1.5"/>
+  <text x="452" y="644" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">Idea clave: cada paso reutiliza lo aprendido en el anterior.</text>
+  <text x="452" y="662" text-anchor="middle" font-size="12" fill="#78350f">Docker es el hilo conductor que une todo el modulo de despliegue.</text>
+</svg>
