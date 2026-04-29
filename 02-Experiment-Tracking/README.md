@@ -14,6 +14,10 @@ Este proyecto proporciona una introducción práctica al seguimiento de experime
 │   ├── 01_first_steps_without_tracking.ipynb
 │   ├── 02_experiment_tracking_intro.ipynb
 │   └── 03_mlflow_advanced.ipynb
+├── scenarios/
+│   ├── scenario-1.ipynb
+│   ├── scenario-2.ipynb
+│   └── scenario-3.ipynb
 ├── scripts/
 │   ├── preprocess_data.py
 │   ├── train_no_mlflow.py
@@ -25,6 +29,7 @@ Este proyecto proporciona una introducción práctica al seguimiento de experime
 
 * **data/:** Almacena el conjunto de datos crudo y procesado.
 * **notebooks/:** Contiene notebooks de Jupyter que explican los conceptos.
+* **scenarios/:** Notebooks que comparan distintas arquitecturas de despliegue de MLflow (ver tabla abajo).
 * **scripts/:** Contiene los scripts de Python para el preprocesamiento de datos y entrenamiento del modelo.
 * **mlflow.db:** Una base de datos SQLite que sirve como servidor de seguimiento de MLflow.
 
@@ -88,7 +93,21 @@ mlflow ui
 
 Luego, abre tu navegador web y navega a `http://127.0.0.1:5000`.
 
-## notebooks
+## Escenarios de despliegue de MLflow
+
+El directorio `scenarios/` contiene tres notebooks que comparan distintas formas de configurar MLflow, desde lo mas simple hasta una arquitectura cloud:
+
+| Escenario | Tracking Server | Backend Store | Artifacts | Model Registry | Dataset |
+|---|---|---|---|---|---|
+| **1 - Local sin servidor** | No | File store (`mlruns/`) | Local | No disponible | Iris |
+| **2 - Servidor local** | Si (`localhost:5000`) | SQLite | Local | Disponible (aliases, stages) | Iris |
+| **3 - AWS (guia)** | EC2 | RDS PostgreSQL | S3 | Completo | Iris |
+
+> **Nota:** El escenario 3 es una guia de configuracion paso a paso (EC2 + RDS + S3 + IAM). No se ejecuta directamente, requiere infraestructura en AWS.
+
+Los notebooks de `notebooks/` enseñan el **que** (params, metricas, autolog, Optuna). Los scenarios enseñan el **donde** (local vs server vs cloud).
+
+## Notebooks
 
 El directorio `notebooks/` contiene tres notebooks que proporcionan una explicación más detallada de los conceptos:
 

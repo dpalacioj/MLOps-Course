@@ -214,18 +214,35 @@ proyecto-mlops/
 6. **Colabora**: Usa peer review para mejorar tu código
 7. **Mantén Simplicidad**: No sobre-ingenierices la solución
 
-## Evaluación por Pares
+## Evaluación
 
-### Importante
+### ¿Cómo se calcula la nota?
 
-Para evaluar los proyectos, usaremos peer reviewing. Es una excelente oportunidad para aprender de otros.
+| Componente | Peso | Quién evalúa |
+|---|---|---|
+| **Evaluación del instructor** | 70% | El profesor revisa cada proyecto con la rúbrica |
+| **Promedio de peer reviews** | 20% | Cada proyecto recibe ~5-6 revisiones de compañeros |
+| **Participación en peer review** | 10% | ¿Completaste tus 2 revisiones asignadas? Sí = 10%, No = 0% |
 
-- Para obtener puntos por tu proyecto, necesitas evaluar 3 proyectos de tus compañeros
+> Para el promedio de peer reviews se elimina la nota más alta y la más baja
+> para evitar sesgos. Se promedian las restantes.
 
-### Proceso de Evaluación
+### Peer Review (revisión entre pares)
 
-1. **Revisar el README** del proyecto
-2. **Ejecutar el código** siguiendo las instrucciones
-3. **Evaluar cada criterio** según la rúbrica
-4. **Proporcionar feedback constructivo**
-5. **Asignar puntuación** justificada
+Al revisar código ajeno aprendes patrones, errores comunes y formas de resolver
+problemas que no se te habían ocurrido.
+
+**Cada persona** (no el grupo) debe revisar **2 proyectos** de otros grupos.
+La asignación se comunicará por el canal del curso una vez se entreguen todos
+los proyectos.
+
+### ¿Cómo hacer la revisión?
+
+1. Clona el repositorio del proyecto que te asignaron
+2. Usa la plantilla `peer-review-template.md` (está en esta misma carpeta) como
+   guía mientras revisas. Ahí están los criterios y checkboxes para cada sección.
+3. Cuando termines, llena el **Google Form** con tus respuestas y puntuaciones.
+   El enlace estará disponible tanto en este repositorio como en el aula virtual (Moodle).
+
+La revisión toma ~20 minutos por proyecto. No tienes que escribir un ensayo —
+solo verifica, marca y comenta donde sea necesario.
