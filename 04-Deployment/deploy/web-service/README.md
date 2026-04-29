@@ -1,665 +1,357 @@
-# 🚕 NYC Taxi Duration Prediction - Guía de Despliegue para Estudiantes
+# NYC Taxi Duration Prediction API
 
-Esta guía te ayudará a activar el entorno y desplegar el servicio de predicción de duración de viajes de taxi de NYC. **Las dependencias ya están gestionadas en el `pyproject.toml`**, solo necesitas activar el entorno con UV.
+API REST con FastAPI para predecir la duración de viajes de taxi en NYC, con interfaz web interactiva.
 
-## 📋 Tabla de Contenidos
+## Características
 
-- [Inicio Rápido](#inicio-rápido)
-- [Prerequisitos](#prerequisitos)
-- [Activación del Entorno](#activación-del-entorno)
-- [Despliegue del Servicio](#despliegue-del-servicio)
-- [Pruebas del Servicio](#pruebas-del-servicio)
-- [Troubleshooting](#troubleshooting)
+- **API REST** con FastAPI
+- **Interfaz web moderna** para hacer predicciones
+- **Documentación automática** (Swagger UI)
+- **Validación de datos** con Pydantic
+- **Modelo XGBoost** entrenado con MLflow
+- **Dockerizado** y listo para producción
 
-## ⚡ Inicio Rápido
+---
 
-**¿Tienes prisa? Ejecuta estos 3 comandos:**
+## Estructura del Proyecto
+
+```
+web-service/
+├── app.py                  # API FastAPI principal
+├── src/
+│   ├── model_loader.py     # Carga del modelo
+│   └── schemas.py          # Esquemas Pydantic
+├── templates/
+│   └── index.html          # Interfaz web
+├── model/                  # Modelo MLflow (copiar antes de usar)
+├── Dockerfile              # Imagen Docker
+├── docker-compose.yml      # Orquestación Docker
+├── copy_model.py           # Script para copiar modelo
+└── README.md               # Esta guía
+```
+
+---
+
+## Opción 1: Ejecución Local (Sin Docker)
+
+### Paso 1: Copiar el Modelo
 
 ```bash
-cd 04-Deployment/deploy/web-service/
+cd 04-Deployment/deploy/web-service
+uv run python copy_model.py
+```
+
+### Paso 2: Instalar Dependencias
+
+```bash
 uv sync
-uv run python predict.py
 ```
 
-¡Listo! Tu servicio estará corriendo en http://localhost:9696
-
-## 🔧 Prerequisitos
-
-**Solo necesitas tener instalado:**
-
-- **Python 3.8+** (ya deberías tenerlo)
-- **uv** (gestor de entornos virtuales moderno)
-
-**Las dependencias del proyecto (Flask, scikit-learn, pandas, etc.) ya están definidas en `pyproject.toml` y se instalarán automáticamente.**
-
-### Verificar que tienes UV instalado
+### Paso 3: Ejecutar la API
 
 ```bash
-# Verificar uv
-uv --version
-# Debe mostrar algo como: uv 0.x.x
+uv run uvicorn app:app --host 127.0.0.1 --port 8000
 ```
 
-### Si no tienes UV, instálalo:
+### Paso 4: Abrir la Interfaz Web
 
 ```bash
-# En macOS/Linux
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Reinicia tu terminal después de la instalación
+open http://localhost:8000
 ```
 
-## 📁 Estructura del Proyecto
+O abre en tu navegador: **http://localhost:8000**
 
-```
-04-Deployment/deploy/web-service/
-├── README.md              # Esta guía
-├── pyproject.toml         # ✅ Dependencias ya configuradas
-├── .python-version        # ✅ Versión de Python definida
-├── predict.py             # 🎯 Servicio Flask principal
-├── test.py               # 🧪 Cliente de pruebas
-├── lin_reg.bin           # 🤖 Modelo entrenado
-└── .venv/                # 📦 Entorno virtual (se crea automáticamente)
-```
+---
 
-**Archivos importantes:**
+## Opción 2: Ejecución con Docker
 
-- `pyproject.toml`: Contiene todas las dependencias ya configuradas
-- `predict.py`: El servicio web que vas a ejecutar
-- `lin_reg.bin`: Modelo de ML pre-entrenado
-
-## 🚀 Activación del Entorno
-
-### Paso 1: Navegar al Directorio del Proyecto
+### Paso 1: Copiar el Modelo
 
 ```bash
-# Navegar al directorio web-service
-cd 04-Deployment/deploy/web-service/
+cd 04-Deployment/deploy/web-service
+uv run python copy_model.py
 ```
 
-### Paso 2: Activar el Entorno con UV
-
-**Las dependencias ya están configuradas. Solo necesitas activar el entorno:**
+### Paso 2: Construir la Imagen
 
 ```bash
-# Crear entorno virtual e instalar todas las dependencias automáticamente
-uv sync
-
-# ✅ Esto instalará: Flask, scikit-learn, pandas, numpy, gunicorn, etc.
-# ✅ Todo basado en el pyproject.toml ya configurado
+docker build -t nyc-taxi-api .
 ```
 
-### Paso 3: Verificar la Instalación
+### Paso 3: Ejecutar el Contenedor
+
+**Opción A: Ver logs directamente**
+```bash
+docker run -p 8000:8000 --name nyc-taxi-api nyc-taxi-api
+```
+
+**Opción B: Ejecutar en background**
+```bash
+docker run -d -p 8000:8000 --name nyc-taxi-api nyc-taxi-api
+
+# Ver logs
+docker logs -f nyc-taxi-api
+```
+
+### Paso 4: Abrir la Interfaz Web
 
 ```bash
-# Verificar que el entorno se creó
-ls -la .venv/  # Debe existir el directorio
-
-# Ver las dependencias instaladas
-uv tree
+open http://localhost:8000
 ```
 
-## 🎯 Formas de Usar el Entorno
+---
 
-### **Opción A: Con `uv run` (Más Fácil)**
+## Opción 3: Docker Compose (Más Fácil)
+
+### Paso 1: Copiar el Modelo
 
 ```bash
-# UV maneja todo automáticamente
-uv run python predict.py
-uv run python test.py
+uv run python copy_model.py
 ```
 
-### **Opción B: Activar Manualmente**
+### Paso 2: Levantar con Docker Compose
 
 ```bash
-# Activar el entorno virtual
-source .venv/bin/activate
-
-# Ahora puedes usar comandos normales
-python predict.py
-gunicorn --bind 0.0.0.0:9696 --workers 4 predict:app
-
-# Para desactivar cuando termines
-deactivate
+docker-compose up --build
 ```
 
-### **¿Cuál usar?**
-
-- **`uv run`**: Más fácil, no necesitas activar/desactivar
-- **`source .venv/bin/activate`**: Más tradicional, útil si vas a ejecutar varios comandos
-
-## 🌐 Despliegue del Servicio
-
-### Método 1: Servidor de Desarrollo (Recomendado para Aprender)
+### Paso 3: Abrir la Interfaz Web
 
 ```bash
-# Ejecutar el servidor Flask
-uv run python predict.py
-
-# O si tienes el entorno activado:
-python predict.py
+open http://localhost:8000
 ```
 
-**Verás algo como:**
-
-```
-INFO:__main__:🔄 Loading model and DictVectorizer...
-INFO:__main__:✅ Model and DV loaded successfully
-INFO:__main__:🚀 Starting Flask server on port 9696...
- * Running on http://127.0.0.1:9696
-```
-
-### Método 2: Servidor de Producción (Gunicorn)
+### Detener
 
 ```bash
-# Con UV (recomendado)
-uv run gunicorn --bind 0.0.0.0:9696 --workers 4 predict:app
-
-# O con entorno activado
-source .venv/bin/activate
-gunicorn --bind 0.0.0.0:9696 --workers 4 predict:app
+docker-compose down
 ```
 
-### ✅ Verificar que Todo Funciona
+---
+
+## Interfaz Web
+
+La interfaz web incluye:
+
+- **Campo de Zona de Recogida** (PULocationID: 1-265)
+- **Campo de Zona de Destino** (DOLocationID: 1-265)
+- **Campo de Distancia** (en millas)
+- **Botón de Predicción**
+- **Resultado con duración estimada** en minutos
+- **Información del modelo** usado
+
+### Ejemplo de Uso
+
+1. Abre http://localhost:8000
+2. Ingresa los datos del viaje (valores por defecto ya están cargados)
+3. Click en "Predecir Duración"
+4. Ve el resultado con la duración estimada
+
+---
+
+## Endpoints de la API
+
+| Endpoint | Método | Descripción |
+|----------|--------|-------------|
+| `/` | GET | Interfaz web interactiva |
+| `/health` | GET | Health check |
+| `/predict` | POST | Predicción individual |
+| `/predict/batch` | POST | Predicción por lotes |
+| `/docs` | GET | Documentación Swagger UI |
+| `/redoc` | GET | Documentación ReDoc |
+
+---
+
+## Probar la API con cURL
+
+### Health Check
 
 ```bash
-# 1. Verificar que el modelo existe
-ls -la lin_reg.bin
-
-# 2. Verificar que el entorno está activo
-which python  # Debe apuntar a .venv/bin/python
-
-# 3. Ver dependencias instaladas
-uv tree | head -10
+curl http://localhost:8000/health
 ```
 
-### Probar la Carga del Modelo
+### Predicción Individual
 
 ```bash
-# Ejecutar prueba directa del modelo
-uv run python predict_test.py
-```
-
-**Salida esperada:**
-
-```
-INFO:__main__:🔄 Loading model and DictVectorizer for testing...
-INFO:__main__:✅ Model and DV loaded successfully
-INFO:__main__:🧪 Running prediction test...
-INFO:__main__:✅ Features prepared for testing: PU_DO=161_236, distance=2.5
-INFO:__main__:🎯 Testing prediction made: 12.34 minutes
-INFO:__main__:📊 Test result:
-INFO:__main__:   Origin: 161
-INFO:__main__:   Destination: 236
-INFO:__main__:   Distance: 2.5 miles
-INFO:__main__:   Predicted duration: 12.34 minutes
-```
-
-## 🌐 Despliegue Local
-
-### Método 1: Ejecutar el Servidor Flask
-
-```bash
-# Ejecutar el servidor principal
-uv run python predict.py
-```
-
-**Salida esperada:**
-
-```
-INFO:__main__:🔄 Loading model and DictVectorizer...
-INFO:__main__:✅ Model and DV loaded successfully
-INFO:__main__:🚀 Starting Flask server on port 9696...
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:9696
- * Running on http://[tu-ip]:9696
-```
-
-### Método 2: Usando Flask CLI
-
-```bash
-# Configurar variables de entorno
-export FLASK_APP=predict.py
-export FLASK_ENV=development
-
-# Ejecutar servidor
-flask run --host=0.0.0.0 --port=9696
-```
-
-### Método 3: Usando Gunicorn (Producción)
-
-**Opción A: Con UV (Recomendado)**
-
-```bash
-# Gunicorn ya está incluido en las dependencias del pyproject.toml
-# Ejecutar con UV
-uv run gunicorn --bind 0.0.0.0:9696 --workers 4 predict:app
-```
-
-**Opción B: Con Entorno Activado**
-
-```bash
-# Activar entorno virtual
-source .venv/bin/activate
-
-# Ejecutar Gunicorn directamente
-gunicorn --bind 0.0.0.0:9696 --workers 4 predict:app
-```
-
-**Probar el servicio:**
-
-```bash
-# En otra terminal, probar con curl
-curl -X POST http://localhost:9696/predict \
-  -H "Content-Type: application/json" \
-  -d '{"PULocationID": 161, "DOLocationID": 236, "trip_distance": 2.5}'
-```
-
-## 🧪 Pruebas del Servicio
-
-### Prueba 1: Health Check
-
-```bash
-# Verificar que el servicio está funcionando
-curl http://localhost:9696/health
-```
-
-**Respuesta esperada:**
-
-```json
-{
-  "dv_loaded": true,
-  "model_loaded": true,
-  "service": "NYC Taxi Duration Prediction",
-  "status": "healthy"
-}
-```
-
-### Prueba 2: Predicción Simple
-
-```bash
-# Hacer una predicción
-curl -X POST http://localhost:9696/predict \
+curl -X POST http://localhost:8000/predict \
   -H "Content-Type: application/json" \
   -d '{
     "PULocationID": 161,
     "DOLocationID": 236,
-    "trip_distance": 2.5
+    "trip_distance": 5.2
   }'
 ```
 
 **Respuesta esperada:**
-
 ```json
 {
-  "duration": 12.34,
-  "pickup_location": 161,
-  "dropoff_location": 236,
-  "trip_distance": 2.5
+  "PULocationID": 161,
+  "DOLocationID": 236,
+  "trip_distance": 5.2,
+  "predicted_duration_minutes": 8.86,
+  "model_name": "nyc-taxi-duration-predictor",
+  "model_version": "2"
 }
 ```
 
-### Prueba 3: Suite Completa de Pruebas
+### Predicción por Lotes
 
 ```bash
-# Ejecutar cliente de pruebas automatizado
-uv run python test.py
+curl -X POST http://localhost:8000/predict/batch \
+  -H "Content-Type: application/json" \
+  -d '{
+    "trips": [
+      {"PULocationID": 161, "DOLocationID": 236, "trip_distance": 5.2},
+      {"PULocationID": 237, "DOLocationID": 140, "trip_distance": 3.8}
+    ]
+  }'
 ```
 
-## 📊 Entender el Entorno UV
+---
 
-### ¿Qué hace UV?
+## Comandos Docker Útiles
 
-- **Gestiona dependencias** automáticamente
-- **Crea entornos virtuales** sin configuración manual
-- **Ejecuta comandos** en el entorno correcto
-
-### Comandos UV útiles
+### Ver Contenedores
 
 ```bash
-uv info          # Ver información del proyecto
-uv tree          # Ver dependencias instaladas
-uv run <comando> # Ejecutar comando en el entorno
-uv add <paquete> # Añadir nueva dependencia
-uv sync          # Instalar/actualizar dependencias
+docker ps                 # Activos
+docker ps -a              # Todos
 ```
 
-### ¿Cuándo usar cada comando?
-
-
-| Situación       | Comando                    |
-| ---------------- | -------------------------- |
-| Primera vez      | `uv sync`                  |
-| Ejecutar app     | `uv run python predict.py` |
-| Añadir paquete  | `uv add requests`          |
-| Ver dependencias | `uv tree`                  |
-
-## 🎯 Flujo Típico de Trabajo
-
-1. **Clonar/descargar** el proyecto
-2. **Navegar** al directorio: `cd 04-Deployment/deploy/web-service/`
-3. **Instalar** dependencias: `uv sync`
-4. **Levantar** servicio: `uv run python predict.py`
-5. **Probar** en otra terminal: `curl http://localhost:9696/health`
-6. **Hacer predicciones** con POST requests
-
-## 💡 Tips para Estudiantes
-
-### ✅ Buenas Prácticas
-
-- Siempre usar `uv run` para ejecutar comandos
-- Verificar que el modelo existe antes de levantar el servicio
-- Probar con health check antes de hacer predicciones
-- Leer los logs para entender qué está pasando
-
-### ❌ Errores Comunes
-
-- No estar en el directorio correcto
-- Olvidar hacer `uv sync` primero
-- Intentar usar pip en lugar de uv
-- No verificar que el puerto esté libre
-
-## 🏆 Objetivos de Aprendizaje
-
-Al completar este ejercicio deberías entender:
-
-1. **Gestión de entornos** con UV
-2. **Despliegue de APIs** con Flask/Gunicorn
-3. **Testing de servicios** con curl
-4. **Troubleshooting** de problemas comunes
-5. **Diferencias** entre desarrollo y producción
-
-**Salida esperada:**
-
-```
-INFO:__main__:🚀 Starting test client for NYC Taxi API...
-INFO:__main__:🧪 Starting comprehensive test suite...
-
-INFO:__main__:1️⃣ Testing Health Check...
-INFO:__main__:🏥 Checking health endpoint at http://localhost:9696/health
-INFO:__main__:✅ Service healthy!
-
-INFO:__main__:2️⃣ Testing basic prediction...
-INFO:__main__:🚕 Sending test request to http://localhost:9696/predict
-INFO:__main__:✅ Request successful!
-INFO:__main__:📈 Predicted duration: 12.34 minutes
-
-INFO:__main__:3️⃣ Testing edge cases...
-INFO:__main__:   🔍 Case: Short trip
-INFO:__main__:   ✅ Short trip: 8.45 minutes
-INFO:__main__:   🔍 Case: Long trip
-INFO:__main__:   ✅ Long trip: 45.67 minutes
-
-INFO:__main__:🎉 Test suite completed!
-```
-
-## 📊 Monitoreo
-
-### Logs del Servidor
-
-Los logs aparecerán en la consola donde ejecutaste el servidor:
-
-```
-INFO:__main__:🚕 New prediction: 161 -> 236
-INFO:__main__:✅ Features prepared: PU_DO=161_236, distance=2.5
-INFO:__main__:🎯 Prediction made: 12.34 minutes
-INFO:__main__:✅ Response sent: 12.34 minutes
-```
-
-### Endpoints Disponibles
-
-
-| Endpoint   | Método | Descripción                  |
-| ---------- | ------- | ----------------------------- |
-| `/health`  | GET     | Verificar estado del servicio |
-| `/predict` | POST    | Realizar predicción          |
-
-### Formato de Request para `/predict`
-
-```json
-{
-  "PULocationID": 161,      // ID de zona de recogida (1-263)
-  "DOLocationID": 236,      // ID de zona de destino (1-263)
-  "trip_distance": 2.5      // Distancia en millas
-}
-```
-
-### Formato de Response
-
-```json
-{
-  "duration": 12.34,        // Duración predicha en minutos
-  "pickup_location": 161,   // Zona de recogida
-  "dropoff_location": 236,  // Zona de destino
-  "trip_distance": 2.5      // Distancia del viaje
-}
-```
-
-## 🆘 Troubleshooting - Problemas Comunes
-
-### Error: "No module named 'flask'"
-
-**Síntomas:**
-
-```
-ModuleNotFoundError: No module named 'flask'
-```
-
-**Solución:**
+### Ver Logs
 
 ```bash
-# Instalar dependencias
-uv sync
-
-# Si persiste, recrear entorno
-rm -rf .venv/
-uv sync
+docker logs nyc-taxi-api           # Ver logs
+docker logs -f nyc-taxi-api        # Seguir logs en tiempo real
+docker logs --tail 50 nyc-taxi-api # Últimas 50 líneas
 ```
 
-### Error: "Port already in use"
-
-**Síntomas:**
-
-```
-OSError: [Errno 48] Address already in use
-```
-
-**Solución:**
+### Detener y Limpiar
 
 ```bash
-# Ver qué usa el puerto
-lsof -i :9696
-
-# Matar proceso
-kill -9 <PID>
+docker stop nyc-taxi-api   # Detener
+docker rm nyc-taxi-api     # Eliminar contenedor
+docker rmi nyc-taxi-api    # Eliminar imagen
 ```
 
-### Error: "lin_reg.bin not found"
-
-**Síntomas:**
-
-```
-ERROR:__main__:❌ Error: lin_reg.bin file not found
-```
-
-**Solución:**
+### Reconstruir Después de Cambios
 
 ```bash
-# Verificar que estás en el directorio correcto
-pwd  # Debe terminar en /web-service/
-ls lin_reg.bin  # Debe existir
+docker rm -f nyc-taxi-api
+docker rmi nyc-taxi-api
+docker build -t nyc-taxi-api .
+docker run -p 8000:8000 --name nyc-taxi-api nyc-taxi-api
 ```
 
-### Error: Gunicorn no encuentra módulo
+---
 
-**Síntomas:**
+## Postman Collection
 
-```
-ModuleNotFoundError: No module named 'predict'
-```
+Incluye una colección de Postman con todos los endpoints:
 
-**Solución:**
+1. Importa `NYC_Taxi_API.postman_collection.json`
+2. Importa `NYC_Taxi_API.postman_environment.json`
+3. Selecciona el environment "NYC Taxi API - Local"
+4. Prueba los endpoints
+
+---
+
+## Actualizar el Modelo
+
+1. Entrena un nuevo modelo con MLflow
+2. Copia el nuevo modelo:
+   ```bash
+   uv run python copy_model.py
+   ```
+3. Reconstruye la imagen Docker:
+   ```bash
+   docker-compose down
+   docker-compose up --build
+   ```
+
+---
+
+## Ventajas de Docker
+
+| Aspecto | Sin Docker | Con Docker |
+|---------|------------|------------|
+| **Instalación** | Instalar Python, dependencias, etc. | Solo Docker |
+| **Portabilidad** | "Funciona en mi máquina" | Funciona en cualquier lugar |
+| **Reproducibilidad** | Difícil | Garantizada |
+| **Aislamiento** | Conflictos de versiones | Entorno aislado |
+| **Despliegue** | Complejo | Simple |
+
+---
+
+## Despliegue a Producción
+
+### AWS ECS / Fargate
 
 ```bash
-# Asegúrate de estar en el directorio correcto
-cd 04-Deployment/deploy/web-service/
+# Tag de la imagen
+docker tag nyc-taxi-api:latest <account-id>.dkr.ecr.<region>.amazonaws.com/nyc-taxi-api:latest
 
-# Usar comando completo
-uv run gunicorn --bind 0.0.0.0:9696 --workers 4 predict:app
+# Push a ECR
+docker push <account-id>.dkr.ecr.<region>.amazonaws.com/nyc-taxi-api:latest
 ```
 
-### Error: Predicción fallida
-
-**Síntomas:**
-
-```json
-{"error": "Missing required field: PULocationID"}
-```
-
-**Solución:**
-
-- Verificar que el JSON incluye todos los campos requeridos
-- Verificar el Content-Type header: `application/json`
-- Verificar que los valores son del tipo correcto (int/float)
-
-## 📞 Ayuda Adicional
-
-Si tienes problemas:
-
-1. **Lee los logs** completos del error
-2. **Verifica prerequisitos** (Python, UV, directorio)
-3. **Pregunta al profesor** con el error específico
-
-## 🚀 Despliegue en Producción (Opcional)
-
-### Opción 1: Docker con UV
+### Google Cloud Run
 
 ```bash
-# Crear Dockerfile optimizado para UV
-cat > Dockerfile << EOF
-FROM python:3.11-slim
-
-# Instalar UV
-RUN pip install uv
-
-WORKDIR /app
-
-# Copiar archivos de configuración
-COPY pyproject.toml ./
-COPY .python-version ./
-
-# Crear entorno e instalar dependencias
-RUN uv sync --no-dev
-
-# Copiar código fuente
-COPY . .
-
-EXPOSE 9696
-
-# Ejecutar con UV
-CMD ["uv", "run", "gunicorn", "--bind", "0.0.0.0:9696", "--workers", "4", "predict:app"]
-EOF
-
-# Construir imagen
-docker build -t taxi-prediction .
-
-# Ejecutar contenedor
-docker run -p 9696:9696 taxi-prediction
+gcloud run deploy nyc-taxi-api \
+  --image nyc-taxi-api:latest \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated
 ```
 
-### Opción 2: Heroku
+### Azure Container Instances
 
 ```bash
-# Crear Procfile
-echo "web: gunicorn predict:app" > Procfile
-
-# Crear runtime.txt
-echo "python-3.9.16" > runtime.txt
-
-# Deploy a Heroku
-heroku create tu-app-name
-git add .
-git commit -m "Deploy taxi prediction service"
-git push heroku main
+az container create \
+  --resource-group myResourceGroup \
+  --name nyc-taxi-api \
+  --image nyc-taxi-api:latest \
+  --dns-name-label nyc-taxi-api \
+  --ports 8000
 ```
 
-### Opción 3: AWS EC2
+---
 
+## Recursos Adicionales
+
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [Docker Documentation](https://docs.docker.com/)
+- [MLflow Documentation](https://mlflow.org/docs/latest/index.html)
+- [Pydantic Documentation](https://docs.pydantic.dev/)
+
+---
+
+## Troubleshooting
+
+### Error: "No module named uvicorn"
+
+Reconstruye la imagen Docker:
 ```bash
-# En tu instancia EC2
-sudo apt update
-sudo apt install python3-pip
-pip3 install -r requirements.txt
-
-# Usar systemd para mantener el servicio corriendo
-sudo nano /etc/systemd/system/taxi-prediction.service
+docker rmi nyc-taxi-api
+docker build -t nyc-taxi-api .
 ```
 
-### Variables de Entorno para Producción
+### Error: "model/ directory not found"
 
+Copia el modelo primero:
 ```bash
-# Configurar variables de entorno
-export FLASK_ENV=production
-export MODEL_PATH=/path/to/lin_reg.bin
-export PORT=9696
-export WORKERS=4
+uv run python copy_model.py
 ```
 
-## 📚 Recursos Adicionales
+### Puerto 8000 ya en uso
 
-### Comandos Útiles
-
+Cambia el puerto:
 ```bash
-# Ver procesos de Python
-ps aux | grep python
-
-# Verificar entorno UV activo
-uv info
-echo $VIRTUAL_ENV
-
-# Ver dependencias instaladas
-uv tree
-
-# Monitorear logs en tiempo real
-tail -f /var/log/taxi-prediction.log
-
-# Verificar uso de memoria
-htop
-
-# Hacer múltiples requests de prueba
-for i in {1..10}; do curl -X POST http://localhost:9696/predict -H "Content-Type: application/json" -d '{"PULocationID": 161, "DOLocationID": 236, "trip_distance": 2.5}'; done
-
-# Recrear entorno si hay problemas
-rm -rf .venv/
-uv sync
+docker run -p 9000:8000 --name nyc-taxi-api nyc-taxi-api
+# Abre: http://localhost:9000
 ```
 
-### Mejores Prácticas
+---
 
-1. **Siempre usar entornos virtuales**
-2. **Validar datos de entrada**
-3. **Implementar logging adecuado**
-4. **Usar HTTPS en producción**
-5. **Implementar rate limiting**
-6. **Monitorear métricas de performance**
-
-### Próximos Pasos
-
-* Implementar autenticación (capas de seguridad)
-* Generar board con métricas del sistema (cantidad de instancias, responses, memoria, tiempos de respuesta) - [DataDog](https://docs.datadoghq.com/es/getting_started/application/)
-* Agregar tests unitarios
-* Configurar CI/CD pipeline
-
-## 🆘 Soporte
-
-Si tienes problemas:
-
-1. **Revisa los logs** del servidor
-2. **Verifica las dependencias** están instaladas
-3. **Confirma que el modelo** se carga correctamente
-4. **Prueba con curl** antes de usar clientes complejos
-5. **Consulta la documentación** de Flask si es necesario
-
-**¡Felicidades! 🎉 Tu servicio de predicción de taxi está listo para usar.**
-
-Para más información sobre MLOps y despliegue de modelos, consulta la documentación de teo y yo hemos preparado para ti.
+**Listo para predecir duraciones de viajes de taxi.**
