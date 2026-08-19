@@ -1,0 +1,71 @@
+# =============================================================================
+# Prometheus — configuracion de scraping del stack local
+# =============================================================================
+# Modelo de datos: Prometheus es *pull*. No recibe metricas; va a buscarlas cada
+# `scrape_interval` a un endpoint HTTP que expone el estado ACTUAL de los
+# contadores. Consecuencias practicas que conviene tener claras:
+#
+# - Un contador reiniciado (deploy, reinicio del contenedor) vuelve a 0.
+#   `rate()` y `increase()` detectan el reinicio y lo corrigen; usar el valor
+#   crudo de un counter en un panel, no.
+# - Si el proceso muere entre dos scrapes, esas metricas se pierden. Prometheus
+#   sirve para tendencias y alertas, no para contabilidad exacta (si necesitas no
+#   perder un solo evento, eso es un log o una tabla, no una metrica).
+# - La resolucion minima de cualquier analisis es el scrape_interval. Con 15s no
+#   se puede investigar un pico de 2 segundos.
+#
+# Este archivo se monta de solo lectura en el contenedor. Tras editarlo:
+#   curl -X POST http://127.0.0.1:9090/-/reload
+# =============================================================================
+
+global:
+  # 15s es el default razonable: suficiente resolucion para latencia y
+  # throughput sin inflar la base de series. Bajarlo a 1s multiplica por 15 el
+  # almacenamiento y la carga sobre el endpoint /metrics.
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  # Solo aplica a reglas de alerta y de agregacion. Se deja igual al scrape para
+  # que una alerta no evalue datos mas viejos que su propia ventana.
+  evaluation_interval: 15s
+  # Etiquetas que se agregan a TODA serie al federar o al enviar a un
+  # Alertmanager. Sin ellas, dos entornos que envian al mismo destino producen
+  # series indistinguibles.
+  external_labels:
+    entorno: local
+    proyecto: mlops-curso
+
+scrape_configs:
+  # ===========================================================================
+  # API de inferencia — las metricas del SERVICIO
+  # ===========================================================================
+  # Recordatorio de la sesion 7: lo que se ve aqui es salud del servicio
+  # (latencia, throughput, errores). El drift de datos y del modelo NO se mide
+  # con Prometheus, se mide con Evidently sobre lotes de datos. Son dos preguntas
+  # distintas y ninguna de las dos responde la otra.
+  - job_name: taxi-api
+    # `api` es el nombre del servicio en docker-compose; el DNS interno de Docker
+    # lo resuelve. Nunca 127.0.0.1: dentro del contenedor de Prometheus eso
+    # apunta a Prometheus mismo, y es el error mas comun al montar este stack.
+    static_configs:
+      - targets: ["api:8000"]
+        labels:
+          servicio: api-inferencia
+    # El exporter esta montado como sub-aplicacion ASGI en /metrics. Starlette
+    # responde 307 hacia /metrics/ y Prometheus lo sigue (follow_redirects es
+    # true por defecto). Si molesta el salto extra en cada scrape, se apunta
+    # directamente a /metrics/.
+    metrics_path: /metrics
+    # La API puede tardar en arrancar (carga del modelo desde el registry). Un
+    # target `DOWN` durante el arranque es informacion, no un problema: se ve en
+    # http://127.0.0.1:9090/targets
+    honor_labels: false
+
+  # ===========================================================================
+  # Prometheus a si mismo
+  # ===========================================================================
+  # No es narcisismo: `up`, `prometheus_tsdb_*` y `scrape_duration_seconds` son
+  # lo que responde "el monitoreo esta sano?" cuando un dashboard aparece vacio.
+  # Sin esto, no hay forma de distinguir "no hay errores" de "no llegan datos".
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

@@ -1,26 +1,59 @@
-name: weather-flows
-pull:
-  - prefect.deployments.steps.set_working_directory:
-      directory: /Users/mdurango/Downloads/proyectos/MLOps_UdM/03-Orchestration/00-intro-prefect
+# =============================================================================
+# prefect.yaml — deployments declarativos
+# =============================================================================
+# Se despliega ejecutando `prefect deploy --all` DESDE ESTE DIRECTORIO.
+#
+# Dos cosas que este archivo corrige respecto a la version anterior del curso:
+#
+# 1. No hay rutas absolutas. La version anterior tenia un paso
+#    `set_working_directory` apuntando al disco de quien lo escribio
+#    (/Users/<usuario>/Downloads/proyectos/...), asi que `prefect deploy --all`
+#    fallaba en cualquier otra maquina. El `entrypoint` se resuelve relativo al
+#    directorio donde vive este archivo: para desplegar en local no hace falta
+#    ningun paso `pull`.
+#
+# 2. La clave es `schedules:` (plural, una lista). El `schedule:` singular con
+#    un mapa cron/timezone es la forma heredada de Prefect 2: esta deprecada, y
+#    si aparecen las dos claves en el mismo deployment, `prefect deploy` falla.
+# =============================================================================
+name: intro-prefect
+prefect-version: 3.8.3
 
 deployments:
-  - name: simple-flow-deployment
+  # Un mismo flow puede tener varios deployments: distinto schedule, distintos
+  # parametros. El codigo del flow no cambia.
+  - name: clima-medellin
     entrypoint: flows/weather1-flow.py:fetch_weather
-    schedule:
-      cron: "*/10 * * * *"
-      timezone: "America/Bogota"
+    description: Consulta el pronostico de Medellin cada 10 minutos.
+    tags: [s04, demo]
+    # `prefect deploy` necesita un work pool: quien ejecuta es un worker, no
+    # este proceso. Crear el pool y arrancar el worker:
+    #   prefect work-pool create curso-mlops --type process
+    #   prefect worker start --pool curso-mlops
+    work_pool:
+      name: curso-mlops
+    schedules:
+      - cron: "*/10 * * * *"
+        timezone: America/Bogota
     parameters:
       lat: 6.2476
       lon: -75.5658
 
-  - name: scheduled-flow
+  - name: clima-bogota
     entrypoint: flows/weather1-flow.py:fetch_weather
-    schedule:
-      cron: "0 */2 * * *"
-      timezone: "America/Bogota"
+    description: Consulta el pronostico de Bogota cada 2 horas.
+    tags: [s04, demo]
+    work_pool:
+      name: curso-mlops
+    schedules:
+      - cron: "0 */2 * * *"
+        timezone: America/Bogota
     parameters:
       lat: 4.7110
       lon: -74.0721
 
-# prefect deploy --all   
-# prefect deployment ls
+# Comandos utiles:
+#   prefect deploy --all
+#   prefect deployment ls
+#   prefect deployment run 'fetch-weather/clima-medellin'
+#   prefect deployment delete 'fetch-weather/clima-bogota'

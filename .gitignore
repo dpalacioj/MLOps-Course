@@ -73,6 +73,13 @@ data/external/
 
 # --- Modelos y artefactos (se obtienen del registry: models:/<name>@champion)
 models/
+# ...pero `src/taxi/models/` es un PAQUETE de codigo, no una carpeta de
+# artefactos. Sin esta negacion la regla anterior lo excluye entero: `git add`
+# no muestra error, `git status` sale limpio, todo funciona en la maquina del
+# autor y el repositorio queda sin el modulo de entrenamiento. Es el mismo bug
+# que hacia invisible a `data/raw/metadata.json` bajo la regla global `*.json`.
+# Lo vigila tests/unit/test_config_y_convenciones.py.
+!src/taxi/models/
 artifacts/
 *.pkl
 *.joblib

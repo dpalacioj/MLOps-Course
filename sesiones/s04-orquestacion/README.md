@@ -1,479 +1,252 @@
+# Sesión 4 — Orquestación y Continuous Training
 
-# Curso MLOps: Orquestacion de Pipelines de ML
+> Pregunta que responde la sesión: **¿cómo paso de "ejecuté el script" a "el
+> sistema se reentrena solo, y sé qué pasó cuando falle"?**
 
-Este modulo enseña como **automatizar, programar y hacer resilientes** tus pipelines de machine learning usando herramientas de orquestacion. Trabajamos principalmente con **Prefect** y exploramos **Mage** como alternativa visual, ambas aplicadas al mismo problema: predecir la duracion de viajes en taxi en NYC.
+## Objetivos
 
-## Diagramas de Apoyo
+Al terminar la sesión, cada estudiante puede:
 
-En la carpeta [`diagrams/`](diagrams/) encontraras 12 diagramas organizados en 5 fases pedagogicas. Estan diseñados para explicar Prefect paso a paso, desde la motivacion hasta arquitectura de produccion:
+1. **Modelar** un pipeline de entrenamiento como un grafo de tasks con
+   dependencias explícitas, reintentos con backoff y caching, y **explicar** qué
+   garantiza cada uno de los tres.
+2. **Desplegar** ese pipeline con un schedule y **distinguir** cuándo usar
+   `serve` y cuándo `deploy` con work pool, en términos de infraestructura y
+   aislamiento.
+3. **Medir** la diferencia de tiempo entre la primera y la segunda ejecución de un
+   flow con caching, y **diagnosticar** el caso en que no haya diferencia.
+4. **Diseñar** un trigger de reentrenamiento para su propio proyecto y
+   **argumentar por escrito** por qué reentrenar el modelo completo cada dos
+   minutos es un anti-patrón.
+5. **Verificar** que su pipeline registra un candidato en el registry y **no lo
+   promueve**, y explicar por qué la promoción pertenece al gate de CI.
+6. **Comparar** orquestadores según criterios declarados, en lugar de por
+   preferencia o popularidad.
 
-| Fase | Diagramas | Pregunta que responde |
-|---|---|---|
-| **1. Motivacion** | [01 - El Problema](diagrams/01_el_problema.png), [02 - Los 5 Pilares](diagrams/02_cinco_pilares.png) | POR QUE necesito orquestacion? |
-| **2. Conceptos Core** | [03 - Flow y Task](diagrams/03_flow_y_task.png), [04 - Grafo de Dependencias](diagrams/04_grafo_dependencias.png), [05 - Estados](diagrams/05_estados_ejecucion.png) | QUE es Prefect y como funciona? |
-| **3. Resiliencia** | [06 - Reintentos](diagrams/06_reintentos.png), [07 - Caching](diagrams/07_caching.png) | COMO hago mi pipeline robusto? |
-| **4. Deployment** | [08 - Deployment y Cron](diagrams/08_deployment.png), [09 - Arquitectura](diagrams/09_arquitectura.png) | COMO lo pongo a correr automaticamente? |
-| **5. Aplicacion ML** | [10 - Pipeline NYC Taxi](diagrams/10_pipeline_ml_completo.png), [11 - Prefect + MLflow](diagrams/11_prefect_mlflow.png), [12 - Panorama](diagrams/12_panorama_orquestadores.png) | COMO aplico esto a ML en la vida real? |
+## Contenidos
 
-Para regenerar los diagramas: `python diagrams/generate_diagrams.py`
-
----
-
-## 1. Que problema resuelve la orquestacion?
-
-> Ver: [Diagrama 01 - El Problema](diagrams/01_el_problema.png)
-
-Sin orquestacion, un pipeline de ML es un script que ejecutas manualmente. Esto genera problemas reales:
-
-| Sin orquestacion | Con orquestacion |
+| Carpeta | Qué hay |
 |---|---|
-| Ejecutas scripts a mano | Se ejecutan automaticamente (cron, triggers) |
-| Si falla, no te enteras | Alertas, logs y reintentos automaticos |
-| No sabes que paso ni cuando | Dashboard con estado, duracion y resultados |
-| Dificil reproducir una ejecucion | Parametros y artefactos versionados |
-| Dependencias entre pasos son implicitas | Grafo explicito de dependencias |
+| [`00-intro-prefect/`](00-intro-prefect/) | Progresión escalonada de Prefect: `@flow` → `@task` → retries → `serve` → cron → parámetros → varios flows → `deploy` → `prefect.yaml` |
+| [`01-pipeline-ml/`](01-pipeline-ml/) | Ejecución y análisis del pipeline del caso guía, medición del caching, consultas SQL sobre las predicciones y el ejercicio de clasificación |
+| [`_soluciones/`](_soluciones/) | Soluciones de referencia del ejercicio y del taller |
+| [`diagrams/`](diagrams/) | 12 diagramas, en cinco fases pedagógicas |
+| [`taller.md`](taller.md) | Enunciado del taller, con criterios de aceptación medibles |
 
-> Ver: [Diagrama 02 - Los 5 Pilares](diagrams/02_cinco_pilares.png)
+El pipeline **no vive aquí**: vive en `src/taxi/flows/` y esta carpeta lo importa.
+Esa es la corrección estructural de la sesión — antes el mismo pipeline estaba
+implementado tres veces, con features distintas en cada copia.
 
-La orquestacion se trata de 5 principios (aplican a **cualquier** herramienta):
-
-1. **Definir pasos claros** (tasks/blocks)
-2. **Conectarlos en un flujo** (flow/pipeline)
-3. **Automatizar la ejecucion** (scheduling/triggers)
-4. **Observar y reaccionar** (dashboard/logs/artefactos)
-5. **Manejar errores** (retries/alertas)
-
----
-
-## 2. Instalacion
-
-### Prefect
-
-Prefect requiere **Python 3.10+** y se instala con un solo comando ([docs oficiales](https://docs.prefect.io/get-started/install)):
-
-```bash
-# Con pip
-pip install -U prefect
-
-# Con uv (recomendado en este curso)
-uv add prefect
-```
-
-Para verificar la instalacion:
-
-```bash
-prefect version
-```
-
-**Dependencias adicionales** que usamos en el pipeline completo:
-
-```bash
-uv add mlflow optuna xgboost scikit-learn httpx
-```
-
-### Mage
-
-Mage tiene dependencias que pueden entrar en conflicto con Prefect y MLflow, por lo que usamos un **entorno virtual aislado**. El script `setup_and_run.sh` se encarga de todo ([docs oficiales](https://docs.mage.ai/getting-started/setup)):
-
-```bash
-cd 03-Orchestration/Mage-pipelines/
-chmod +x setup_and_run.sh
-./setup_and_run.sh
-```
-
-Esto crea un entorno `.venv-mage` separado con `uv`, instala Mage, y abre la UI en `http://localhost:6789`.
-
-> **Nota:** Necesitas tener `uv` instalado. Si no lo tienes: `curl -LsSf https://astral.sh/uv/install.sh | sh`
-
----
-
-## 3. Conceptos Core de Prefect
-
-> Ver: [Diagrama 03 - Flow y Task](diagrams/03_flow_y_task.png)
-
-### Que es un Flow y que es un Task?
-
-| Concepto | Que es | Para que sirve |
+| Fase | Diagramas | Pregunta |
 |---|---|---|
-| **Flow** | Funcion decorada con `@flow` | Define el pipeline completo |
-| **Task** | Funcion decorada con `@task` | Define un paso individual del pipeline |
-| **Deployment** | Configuracion de ejecucion | Programa cuando y como se ejecuta un flow |
-| **Artifact** | Resultado visual | Muestra resultados en el dashboard (tablas, graficos) |
-| **Schedule** | Expresion cron o intervalo | Automatiza la ejecucion periodica |
+| 1. Motivación | [01](diagrams/01_el_problema.png), [02](diagrams/02_cinco_pilares.png) | ¿por qué necesito orquestación? |
+| 2. Conceptos | [03](diagrams/03_flow_y_task.png), [04](diagrams/04_grafo_dependencias.png), [05](diagrams/05_estados_ejecucion.png) | ¿qué es un flow y cómo se ejecuta? |
+| 3. Resiliencia | [06](diagrams/06_reintentos.png), [07](diagrams/07_caching.png) | ¿cómo lo hago robusto? |
+| 4. Deployment | [08](diagrams/08_deployment.png), [09](diagrams/09_arquitectura.png) | ¿cómo corre sin mí? |
+| 5. Aplicación | [10](diagrams/10_pipeline_ml_completo.png), [11](diagrams/11_prefect_mlflow.png), [12](diagrams/12_panorama_orquestadores.png) | ¿cómo se ve esto en un sistema real? |
 
-Referencia: [Prefect Concepts - Flows](https://docs.prefect.io/concepts/flows) | [Tasks](https://docs.prefect.io/concepts/tasks)
-
-### Ejemplo minimo
-
-```python
-from prefect import flow, task
-
-@task
-def cargar_datos():
-    print("Cargando datos...")
-    return [1, 2, 3]
-
-@task
-def procesar(datos):
-    print(f"Procesando {len(datos)} registros")
-    return sum(datos)
-
-@flow
-def mi_pipeline():
-    datos = cargar_datos()
-    resultado = procesar(datos)
-    print(f"Resultado: {resultado}")
-
-# Ejecutar
-mi_pipeline()
-```
-
-Con solo agregar `@flow` y `@task`, Prefect automaticamente:
-- Registra el estado de cada paso (exito, fallo, en progreso)
-- Mide tiempos de ejecucion
-- Captura logs
-- Permite ver todo en un dashboard
-
-### Grafo de dependencias
-
-> Ver: [Diagrama 04 - Grafo de Dependencias](diagrams/04_grafo_dependencias.png)
-
-Cuando un task recibe el resultado de otro, Prefect entiende la dependencia. Los tasks se ejecutan en el orden correcto automaticamente. Si dos tasks no dependen entre si, Prefect puede ejecutarlos en paralelo.
-
-### Estados de ejecucion
-
-> Ver: [Diagrama 05 - Estados de Ejecucion](diagrams/05_estados_ejecucion.png)
-
-Cada flow y task pasa por estados: `SCHEDULED` -> `PENDING` -> `RUNNING` -> `COMPLETED` o `FAILED`. Si tiene retries configurados, pasa a `RETRYING` antes de volver a `RUNNING`.
-
-Referencia: [Prefect Concepts - States](https://docs.prefect.io/concepts/states)
+Los `.png` están en Git LFS: si se ven como archivos de texto de tres líneas,
+falta `git lfs pull`.
 
 ---
 
-## 4. Resiliencia: Retries y Caching
+## 1. El dolor: qué se rompe sin orquestación
 
-### Reintentos automaticos
+Antes de abrir la herramienta, el problema. Tres actos, en vivo:
 
-> Ver: [Diagrama 06 - Reintentos](diagrams/06_reintentos.png)
+1. **El pipeline falla en el paso 3** por un timeout de red. Se relanza desde
+   cero: se vuelven a descargar los datos que ya estaban en disco. Ocho minutos
+   perdidos por un fallo de dos segundos.
+2. **"¿Quién ejecutó el entrenamiento el martes pasado, y con qué parámetros?"**
+   Nadie lo sabe. El modelo que está sirviendo salió de un `python train.py` en
+   la máquina de alguien.
+3. **"Hay que correrlo cada lunes a las 3 a.m."** ¿Quién se levanta? ¿Y quién se
+   entera si falla?
 
-```python
-@task(retries=3, retry_delay_seconds=10)
-def descargar_datos(url):
-    response = httpx.get(url)
-    return response.json()
-```
+Los tres problemas son de **operación**, no de modelado. La orquestación es la
+capa que los resuelve, y sus cinco piezas aplican a cualquier herramienta:
 
-Si el task falla (timeout, error de red, etc.), Prefect reintenta automaticamente hasta 3 veces, esperando 10 segundos entre cada intento.
-
-Referencia: [Prefect - Retries](https://docs.prefect.io/concepts/tasks#retries)
-
-### Caching
-
-> Ver: [Diagrama 07 - Caching](diagrams/07_caching.png)
-
-```python
-from datetime import timedelta
-
-@task(cache_expiration=timedelta(hours=24))
-def cargar_datos(year, month):
-    # Solo se ejecuta si no hay cache valido
-    return pd.read_parquet(f"https://.../{year}-{month}.parquet")
-```
-
-Si los datos no cambian, no los recalcula. Ahorra tiempo en ejecuciones repetidas.
-
-Referencia: [Prefect - Caching](https://docs.prefect.io/concepts/tasks#caching)
-
----
-
-## 5. Deployment y Scheduling
-
-> Ver: [Diagrama 08 - Deployment](diagrams/08_deployment.png)
-
-La progresion para poner un flow a correr automaticamente:
-
-| Nivel | Metodo | Que hace |
+| Pieza | Qué resuelve | En Prefect |
 |---|---|---|
-| 1 | `python pipeline.py` | Ejecucion manual, una vez |
-| 2 | `flow.serve(name='mi-deploy')` | El flow queda escuchando peticiones |
-| 3 | `flow.serve(cron='0 2 * * *')` | Se ejecuta solo, todos los dias a las 2am |
-| 4 | `prefect deploy --all` (prefect.yaml) | Config declarativa, multiples deployments |
+| Pasos declarados | saber *cuál* paso falló | `@task` |
+| Grafo de dependencias | orden y paralelismo sin escribirlos | pasar resultados entre tasks |
+| Programación | que corra sin nadie delante | deployment + `schedules` |
+| Observabilidad | reconstruir qué pasó y cuándo | logs del run, artifacts, UI |
+| Manejo de fallos | que un fallo transitorio no cueste una corrida | `retries`, backoff, caching |
 
-### Expresiones cron
-
-| Expresion | Significado |
-|---|---|
-| `* * * * *` | `minuto  hora  dia  mes  dia_semana` |
-| `0 2 * * *` | Todos los dias a las 2:00 AM |
-| `*/5 * * * *` | Cada 5 minutos |
-| `0 9 * * 1-5` | Lunes a viernes a las 9 AM |
-| `0 0 1 * *` | El primer dia de cada mes a medianoche |
-
-Referencia: [Prefect - Schedules](https://docs.prefect.io/concepts/schedules) | [Guia de prefect.yaml](00-intro-prefect/infrastructure/prefect-yaml-guide.md)
-
-### Arquitectura de Prefect
-
-> Ver: [Diagrama 09 - Arquitectura](diagrams/09_arquitectura.png)
-
-Prefect tiene tres componentes principales:
-- **Tu codigo** (pipeline.py con `@flow` y `@task`)
-- **Prefect Server** (API REST + scheduler + base de datos)
-- **Dashboard UI** (localhost:4200 o app.prefect.cloud)
-
-Puedes usar el servidor local (gratis, `prefect server start`) o Prefect Cloud (managed, tier gratuito disponible).
-
-Referencia: [Prefect - Server & Cloud](https://docs.prefect.io/host)
+Sobre lo que la orquestación **no** resuelve: no mejora tu modelo, no valida tus
+datos (eso es el contrato de S02) y no decide si un modelo va a producción (eso es
+el gate de S06). Un pipeline orquestado que entrena sobre datos malos entrena
+sobre datos malos, con más puntualidad.
 
 ---
 
-## 6. Progresion de Aprendizaje
+## 2. Prefect y MLflow responden preguntas distintas
 
-### 6.1. Ejemplos basicos (carpeta `00-intro-prefect/`)
-
-Los archivos en `flows/` estan diseñados para seguirse en orden:
-
-1. **`weather1-bare.py`** - Flow basico: una funcion con `@flow` que consulta una API del clima
-2. **`weather1-flow.py`** - Lo mismo pero ya como flow completo
-3. **`weather1-serve.py`** - Servir el flow como deployment local (el flow queda "escuchando")
-4. **`weather1-serve-params.py`** - Deployment con parametros configurables
-5. **`weather1-serve-schedule.py`** - Deployment con schedule automatico
-6. **`weather1-deploy.py`** - Deployment remoto
-7. **`serve-two-flows.py`** - Servir multiples flows desde un mismo archivo
-8. **`serve-two-flows-scheduled.py`** - Multiples flows con schedules diferentes
-
-Para ejecutar cualquier ejemplo:
-
-```bash
-# Ejecutar un flow directamente
-uv run python 00-intro-prefect/flows/weather1-bare.py
-
-# Iniciar el servidor de Prefect (para ver el dashboard)
-uv run prefect server start
-
-# En otra terminal, servir un flow
-uv run python 00-intro-prefect/flows/weather1-serve.py
-```
-
-El dashboard estara disponible en `http://localhost:4200`.
-
-### 6.2. Funcionalidades avanzadas (carpeta `workflows/`)
-
-- **`retries.py`** - Reintentos automaticos cuando un task falla
-- **`simple-artifacts.py`** - Crear artefactos visuales en el dashboard
-- **`artifacts-ml.py`** - Artefactos especificos para pipelines de ML
-- **`runtime_context.py`** - Acceder a informacion del flow en ejecucion
-
-### 6.3. Pipeline completo de ML (carpeta `Prefect-pipelines/`)
-
-> Ver: [Diagrama 10 - Pipeline ML Completo](diagrams/10_pipeline_ml_completo.png)
-
-El directorio `Prefect-pipelines/` contiene un pipeline real de ML que:
-
-1. **Descarga datos** de taxis de NYC (formato parquet) desde [NYC TLC](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)
-2. **Valida** volumen y calidad de los datos
-3. **Crea features** con [DictVectorizer](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.DictVectorizer.html) (PULocationID, DOLocationID)
-4. **Optimiza hiperparametros** con [Optuna](https://optuna.readthedocs.io/) (20 trials)
-5. **Entrena** un modelo [XGBoost](https://xgboost.readthedocs.io/) con los mejores parametros
-6. **Registra** todo en [MLflow](https://mlflow.org/docs/latest/) (metricas, modelo, artefactos)
-7. **Genera** un resumen visual como artefacto de Prefect
-
-#### Ejecutar el pipeline
-
-```bash
-cd Prefect-pipelines/
-
-# Ejecucion unica
-uv run python pipeline.py --year 2025 --month 1
-
-# Deployment automatico (cada 2 minutos, para practicar)
-uv run python deploy.py
-```
-
-#### Arquitectura modular
-
-El pipeline sigue una arquitectura modular en `src/`:
-
-```
-src/
-├── config/          # Constantes (year, month, nombres de experimento)
-│   ├── constants.py
-│   └── mlflow_setup.py
-├── data/            # Carga desde URL, validacion, utilidades
-│   ├── loaders.py
-│   ├── validators.py
-│   └── utils.py
-├── features/        # DictVectorizer sobre columnas categoricas
-│   └── engineering.py
-└── models/          # Optuna optimization + entrenamiento XGBoost
-    └── optimization.py
-```
-
-### 6.4. Integracion Prefect + MLflow
-
-> Ver: [Diagrama 11 - Prefect + MLflow](diagrams/11_prefect_mlflow.png)
+Es la confusión más común de la sesión:
 
 | Prefect responde | MLflow responde |
 |---|---|
-| CUANDO se ejecuta el pipeline | QUE parametros usaste |
-| En QUE ORDEN se ejecutan los pasos | QUE metricas obtuviste |
-| QUE HACER si falla (retries) | QUE modelo entrenaste |
-| ESTADO general (dashboard) | COMPARAR experimentos |
-| Artefactos (resumenes) | Versionado de modelos (Registry) |
+| cuándo corrió el pipeline | qué parámetros se usaron |
+| en qué orden corrieron los pasos | qué métricas dio |
+| qué hacer si un paso falla | qué artefacto se produjo |
+| en qué estado terminó | qué versión del modelo existe y cuál sirve |
+
+No compiten. En el flow del caso guía, cada corrida de Prefect produce un run de
+MLflow, y el `run_id` de Prefect queda como tag de la versión registrada: eso es
+lo que permite reconstruir el linaje **corrida → modelo → predicción**.
 
 ---
 
-## 7. Alternativa Visual: Mage
+## 3. La decisión de diseño de la sesión: registrar no es promover
 
-Mage es un orquestador que usa una **interfaz grafica tipo notebook** en el navegador. Implementamos exactamente el mismo pipeline de NYC Taxi para comparar ambos enfoques.
+El flow de entrenamiento registra el candidato con el alias `candidate` y **no lo
+promueve**.
 
-| Aspecto | Prefect | Mage |
+La versión anterior de este curso hacía lo contrario: en cada corrida llamaba a
+`transition_model_version_stage(stage="Production", archive_existing_versions=True)`.
+Un modelo llegaba a producción por el solo hecho de que el entrenamiento terminó
+sin lanzar excepciones — sin holdout, sin comparación con el modelo actual, sin
+posibilidad de rechazo, archivando al anterior. Y con una API deprecada.
+
+```mermaid
+flowchart LR
+    FLOW["Flow de Prefect (S04)<br/>entrena y registra"] -->|"alias @candidate<br/>validation_status=pending"| REG[("Model Registry")]
+    REG --> GATE{"Gate en CI (S06)<br/>holdout fijo<br/>candidato vs @champion"}
+    GATE -->|mejora| PROM["alias @champion<br/>validation_status=passed"]
+    GATE -->|no mejora| STOP["no promueve<br/>comentario en el PR"]
+    PROM --> SERV["API y batch<br/>models:/…@champion"]
+```
+
+Separarlo tiene tres consecuencias prácticas: el reentrenamiento puede ser
+automático **sin** que el despliegue lo sea; el criterio de promoción queda
+escrito y versionado en un solo lugar; y el rollback es mover un alias, no
+reentrenar ni reconstruir una imagen.
+
+---
+
+## 4. Continuous Training: el trigger es una decisión de diseño
+
+CT no significa "reentrenar seguido". Significa "reentrenar **cuando hay una
+razón**".
+
+| Estrategia | Cuándo tiene sentido | Riesgo principal |
 |---|---|---|
-| **Filosofia** | Code-first (decoradores Python) | UI-first (bloques visuales) |
-| **Unidad basica** | `@flow` + `@task` | Bloques: data_loader, transformer, data_exporter |
-| **Edicion** | Tu editor/IDE favorito | UI web tipo notebook |
-| **Flujo** | Definido en codigo Python | Definido en `metadata.yaml` / visualmente |
-| **Retries/cache** | Decoradores (`retries=3`) | Configuracion en UI o metadata |
+| Periódico (semanal, mensual) | los datos cambian de forma gradual | reentrena sin necesidad; cuesta |
+| **Por llegada de datos** | llegan particiones nuevas (nuestro caso) | hay que detectar la disponibilidad |
+| Por drift detectado | los cambios son impredecibles | falsos positivos → churn de modelos |
+| Por caída de performance | hay labels en producción | los labels llegan tarde (*label lag*) |
 
-Referencia: [Mage Docs - Getting Started](https://docs.mage.ai/getting-started/setup)
+**Por qué `cron="*/2 * * * *"` reentrenando el modelo completo es un
+anti-patrón** — y esto estaba en el repo, documentado como buena práctica:
 
-### Ejecutar Mage
+1. no aporta señal: entre las 14:02 y las 14:04 no hay un dato nuevo, las
+   particiones son mensuales e inmutables;
+2. cuesta: 720 descargas y 720 entrenamientos al día, contra un servidor público
+   y gratuito;
+3. ensucia el registry: con auto-promoción, 720 versiones "de producción" al día,
+   y el linaje deja de poder reconstruirse;
+4. rompe la noción de trigger: un cron de minutos no responde a ninguna razón;
+5. enseña el hábito equivocado, que el estudiante replica en su trabajo.
 
-```bash
-cd Mage-pipelines/
-
-# Opcion 1: UI visual (recomendado para aprender)
-./setup_and_run.sh
-
-# Opcion 2: Solo ejecutar el pipeline (sin UI)
-./setup_and_run.sh --run
-```
-
-La UI se abre en `http://localhost:6789`. Ahi puedes ver los bloques conectados, ejecutarlos individualmente, y ver logs en tiempo real.
-
-> Para una comparacion detallada entre Prefect, Mage, Airflow y Dagster, revisa el notebook [`comparacion_orquestadores.ipynb`](Mage-pipelines/comparacion_orquestadores.ipynb).
+La discusión completa está en el docstring de `src/taxi/flows/deploy.py`, y el
+taller pide argumentar el trigger propio en un ADR.
 
 ---
 
-## 8. Panorama de Herramientas de Orquestacion
+## 5. Panorama de orquestadores
 
-> Ver: [Diagrama 12 - Panorama de Orquestadores](diagrams/12_panorama_orquestadores.png)
+**Criterios de esta comparación**, declarados para que se pueda discutir:
+(a) *modelo mental* — qué es la unidad de trabajo; (b) *encaje con ML* — soporte
+de parámetros, artifacts, reintentos y linaje; (c) *costo de entrada* — qué hay
+que levantar y aprender para la primera corrida en producción; (d) *estado del
+proyecto* — versión vigente y actividad de releases.
 
-| Herramienta | Enfoque | Ideal para | Complejidad de setup |
-|---|---|---|---|
-| **[Prefect](https://docs.prefect.io/)** | Code-first, Python nativo | Equipos de ML/DS, startups | Baja (`pip install prefect`) |
-| **[Mage](https://docs.mage.ai/)** | UI visual, tipo notebook | Prototipos, aprendizaje | Baja (pero entorno aislado) |
-| **[Apache Airflow](https://airflow.apache.org/)** | DAGs, estandar empresarial | Empresas grandes, ETL complejo | Alta (scheduler + webserver + DB) |
-| **[Dagster](https://docs.dagster.io/)** | Assets-first, tipado fuerte | Data engineering con contratos | Media |
-| **[Kestra](https://kestra.io/)** | YAML-first, event-driven | Equipos multilenguaje | Media |
+**Fecha de evaluación: 19 de agosto de 2026.** Las versiones envejecen; el
+criterio, menos. Verifica la columna de estado antes de cada cohorte.
 
-### Por que Prefect en este curso?
+| Herramienta | Modelo mental | Sweet spot | Costo de entrada | Estado (ago-2026) | Doc oficial |
+|---|---|---|---|---|---|
+| **Prefect** | flows y tasks en Python puro; el grafo se deriva de los datos | equipos de DS, pipelines dinámicos, ML | bajo: `pip install prefect` y una función decorada | 3.8.x, releases frecuentes | [docs.prefect.io](https://docs.prefect.io/v3/get-started) |
+| **Apache Airflow** | DAGs declarados; ecosistema enorme de operadores | data engineering en empresa, ETL con muchas integraciones | alto: scheduler, API server, base de datos, workers | 3.3.x. En Airflow 3 la API de autoría es `airflow.sdk`, hay **DAG versioning**, el parámetro es `schedule=` (`schedule_interval=` fue removido), la REST API es v2 y `SubDagOperator` fue eliminado (se usan TaskGroups) | [airflow.apache.org](https://airflow.apache.org/docs/apache-airflow/stable/) |
+| **Dagster** | *assets* (el dato producido), no tareas; linaje de primera clase | plataformas de datos donde importa el catálogo y el linaje | medio-alto: modelo mental propio, `dg` CLI y Components | 1.13.x, activo | [docs.dagster.io](https://docs.dagster.io/) |
+| **ZenML** | pipelines portables tipados, con *stacks* intercambiables | equipos ML que quieren cambiar de backend sin reescribir | medio | activo | [docs.zenml.io](https://docs.zenml.io/) |
+| **Metaflow** | flows como clases con pasos; foco en experimentación reproducible | ML en AWS, escalado vertical sencillo | medio | activo (Netflix / Outerbounds) | [docs.metaflow.org](https://docs.metaflow.org/) |
+| **Flyte** | tareas fuertemente tipadas y versionadas sobre Kubernetes | ML multi-equipo con requisitos de reproducibilidad estrictos | alto: requiere Kubernetes | activo (LF AI & Data) | [docs.flyte.org](https://docs.flyte.org/) |
+| **Kubeflow Pipelines** | componentes en contenedores sobre Kubernetes | organizaciones que ya viven en Kubernetes | muy alto | activo | [kubeflow.org](https://www.kubeflow.org/docs/components/pipelines/) |
+| **Mage** | notebook-como-pipeline, edición visual por bloques | prototipado visual | bajo, pero entorno aislado | **AVISO: la última release OSS es de enero de 2026**: no lo presentemos como un proyecto vivo sin verificarlo antes de la cohorte | [docs.mage.ai](https://docs.mage.ai/introduction/overview) |
 
-- **Setup minimo**: `pip install prefect` y funciona, no necesitas levantar servicios extra
-- **Python nativo**: Agregas `@flow` y `@task` a funciones normales de Python
-- **Bueno para ML**: Artefactos, caching, integracion natural con MLflow
-- **Dashboard moderno**: Monitoreo sin configuracion adicional
+### Por qué Prefect en este curso
 
-### Cuando usar cada herramienta?
+No porque sea "el mejor": porque el costo de entrada es el más bajo de la lista y
+eso deja las cuatro horas para los **conceptos** de orquestación en lugar de para
+levantar infraestructura. Con Airflow, la primera hora se va en el scheduler y la
+base de datos; con Kubeflow, en el clúster.
 
-- **Prefect**: Cuando tu equipo ya programa en Python y quiere orquestar rapido
-- **Mage**: Cuando necesitas prototipar visualmente o enseñar conceptos
-- **Airflow**: Cuando la empresa ya lo usa o necesitas integraciones masivas (+2000 plugins)
-- **Dagster**: Cuando necesitas contratos de datos estrictos entre pasos
+El compromiso, dicho explícitamente: quien vaya a trabajar en una empresa con
+Airflow tendrá que traducir. La traducción es directa —`@flow` es un DAG, `@task`
+es una tarea, `schedules` es `schedule=`, un work pool es una queue con un
+worker— porque los cinco pilares de la sección 1 son los mismos. Lo que **no** se
+transfiere es el ecosistema de operadores de Airflow, que es su ventaja real.
 
----
-
-## 9. Estructura del Modulo
-
-```
-03-Orchestration/
-├── 00-intro-prefect/              # Conceptos basicos de Prefect
-│   ├── flows/                     # Ejemplos progresivos de flows
-│   │   ├── weather1-bare.py       # Flow minimo (solo @flow)
-│   │   ├── weather1-flow.py       # Flow con decorador
-│   │   ├── weather1-serve.py      # Flow servido (deployment local)
-│   │   ├── weather1-serve-params.py
-│   │   ├── weather1-serve-schedule.py
-│   │   ├── weather1-deploy.py
-│   │   ├── serve-two-flows.py
-│   │   └── serve-two-flows-scheduled.py
-│   ├── workflows/                 # Funcionalidades avanzadas
-│   │   ├── my-first-task.py       # Tasks basicos
-│   │   ├── retries.py             # Reintentos automaticos
-│   │   ├── simple-artifacts.py    # Artefactos en dashboard
-│   │   ├── artifacts-ml.py        # Artefactos para ML
-│   │   ├── runtime_context.py     # Contexto de ejecucion
-│   │   ├── get_variable.py        # Variables de configuracion
-│   │   ├── create_secret.py       # Secretos
-│   │   └── openai_with_secret.py  # Uso de secretos con APIs
-│   ├── infrastructure/
-│   │   └── prefect-yaml-guide.md  # Guia de deployments con YAML
-│   └── prefect.yaml               # Ejemplo de configuracion
-│
-├── Prefect-pipelines/             # Pipeline completo NYC Taxi con Prefect
-│   ├── pipeline.py                # Flow principal (orquestacion)
-│   ├── deploy.py                  # Deployment con schedule (cron)
-│   └── src/                       # Codigo modular del pipeline
-│       ├── config/                # Constantes y setup de MLflow
-│       ├── data/                  # Carga y validacion de datos
-│       ├── features/              # Feature engineering
-│       └── models/                # Optuna + XGBoost + MLflow
-│
-├── Mage-pipelines/                # Mismo pipeline con Mage (alternativa visual)
-│   ├── comparacion_orquestadores.ipynb  # Comparacion detallada Prefect vs Mage
-│   ├── setup_and_run.sh           # Script para instalar y ejecutar Mage
-│   ├── pyproject.toml             # Dependencias aisladas para Mage
-│   ├── test_blocks.py             # Tests de los bloques
-│   └── nyc_taxi_project/          # Proyecto Mage
-│       ├── data_loaders/          # Bloque: carga de datos
-│       ├── transformers/          # Bloques: validacion y features
-│       ├── data_exporters/        # Bloque: entrenamiento
-│       ├── pipelines/             # Definicion del pipeline (metadata.yaml)
-│       └── utils/                 # Constantes compartidas
-│
-├── diagrams/                      # Diagramas educativos (12 PNGs)
-│   ├── generate_diagrams.py       # Script para regenerar los diagramas
-│   ├── 01_el_problema.png         # Fase 1: Motivacion
-│   ├── 02_cinco_pilares.png
-│   ├── 03_flow_y_task.png         # Fase 2: Conceptos core
-│   ├── 04_grafo_dependencias.png
-│   ├── 05_estados_ejecucion.png
-│   ├── 06_reintentos.png          # Fase 3: Resiliencia
-│   ├── 07_caching.png
-│   ├── 08_deployment.png          # Fase 4: Deployment
-│   ├── 09_arquitectura.png
-│   ├── 10_pipeline_ml_completo.png  # Fase 5: Aplicacion ML
-│   ├── 11_prefect_mlflow.png
-│   └── 12_panorama_orquestadores.png
-│
-└── README.md                      # Este archivo
-```
+Una nota sobre "orquestador vs. herramienta de ML": Airflow y Dagster orquestan
+datos; ZenML, Metaflow y Flyte están diseñados alrededor del ciclo de vida del
+modelo. Prefect está en el medio: es un orquestador general que se lleva bien con
+ML, y el pegamento con MLflow lo escribes tú (es lo que hace
+`src/taxi/flows/training.py`).
 
 ---
 
-## 10. Referencias
+## 6. Autoverificación
 
-### Documentacion oficial
-- [Prefect 3.x Docs](https://docs.prefect.io/) - Guia completa, quickstart, API reference
-- [Prefect GitHub](https://github.com/PrefectHQ/prefect) - Codigo fuente y ejemplos
-- [Mage AI Docs](https://docs.mage.ai/) - Guia de Mage, setup, bloques
-- [Mage AI GitHub](https://github.com/mage-ai/mage-ai) - Codigo fuente
-- [Apache Airflow Docs](https://airflow.apache.org/docs/) - Referencia del estandar de la industria
-- [Dagster Docs](https://docs.dagster.io/) - Framework assets-first
-- [Kestra Docs](https://kestra.io/docs) - Orquestacion YAML-first
+Cuatro preguntas. Si alguna no se puede responder sin volver al material, ahí está
+el vacío.
 
-### Herramientas usadas en el pipeline
-- [MLflow](https://mlflow.org/docs/latest/) - Experiment tracking y model registry
-- [Optuna](https://optuna.readthedocs.io/) - Optimizacion de hiperparametros
-- [XGBoost](https://xgboost.readthedocs.io/) - Gradient boosting
-- [scikit-learn DictVectorizer](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.DictVectorizer.html) - Feature encoding
-- [NYC TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) - Dataset publico
+1. Tu flow tiene una task que descarga datos y otra que entrena. **¿En cuál pones
+   `retries` y en cuál no, y por qué?** ¿Qué diferencia hay entre
+   `retry_delay_seconds=2` y `retry_delay_seconds=[10, 30, 60]` cuando el fallo es
+   de red?
+2. Corres el flow dos veces seguidas y la segunda tarda lo mismo que la primera,
+   aunque la task de preparación tiene `cache_key_fn`. **Nombra tres causas
+   posibles**, en el orden en que las revisarías.
+3. Tu entrenamiento programado corre todos los lunes y siempre termina en
+   `Completed`. **¿Qué garantiza eso sobre el modelo que está sirviendo en
+   producción?** (La respuesta correcta es incómoda.)
+4. Tu equipo quiere reentrenar "en cuanto lleguen datos nuevos". **¿Qué necesitas
+   para implementar ese trigger** y qué harías mientras no lo tengas?
 
-### Recursos de aprendizaje
-- [MLOps Zoomcamp - Module 3: Orchestration](https://github.com/DataTalksClub/mlops-zoomcamp/tree/main/03-orchestration) - Material base de referencia
-- [Prefect vs Airflow](https://docs.prefect.io/latest/resources/airflow-vs-prefect/) - Comparacion oficial
-- [Mage vs Airflow](https://docs.mage.ai/about/comparison/airflow) - Comparacion oficial de Mage
-- [Notebook de comparacion](Mage-pipelines/comparacion_orquestadores.ipynb) - Comparacion detallada Prefect vs Mage vs Airflow vs Dagster (dentro de este repositorio)
+---
 
-### Libros recomendados
-- *"Fundamentals of Data Engineering"* - Joe Reis & Matt Housley (capitulos de orquestacion)
-- *"Designing Machine Learning Systems"* - Chip Huyen (pipelines de ML en produccion)
+## 7. Qué NO usar
+
+APIs de Prefect 2 que aparecen en la mayoría de los tutoriales de la web y que ya
+no son válidas o no son la forma canónica:
+
+| No usar | Usar | Motivo |
+|---|---|---|
+| `prefect agent start` | `prefect worker start --pool <pool>` | los agents fueron **eliminados** en Prefect 3 |
+| `Deployment.build_from_flow(...)` | `flow.deploy(...)`, `flow.serve(...)` o `prefect.yaml` | ya no es el mecanismo de despliegue |
+| `prefect deployment build` | `prefect deploy` | idem |
+| Bloques de infraestructura (`DockerContainer`, `KubernetesJob`) | work pools tipados (`docker`, `kubernetes`) | dejaron de ser el mecanismo de despliegue |
+| `schedule=` singular estilo Prefect 2 (dict `cron`/`timezone`), y `schedule:` en `prefect.yaml` | `schedules=[Cron(...)]` y `schedules:` (lista) | la clave canónica es plural; si en `prefect.yaml` están las dos, el deploy falla |
+| `.deploy()` sin `work_pool_name` | `.deploy(..., work_pool_name="curso-mlops")` | es obligatorio: sin work pool no hay quién ejecute |
+| Rutas absolutas en `prefect.yaml` | rutas relativas al archivo | el `set_working_directory: /Users/<alguien>/…` del repo anterior rompía el deploy en cualquier otra máquina |
+
+Y del lado de MLflow, lo que esta sesión no vuelve a hacer:
+`transition_model_version_stage`, URIs de modelo por stage, `artifact_path=` en
+`log_model` (hoy es `name=`) y `try/except` alrededor del logging del modelo.
+
+Si alguien menciona Airflow: `schedule_interval=` y `SubDagOperator` ya no
+existen en Airflow 3, y la forma canónica de autoría es `airflow.sdk`.
+
+---
+
+## 8. Referencias
+
+- Prefect 3 — [conceptos](https://docs.prefect.io/v3/concepts), [caching](https://docs.prefect.io/v3/concepts/caching), [deployments](https://docs.prefect.io/v3/concepts/deployments), [work pools](https://docs.prefect.io/v3/concepts/work-pools), [artifacts](https://docs.prefect.io/v3/concepts/artifacts)
+- Migración Prefect 2 → 3: <https://docs.prefect.io/v3/how-to-guides/migrate/upgrade-to-prefect-3>
+- Airflow 3.3 — [release notes](https://airflow.apache.org/docs/apache-airflow/stable/release_notes.html), [novedades de Airflow 3](https://airflow.apache.org/blog/airflow-three-point-oh-is-here/)
+- Dagster 1.13 — [anuncio](https://dagster.io/blog/dagster-1-13-octopuss-garden)
+- Datos: [NYC TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)
+- *Designing Machine Learning Systems*, Chip Huyen — capítulo de pipelines y CT.
+- *Fundamentals of Data Engineering*, Reis & Housley — capítulo de orquestación.

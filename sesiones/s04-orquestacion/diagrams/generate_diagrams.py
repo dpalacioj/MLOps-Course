@@ -10,11 +10,10 @@ Genera 12 PNGs en este directorio.
 """
 
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.patches import FancyBboxPatch, FancyArrowPatch, ArrowStyle
-import numpy as np
+from matplotlib.patches import FancyBboxPatch
 
 # ==============================================================================
 # Estilos globales
@@ -80,7 +79,7 @@ def draw_box(ax, x, y, w, h, text, color, text_color='white', fontsize=11,
 
 def draw_arrow(ax, x1, y1, x2, y2, color=COLORS['gray'], style='->', lw=2):
     ax.annotate('', xy=(x2, y2), xytext=(x1, y1),
-                arrowprops=dict(arrowstyle=style, color=color, lw=lw),
+                arrowprops={'arrowstyle': style, 'color': color, 'lw': lw},
                 zorder=1)
 
 
@@ -228,8 +227,8 @@ def diagram_02_five_pillars():
     ax.text(5.5, 2.5, "Estos principios aplican a CUALQUIER orquestador:\nPrefect, Airflow, Mage, Dagster, Kestra...",
             fontsize=12, ha='center', va='center', color=COLORS['gray'],
             fontfamily='sans-serif', style='italic',
-            bbox=dict(boxstyle='round,pad=0.5', facecolor=COLORS['light_gray'],
-                     edgecolor='none'))
+            bbox={'boxstyle': 'round,pad=0.5', 'facecolor': COLORS['light_gray'],
+                     'edgecolor': 'none'})
 
     save_fig(fig, '02_cinco_pilares')
 
@@ -267,7 +266,7 @@ def diagram_03_flow_and_task():
                               facecolor='#263238', edgecolor='#37474F', linewidth=2)
     ax.add_patch(code_bg)
 
-    for i, (line, color) in enumerate(code_lines):
+    for i, (line, _color) in enumerate(code_lines):
         text_color = '#4FC3F7' if '@task' in line or '@flow' in line else '#E0E0E0'
         if '# ' in line:
             parts = line.split('# ')
@@ -350,7 +349,7 @@ def diagram_04_task_graph():
         'log': (5, 2.5, "registrar_en_mlflow\n(metricas + modelo)", COLORS['success']),
     }
 
-    for key, (x, y, text, color) in tasks.items():
+    for _key, (x, y, text, color) in tasks.items():
         draw_box(ax, x, y, 2.2, 1.0, "", color, alpha=0.9)
         lines = text.split('\n')
         ax.text(x, y + 0.15, lines[0], fontsize=10, ha='center',
@@ -424,8 +423,8 @@ def diagram_05_states():
     # Happy path highlight
     ax.annotate('Camino feliz', xy=(5.5, 6.5), fontsize=11,
                 color=COLORS['success'], fontweight='bold', ha='center',
-                bbox=dict(boxstyle='round,pad=0.3', facecolor=COLORS['light_green'],
-                         edgecolor=COLORS['success']))
+                bbox={'boxstyle': 'round,pad=0.3', 'facecolor': COLORS['light_green'],
+                         'edgecolor': COLORS['success']})
 
     save_fig(fig, '05_estados_ejecucion')
 
@@ -484,8 +483,8 @@ def diagram_06_retries():
         x1 = 2 + i * 2 + 0.3
         x2 = 4 + i * 2 - 0.3
         ax.annotate('', xy=(x2, 4.5), xytext=(x1, 4.5),
-                    arrowprops=dict(arrowstyle='->', color=COLORS['orange'],
-                                   lw=1.5, linestyle='--'))
+                    arrowprops={'arrowstyle': '->', 'color': COLORS['orange'],
+                                   'lw': 1.5, 'linestyle': '--'})
         ax.text((x1 + x2) / 2, 4.8, "10s", fontsize=8, ha='center',
                 color=COLORS['orange'])
 
@@ -494,8 +493,8 @@ def diagram_06_retries():
             "Con retries: Prefect reintenta automaticamente.\n"
             "El delay entre reintentos evita saturar el servicio externo.",
             fontsize=11, ha='center', color=COLORS['gray'],
-            bbox=dict(boxstyle='round,pad=0.5', facecolor=COLORS['light_gray'],
-                     edgecolor='none'))
+            bbox={'boxstyle': 'round,pad=0.5', 'facecolor': COLORS['light_gray'],
+                     'edgecolor': 'none'})
 
     save_fig(fig, '06_reintentos')
 
@@ -723,8 +722,8 @@ def diagram_10_ml_pipeline():
     # Main flow label
     ax.text(5, 9.2, "@flow: duration_prediction_pipeline", fontsize=15,
             ha='center', fontweight='bold', color=COLORS['prefect_dark'],
-            bbox=dict(boxstyle='round,pad=0.3', facecolor=COLORS['light_blue'],
-                     edgecolor=COLORS['prefect_blue'], linewidth=2))
+            bbox={'boxstyle': 'round,pad=0.3', 'facecolor': COLORS['light_blue'],
+                     'edgecolor': COLORS['prefect_blue'], 'linewidth': 2})
 
     # Pipeline steps - 2 rows of 3
     steps_row1 = [
@@ -858,8 +857,8 @@ def diagram_11_prefect_mlflow():
     ax.text(5, 0.8, "Prefect responde: CUANDO y COMO se ejecuta el pipeline\n"
             "MLflow responde: QUE resultados produjo cada ejecucion",
             fontsize=12, ha='center', color=COLORS['gray'],
-            bbox=dict(boxstyle='round,pad=0.5', facecolor=COLORS['light_gray'],
-                     edgecolor='none'))
+            bbox={'boxstyle': 'round,pad=0.5', 'facecolor': COLORS['light_gray'],
+                     'edgecolor': 'none'})
 
     save_fig(fig, '11_prefect_mlflow')
 
@@ -870,7 +869,7 @@ def diagram_12_ecosystem():
 
     # Timeline / complexity axis
     ax.annotate('', xy=(9.5, 1.5), xytext=(0.5, 1.5),
-                arrowprops=dict(arrowstyle='->', color=COLORS['gray'], lw=2))
+                arrowprops={'arrowstyle': '->', 'color': COLORS['gray'], 'lw': 2})
     ax.text(5, 0.8, "Complejidad de setup / Curva de aprendizaje", fontsize=11,
             ha='center', color=COLORS['gray'], style='italic')
     ax.text(0.5, 1.1, "Facil", fontsize=9, color=COLORS['success'])
@@ -906,16 +905,16 @@ def diagram_12_ecosystem():
     ax.add_patch(highlight)
     ax.text(3.5, 7.0, "Usado en\neste curso", fontsize=10, ha='center',
             fontweight='bold', color=COLORS['success'],
-            bbox=dict(boxstyle='round,pad=0.2', facecolor=COLORS['light_green'],
-                     edgecolor=COLORS['success']))
+            bbox={'boxstyle': 'round,pad=0.2', 'facecolor': COLORS['light_green'],
+                     'edgecolor': COLORS['success']})
 
     # Key insight
     ax.text(5, 8.5, "La herramienta importa menos que entender el concepto.\n"
             "Los 5 pilares de orquestacion aplican a TODAS estas herramientas.",
             fontsize=12, ha='center', color=COLORS['prefect_dark'],
             fontweight='bold',
-            bbox=dict(boxstyle='round,pad=0.5', facecolor=COLORS['light_blue'],
-                     edgecolor=COLORS['prefect_blue']))
+            bbox={'boxstyle': 'round,pad=0.5', 'facecolor': COLORS['light_blue'],
+                     'edgecolor': COLORS['prefect_blue']})
 
     save_fig(fig, '12_panorama_orquestadores')
 

@@ -1,113 +1,82 @@
-"""
-Simple example of Prefect Artifacts for ML workflows.
+"""Artifacts: el reporte de la corrida vive junto a la corrida.
 
-Artifacts allow you to visualize results and metrics directly in Prefect Cloud.
+Un artifact es un resultado visible en la UI, asociado al flow run que lo produjo.
+Es la diferencia entre "hay un HTML en la carpeta de alguien" y "este numero salio
+de esta ejecucion, con estos parametros, a esta hora".
+
+Tres tipos, y cuando usar cada uno:
+
+- `create_table_artifact`: filas comparables (metricas, top de features).
+- `create_markdown_artifact`: narrativa (resumen, decision tomada, siguiente paso).
+- `create_link_artifact`: enlace a un recurso externo (el run de MLflow, un bucket).
+
+Aqui las metricas son de juguete porque el objetivo es el mecanismo. Los artifacts
+reales del caso guia los produce `src/taxi/flows/training.py` con las metricas de
+esa corrida.
 """
 
-from prefect import flow, task, get_run_logger
+from datetime import UTC, datetime
+
+from prefect import flow, get_run_logger, task
 from prefect.artifacts import create_markdown_artifact, create_table_artifact
-from datetime import datetime
 
 
 @task
-def train_model():
-    """Simulate model training and return metrics."""
+def entrenar_simulado() -> dict[str, float]:
+    """Devuelve metricas de ejemplo."""
     logger = get_run_logger()
-    logger.info("Training model")
-    
-    metrics = {
-        "rmse": 7.15,
-        "mae": 5.23,
-        "r2": 0.82,
-        "training_time": 45.2
-    }
-    
-    return metrics
+    logger.info("Entrenando (simulado)")
+    return {"rmse": 7.15, "mae": 5.23, "r2": 0.82}
 
 
 @task
-def create_summary_artifact(metrics: dict):
-    """Create a markdown artifact with training summary."""
-    
-    markdown_content = f"""
-# Model Training Summary
+def publicar_tabla(metricas: dict[str, float], baseline_rmse: float = 7.82) -> None:
+    """Tabla comparativa contra el baseline.
 
-## Performance Metrics
-
-| Metric | Value |
-|--------|-------|
-| RMSE | {metrics['rmse']:.2f} |
-| MAE | {metrics['mae']:.2f} |
-| R2 Score | {metrics['r2']:.2f} |
-
-## Training Details
-
-- Training Time: {metrics['training_time']:.1f} seconds
-- Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-
-Status: Model trained successfully
-"""
-    
-    create_markdown_artifact(
-        key="training-summary",
-        markdown=markdown_content,
-        description="Model training summary"
-    )
-
-
-@task
-def create_comparison_artifact(metrics: dict):
-    """Create a table artifact comparing runs."""
-    
-    comparison_data = [
-        {
-            "run": "current",
-            "rmse": metrics['rmse'],
-            "mae": metrics['mae'],
-            "r2": metrics['r2']
-        },
-        {
-            "run": "baseline",
-            "rmse": 7.82,
-            "mae": 5.91,
-            "r2": 0.75
-        }
-    ]
-    
+    Una metrica sin baseline no se puede interpretar: 7.15 minutos de RMSE no es
+    bueno ni malo hasta que se sabe cuanto da predecir siempre la media.
+    """
     create_table_artifact(
-        key="metrics-comparison",
-        table=comparison_data,
-        description="Comparison with baseline"
+        key="comparacion-con-baseline",
+        table=[
+            {"modelo": "candidato", "rmse": metricas["rmse"], "mae": metricas["mae"]},
+            {"modelo": "baseline", "rmse": baseline_rmse, "mae": None},
+        ],
+        description="RMSE del candidato frente al baseline.",
     )
 
 
-@flow(name="artifacts-example")
-def artifacts_flow():
-    """
-    Flow demonstrating artifact creation.
-    
-    Run this flow and view artifacts in Prefect Cloud:
-    Flow Runs -> [your run] -> Artifacts tab
-    """
-    logger = get_run_logger()
-    logger.info("Starting artifacts example")
-    
-    # Train model
-    metrics = train_model()
-    
-    # Create artifacts
-    create_summary_artifact(metrics)
-    create_comparison_artifact(metrics)
-    
-    logger.info("Artifacts created successfully")
-    
-    return {"status": "success", "rmse": metrics['rmse']}
+@task
+def publicar_resumen(metricas: dict[str, float]) -> None:
+    """Resumen en markdown de la corrida."""
+    markdown = f"""# Resumen de entrenamiento
+
+| Metrica | Valor |
+|---|---|
+| RMSE | {metricas["rmse"]:.2f} min |
+| MAE | {metricas["mae"]:.2f} min |
+| R2 | {metricas["r2"]:.2f} |
+
+Generado: {datetime.now(UTC).isoformat(timespec="seconds")}
+
+El candidato **no** se promueve desde el pipeline: eso lo decide el gate (S06).
+"""
+    create_markdown_artifact(
+        key="resumen-de-entrenamiento",
+        markdown=markdown,
+        description="Resumen legible de la corrida.",
+    )
+
+
+@flow(name="demo-artifacts", log_prints=True)
+def demo_artifacts() -> dict[str, float]:
+    """Crea dos artifacts y los deja asociados a este flow run."""
+    metricas = entrenar_simulado()
+    publicar_tabla(metricas)
+    publicar_resumen(metricas)
+    return metricas
 
 
 if __name__ == "__main__":
-    result = artifacts_flow()
-    
-    print("\nFlow completed")
-    print(f"Result: {result}")
-    print("\nView artifacts in Prefect Cloud:")
-    print("  Flow Runs -> artifacts-example -> Artifacts tab")
+    print(demo_artifacts())
+    print("Ver en la UI: Runs -> demo-artifacts -> pestana Artifacts")

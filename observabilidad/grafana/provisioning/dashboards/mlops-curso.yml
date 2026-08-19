@@ -1,0 +1,30 @@
+# =============================================================================
+# Provider de dashboards — carga los JSON del repositorio
+# =============================================================================
+# Grafana lee los archivos del directorio indicado y crea/actualiza los
+# dashboards en cada arranque y cada `updateIntervalSeconds`.
+#
+# El directorio es /etc/grafana/dashboards y NO un subdirectorio de
+# /var/lib/grafana: ese es el volumen de datos de Grafana y anidar un bind mount
+# dentro de un volumen con nombre depende del orden de montaje.
+# =============================================================================
+
+apiVersion: 1
+
+providers:
+  - name: mlops-curso
+    orgId: 1
+    folder: MLOps
+    type: file
+    # false: si se borra un JSON del repositorio, el dashboard se borra tambien.
+    # Es lo coherente con tratar el repositorio como fuente de verdad; dejarlo en
+    # true acumula dashboards huerfanos que nadie sabe de donde salieron.
+    disableDeletion: false
+    # false: los cambios hechos en la UI NO se guardan. Suena incomodo y es
+    # deliberado: obliga a que toda modificacion pase por un archivo y un PR. El
+    # flujo de trabajo es editar en la UI, exportar el JSON y commitearlo.
+    allowUiUpdates: false
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/dashboards
+      foldersFromFilesStructure: false

@@ -1,20 +1,34 @@
+"""Paso 6b: dos flows con schedules distintos en el mismo proceso.
+
+Es la forma en que conviven, por ejemplo, un entrenamiento mensual y una
+validacion diaria: dos deployments, dos schedules, un proceso.
+"""
+
 import time
+
 from prefect import flow, serve
+from prefect.schedules import Cron, Interval
 
 
 @flow
-def slow_flow(sleep: int = 60):
-    "Sleepy flow - sleeps the provided amount of time (in seconds)."
-    time.sleep(sleep)
+def flow_lento(segundos: int = 30) -> None:
+    """Duerme el tiempo indicado."""
+    time.sleep(segundos)
 
 
 @flow
-def fast_flow():
-    "Fastest flow this side of the Atlantic."
+def flow_rapido() -> None:
+    """Vuelve de inmediato."""
     return
 
 
 if __name__ == "__main__":
-    slow_deploy = slow_flow.to_deployment(name="sleeper-scheduling", interval=20)
-    fast_deploy = fast_flow.to_deployment(name="fast-scheduling", cron="* * * * *")
-    serve(slow_deploy, fast_deploy)
+    lento = flow_lento.to_deployment(
+        name="lento-programado",
+        schedules=[Interval(60, timezone="America/Bogota")],  # cada 60 segundos
+    )
+    rapido = flow_rapido.to_deployment(
+        name="rapido-programado",
+        schedules=[Cron("* * * * *", timezone="America/Bogota")],  # cada minuto
+    )
+    serve(lento, rapido)

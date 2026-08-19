@@ -1,0 +1,348 @@
+# =============================================================================
+# Stack local del curso — MLflow con backend real, API instrumentada y
+# observabilidad
+# =============================================================================
+# Se levanta con `make up`. Puertos:
+#
+#   MLflow      http://127.0.0.1:5001
+#   API         http://127.0.0.1:8000/docs
+#   MinIO       http://127.0.0.1:9001   (consola: minioadmin / minioadmin)
+#   Prometheus  http://127.0.0.1:9090
+#   Grafana     http://127.0.0.1:3000   (admin / admin)
+#
+# -----------------------------------------------------------------------------
+# Sin clave `version:`
+# -----------------------------------------------------------------------------
+# El compose anterior empezaba con `version: '3.8'`. Compose v2 la ignora y
+# ademas emite un warning en cada comando. La clave venia del formato de
+# Compose v1, donde declaraba el esquema del archivo; hoy el schema lo determina
+# la version del binario. Dejarla es ruido que ensena una practica muerta.
+#
+# -----------------------------------------------------------------------------
+# Todos los healthchecks de este archivo funcionan de verdad
+# -----------------------------------------------------------------------------
+# El compose anterior definia `test: ["CMD","curl","-f","http://localhost:8000/health"]`
+# sobre una imagen `python:3.11-slim`, que no incluye curl. El comando fallaba
+# siempre y el contenedor quedaba `unhealthy` de forma permanente; cualquier
+# `depends_on: condition: service_healthy` habria esperado para siempre.
+#
+# La regla que corrige esto: **el healthcheck solo puede usar binarios que la
+# imagen realmente trae.** Verificable en un comando:
+#
+#   docker run --rm --entrypoint sh <imagen> -c 'command -v curl wget mc python'
+#
+# Aqui se usa, por imagen: `pg_isready` (postgres), `mc` (minio, viene incluido),
+# `python` (mlflow y api, son imagenes de Python), `wget` de busybox (prometheus)
+# y `curl` (grafana, que lo instala via apk en su Dockerfile).
+#
+# -----------------------------------------------------------------------------
+# MinIO habla el protocolo S3
+# -----------------------------------------------------------------------------
+# Esto es el puente con la sesion 6 (cloud). MinIO implementa la API de Amazon
+# S3, asi que el codigo que sube y baja artefactos es EXACTAMENTE el mismo contra
+# MinIO local y contra S3 real. Al migrar a AWS no se cambia una linea de Python:
+# se cambian variables de entorno.
+#
+#   local  -> MLFLOW_S3_ENDPOINT_URL=http://minio:9000 + AWS_ACCESS_KEY_ID/SECRET
+#   AWS    -> se BORRA MLFLOW_S3_ENDPOINT_URL (el default es el de AWS) y las
+#             credenciales las provee el rol de la tarea (ECS/App Runner) o el
+#             instance profile, nunca variables de entorno con llaves.
+#
+# Es la razon de ser de las interfaces estandar: el proveedor pasa a ser
+# configuracion de despliegue en lugar de una decision de arquitectura.
+# =============================================================================
+
+name: mlops-curso
+
+services:
+  # ===========================================================================
+  # Postgres — backend store de MLflow
+  # ===========================================================================
+  # Por que un backend SQL y no `file:./mlruns`: el Model Registry (y por tanto
+  # los aliases, los tags y el gate de promocion) SOLO existe con un backend de
+  # base de datos. Con un file store no hay registry, y la mitad del curso
+  # depende de el.
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mlflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mlflow}
+      POSTGRES_DB: ${POSTGRES_DB:-mlflow}
+    volumes:
+      # Volumen con nombre, no bind mount: los datos de Postgres son binarios y
+      # dependientes de la version, no algo que quieras dentro del repositorio.
+      - postgres-data:/var/lib/postgresql/data
+    # Sin `ports`. La base no necesita ser alcanzable desde el host: solo la usa
+    # MLflow por la red interna. Cada puerto publicado es superficie de ataque
+    # que hay que justificar.
+    healthcheck:
+      # pg_isready viene en la imagen oficial y comprueba que el servidor acepte
+      # conexiones, no solo que el proceso exista. La diferencia importa: durante
+      # la inicializacion del cluster el proceso esta arriba y rechaza
+      # conexiones.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mlflow} -d ${POSTGRES_DB:-mlflow}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  # ===========================================================================
+  # MinIO — artifact store compatible con S3
+  # ===========================================================================
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    command: server /data --console-address ":9001"
+    environment:
+      # Variables PROPIAS, no `${AWS_ACCESS_KEY_ID}`.
+      #
+      # Compose interpola contra el entorno del shell que ejecuta `docker
+      # compose`. Si estas credenciales se leyeran de AWS_ACCESS_KEY_ID, a
+      # cualquier persona con credenciales reales de AWS exportadas en su
+      # terminal —lo normal en cualquiera que trabaje con la nube— el MinIO local
+      # arrancaria con su llave de AWS como usuario root, el servicio mlflow
+      # esperaria `minioadmin` y el fallo aparecerian como un 403 al subir el
+      # primer artefacto. Peor: una credencial de produccion acabaria dentro de un
+      # contenedor de desarrollo.
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "9000:9000" # API S3
+      - "9001:9001" # consola web
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      # `mc ready local` es el healthcheck que documenta MinIO. El cliente `mc`
+      # viene dentro de la imagen del servidor (su Dockerfile copia mc y curl a
+      # /usr/bin), asi que no hay nada que instalar.
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  # ===========================================================================
+  # minio-init — crea el bucket y termina
+  # ===========================================================================
+  # Contenedor de inicializacion (patron "init container"): hace una tarea
+  # idempotente y sale con codigo 0. MLflow no crea el bucket por su cuenta, y
+  # sin el, el primer `log_model` falla con un NoSuchBucket que en clase se
+  # confunde con un problema de credenciales.
+  #
+  # Se reutiliza la imagen del servidor en lugar de traer `minio/mc`: ya trae
+  # `mc` y una capa menos que descargar es una capa menos que esperar.
+  #
+  # `--ignore-existing` es lo que lo hace idempotente: se puede volver a levantar
+  # el stack N veces sin que este contenedor falle. No se toca la politica de
+  # acceso del bucket porque el default de MinIO ya es privado; ejecutar un
+  # comando de mas solo agrega una forma de fallar y bloquear a mlflow, que
+  # espera `service_completed_successfully`.
+  minio-init:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        mc alias set local http://minio:9000 "${MINIO_ROOT_USER:-minioadmin}" "${MINIO_ROOT_PASSWORD:-minioadmin}"
+        mc mb --ignore-existing local/${MLFLOW_BUCKET:-mlflow}
+        echo "bucket ${MLFLOW_BUCKET:-mlflow} listo"
+    # `no` explicito: si se reiniciara, el contenedor entraria en un bucle de
+    # arrancar-crear-salir que ensucia los logs del stack.
+    restart: "no"
+
+  # ===========================================================================
+  # MLflow — tracking server + Model Registry
+  # ===========================================================================
+  mlflow:
+    build:
+      context: .
+      # Etapa dedicada del Dockerfile: la imagen oficial de MLflow no trae el
+      # driver de Postgres ni el cliente S3. Ver el comentario de la etapa.
+      target: mlflow-server
+      args:
+        # Debe coincidir con la version de mlflow que resuelve uv.lock. Si el
+        # servidor y el cliente se separan mucho, aparecen errores de esquema del
+        # backend store que no dicen "version incompatible", dicen cosas como
+        # "column does not exist".
+        MLFLOW_VERSION: "3.15.1"
+    command:
+      - mlflow
+      - server
+      - --backend-store-uri=postgresql+psycopg2://${POSTGRES_USER:-mlflow}:${POSTGRES_PASSWORD:-mlflow}@postgres:5432/${POSTGRES_DB:-mlflow}
+      # ARTIFACT STORE PROXIADO. El servidor guarda los artefactos en MinIO/S3,
+      # pero los clientes NO hablan con S3: los suben y bajan por HTTP a traves
+      # del propio tracking server (URIs `mlflow-artifacts:/`).
+      #
+      # Consecuencias, y son la razon de elegirlo:
+      #  - La imagen de la API no necesita boto3 ni credenciales de S3. El radio
+      #    de exposicion de las llaves se reduce a un solo contenedor.
+      #  - Al migrar a AWS solo cambia este servicio; la API queda intacta.
+      - --artifacts-destination=s3://${MLFLOW_BUCKET:-mlflow}/
+      # 0.0.0.0 es necesario para que el puerto publicado y la red interna de
+      # Docker lleguen al servidor. No es una decision de seguridad: quien filtra
+      # clientes es --allowed-hosts.
+      - --host=0.0.0.0
+      - --port=5001
+      # MLflow valida el header Host para prevenir DNS rebinding. El default
+      # permite localhost e IPs privadas, pero NO el nombre de servicio de
+      # Docker: sin esta linea, los requests de la API a http://mlflow:5001
+      # se rechazan y el error ("Invalid Host header") no sugiere en absoluto
+      # donde esta el problema.
+      - --allowed-hosts=mlflow,mlflow:5001,localhost,localhost:5001,127.0.0.1,127.0.0.1:5001
+    environment:
+      # El cliente S3 se configura con variables AWS_* porque asi es la
+      # convencion de boto3, pero los VALORES vienen de las variables de MinIO:
+      # es el mismo par de credenciales visto desde los dos lados de la interfaz
+      # S3. Eso hace literal la idea de "el codigo no cambia, cambia la
+      # configuracion".
+      #
+      # En AWS real: se BORRA MLFLOW_S3_ENDPOINT_URL y estas dos variables
+      # desaparecen. Las credenciales las provee el rol de la tarea (ECS/App
+      # Runner) o el instance profile, que boto3 descubre solo. Poner llaves en
+      # variables de entorno en produccion es como commitear un .env.
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      # S3 exige una region aunque MinIO la ignore. Sin ella, boto3 falla con
+      # NoRegionError, que no sugiere en absoluto que el problema sea una
+      # variable de entorno ausente.
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
+    ports:
+      # 5001 en TODO el curso: en macOS el 5000 lo ocupa AirPlay Receiver.
+      - "5001:5001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-init:
+        # El bucket tiene que existir ANTES de que el servidor acepte artefactos.
+        condition: service_completed_successfully
+    healthcheck:
+      # Python, no curl: la imagen de MLflow esta basada en python-slim y no trae
+      # curl. Este es el mismo error que hacia inutil el healthcheck anterior.
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=4).status == 200 else 1)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      # Generoso a proposito: en el primer arranque MLflow corre las migraciones
+      # de alembic sobre Postgres y eso tarda.
+      start_period: 60s
+    restart: unless-stopped
+
+  # ===========================================================================
+  # API de inferencia
+  # ===========================================================================
+  api:
+    build:
+      context: .
+      # Explicito aunque `runtime` sea la ultima etapa: hace evidente que esta es
+      # la imagen que tambien construye el CI.
+      target: runtime
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5001
+      # Referencia por ALIAS: el gate de promocion mueve `champion` y la API
+      # recoge el nuevo modelo al reiniciar, sin reconstruir la imagen.
+      # `ninguno` arranca sin modelo (util antes de haber entrenado nada).
+      TAXI_MODELO_URI: ${TAXI_MODELO_URI:-models:/nyc-taxi-duration@champion}
+      TAXI_CORS_ORIGENES: ${TAXI_CORS_ORIGENES:-http://localhost:3000,http://127.0.0.1:3000}
+      TAXI_LOG_LEVEL: ${TAXI_LOG_LEVEL:-INFO}
+      # Sin AWS_ACCESS_KEY_ID ni MLFLOW_S3_ENDPOINT_URL: gracias al artifact
+      # store proxiado, este contenedor descarga el modelo por HTTP del tracking
+      # server y nunca necesita credenciales del object store.
+    ports:
+      - "8000:8000"
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    # Sin bloque `healthcheck`: lo define la imagen (HEALTHCHECK del Dockerfile).
+    # Duplicarlo aqui crea dos definiciones que se desincronizan; el healthcheck
+    # pertenece a la imagen porque depende de que binarios tiene.
+    restart: unless-stopped
+
+  # ===========================================================================
+  # Prometheus — metricas del SERVICIO
+  # ===========================================================================
+  prometheus:
+    image: prom/prometheus:v3.14.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+      # Permite recargar la config con POST /-/reload sin reiniciar el
+      # contenedor (y sin perder la serie temporal).
+      - --web.enable-lifecycle
+    volumes:
+      # `:ro` porque Prometheus no debe poder escribir su propia configuracion.
+      - ./observabilidad/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      - api
+    healthcheck:
+      # La imagen de Prometheus se construye sobre busybox, que trae wget (no
+      # curl). Corre como usuario `nobody` desde la propia imagen oficial.
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:9090/-/healthy"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  # ===========================================================================
+  # Grafana — dashboards versionados
+  # ===========================================================================
+  # El datasource y el dashboard se provisionan desde archivos del repositorio.
+  # Un dashboard construido a mano en la UI vive solo en el volumen de Grafana:
+  # no se revisa en un PR, no se reproduce en otra maquina y desaparece con un
+  # `docker compose down -v`. Provisionarlo lo vuelve codigo.
+  grafana:
+    image: grafana/grafana:13.1.4
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      # Credenciales de desarrollo. En cualquier entorno compartido esto se
+      # reemplaza por un secreto real y por SSO; admin/admin en un Grafana
+      # accesible desde la red es un incidente esperando fecha.
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      # Evita la llamada de telemetria en el arranque, que en redes sin salida
+      # deja el log lleno de timeouts.
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+    volumes:
+      - ./observabilidad/grafana/provisioning:/etc/grafana/provisioning:ro
+      # Los dashboards se montan en /etc/grafana/dashboards y NO dentro de
+      # /var/lib/grafana: ese directorio es el volumen de datos de Grafana y
+      # anidar un bind mount ahi provoca conflictos de orden de montaje.
+      - ./observabilidad/grafana/dashboards:/etc/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      # curl SI existe en esta imagen: el Dockerfile de Grafana lo instala con
+      # apk (ca-certificates, bash, curl, tzdata).
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  minio-data:
+  prometheus-data:
+  grafana-data:
