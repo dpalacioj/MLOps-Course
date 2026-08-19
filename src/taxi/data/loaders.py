@@ -164,18 +164,37 @@ def preparar_particion(
     delta = df[fc.COL_DROPOFF] - df[fc.COL_PICKUP]
     df[fc.TARGET_REGRESION] = delta.dt.total_seconds() / 60.0
 
+    # Limpieza explicita y contabilizada. El contrato del crudo acepta outliers
+    # individuales a proposito (ver ViajesCrudos): rechazar la particion entera
+    # por 34 filas corruptas de 68.211 seria un contrato que el equipo desactiva.
+    # Aqui se filtran, y se registra CUANTAS se descartaron. Un filtro silencioso
+    # es tan peligroso como no tener filtro: si manana se descarta el 40% de los
+    # datos, alguien tiene que enterarse.
     antes = len(df)
-    df = df[df[fc.TARGET_REGRESION].between(DURACION_MIN_MIN, DURACION_MAX_MIN)].reset_index(
-        drop=True
-    )
+    en_rango_duracion = df[fc.TARGET_REGRESION].between(DURACION_MIN_MIN, DURACION_MAX_MIN)
+    en_rango_distancia = df[fc.CRUDAS_NUMERICAS[0]].le(dc.MAX_MILLAS_PLAUSIBLE)
+    df = df[en_rango_duracion & en_rango_distancia].reset_index(drop=True)
+
+    descartadas = antes - len(df)
     logger.info(
-        "%s: %d filas -> %d tras filtrar duracion en [%.0f, %.0f] min",
+        "%s: %d filas -> %d (descartadas %d, %.3f%%): duracion fuera de [%.0f, %.0f] min o "
+        "distancia > %.0f millas",
         particion,
         antes,
         len(df),
+        descartadas,
+        100.0 * descartadas / antes if antes else 0.0,
         DURACION_MIN_MIN,
         DURACION_MAX_MIN,
+        dc.MAX_MILLAS_PLAUSIBLE,
     )
+    if antes and descartadas / antes > 0.35:
+        logger.warning(
+            "%s: se descarto el %.1f%% de las filas. Eso ya no es limpieza, es un "
+            "sintoma. Revisa la particion antes de entrenar con ella.",
+            particion,
+            100.0 * descartadas / antes,
+        )
 
     if filas is not None and len(df) > filas:
         df = df.sample(n=filas, random_state=SEMILLA).reset_index(drop=True)

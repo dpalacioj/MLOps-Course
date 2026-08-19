@@ -1,0 +1,87 @@
+# =============================================================================
+# Stack local del proyecto — MLflow con registry + API
+# =============================================================================
+#   make up     ->  MLflow  http://127.0.0.1:5001
+#                   API     http://127.0.0.1:8000/docs
+#
+# Sin clave `version:`: Compose v2 la ignora y emite un warning en cada comando.
+# Venia del formato de Compose v1; hoy el schema lo determina el binario. Dejarla
+# es ensenar una practica muerta.
+#
+# Por que SQLite y no Postgres + MinIO
+# ------------------------------------
+# Esta es una version reducida a proposito. MLflow necesita un backend con base
+# de datos para tener Model Registry, y SQLite lo cumple con cero servicios
+# extra. Lo que se pierde: concurrencia real (SQLite bloquea la base con
+# escrituras simultaneas) y un artifact store que hable el protocolo S3.
+#
+# Cuando NO alcanza: si trabajas en equipo escribiendo runs a la vez, o si vas a
+# migrar a la nube, cambia a Postgres + MinIO. El stack completo esta en el
+# repositorio del curso (`docker-compose.yml` de la raiz) y la ventaja de MinIO
+# es que habla S3: al pasar a AWS no cambia una linea de Python, solo variables
+# de entorno.
+#
+# Todos los healthchecks de este archivo usan binarios que la imagen SI trae
+# (python en ambas). Un healthcheck con `curl` sobre `python:*-slim` falla
+# siempre, deja el contenedor `unhealthy` de forma permanente y cuelga cualquier
+# `depends_on: service_healthy`.
+# =============================================================================
+
+name: miproyecto
+
+services:
+  # ===========================================================================
+  # MLflow — tracking server con registry (backend SQLite, artifacts en volumen)
+  # ===========================================================================
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v3.15.1
+    command: >
+      mlflow server
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+      --host 0.0.0.0
+      --port 5001
+    ports:
+      - "127.0.0.1:5001:5001"
+    volumes:
+      - mlflow-data:/mlflow
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=4).status == 200 else 1)",
+        ]
+      interval: 15s
+      timeout: 5s
+      start_period: 40s
+      retries: 5
+    restart: unless-stopped
+
+  # ===========================================================================
+  # API de inferencia — resuelve el modelo del registry por alias
+  # ===========================================================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      # El nombre del servicio es el hostname dentro de la red de compose. No
+      # 127.0.0.1: eso apuntaria al propio contenedor de la API.
+      MLFLOW_TRACKING_URI: http://mlflow:5001
+      # TODO(estudiante) 24: cuando tengas un @champion registrado, cambia esto a
+      # models:/miproyecto-modelo@champion. Con `ninguno`, /health responde
+      # modelo_cargado=false y /predict devuelve 503, que es el estado correcto
+      # para verificar la imagen antes de tener modelo.
+      MIPROYECTO_MODELO_URI: ninguno
+      MIPROYECTO_CORS: http://127.0.0.1:3000
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mlflow-data:

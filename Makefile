@@ -16,7 +16,8 @@ PY := $(UV) run
 COMPOSE := docker compose
 
 .PHONY: help setup smoke data train hpo promote serve batch drift model-card \
-        test test-fast lint format typecheck check up down logs clean clean-all \
+        test test-fast test-llmops evals-llm comparar-prompts \
+        lint format typecheck check up down logs clean clean-all \
         mlflow prefect notebooks
 
 # =============================================================================
@@ -80,6 +81,17 @@ test: ## Corre todos los tests
 
 test-fast: ## Corre solo los tests que no requieren red ni servicios
 	$(PY) pytest -m "not slow and not integration"
+
+test-llmops: ## Corre solo los tests de la sesion 8 (sin red, sin API key)
+	$(PY) pytest sesiones/s08-llmops/tests
+
+evals-llm: ## Eval del clasificador de quejas (S08). Exit != 0 si baja del umbral.
+	PYTHONPATH=sesiones/s08-llmops/src LLMOPS_PROVEEDOR=fake LLMOPS_TRACING=off \
+	  $(PY) python -m clasificador.evaluar --sin-mlflow
+
+comparar-prompts: ## Compara las dos versiones del prompt de la sesion 8
+	PYTHONPATH=sesiones/s08-llmops/src LLMOPS_TRACING=off \
+	  $(PY) python -m clasificador.comparar_prompts
 
 lint: ## Revisa estilo y errores con ruff
 	$(PY) ruff check .

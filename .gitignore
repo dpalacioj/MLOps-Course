@@ -80,6 +80,12 @@ models/
 # que hacia invisible a `data/raw/metadata.json` bajo la regla global `*.json`.
 # Lo vigila tests/unit/test_config_y_convenciones.py.
 !src/taxi/models/
+# El starter template del proyecto final tiene el mismo paquete `models/` dentro
+# de `src/<paquete>/`. Su propio .gitignore ya lo desexcluye, pero esa negacion
+# solo funciona mientras el archivo anidado exista: si alguien lo borra por
+# "redundante", el modulo de entrenamiento del template desaparece del repositorio
+# sin un solo error. Se declara tambien aqui, acotado al starter-template.
+!proyecto/starter-template/src/*/models/
 artifacts/
 *.pkl
 *.joblib
@@ -88,10 +94,17 @@ artifacts/
 !*.b
 mlruns/
 mlartifacts/
+# Backend SQLite de las trazas de la sesion 8 (LLMOPS_TRACING=local)
+mlruns-llmops.db
+reports/llmops/
 mlflow.db
 *.db-journal
 outputs/
 reports/*.html
+# Resultado del check de drift (S07). Es un artefacto de corrida, como el HTML:
+# se regenera con `python -m taxi.monitoring.check_drift` y lo consume el CI del
+# mismo job que lo produjo. Versionarlo generaria un diff en cada ejecucion.
+reports/*.json
 !reports/.gitkeep
 
 # --- Prefect ---

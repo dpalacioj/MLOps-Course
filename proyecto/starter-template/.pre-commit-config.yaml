@@ -1,0 +1,70 @@
+# =============================================================================
+# pre-commit — starter template
+# =============================================================================
+# Instalacion:  make setup     (o: uv run pre-commit install)
+# Ejecucion:    uv run pre-commit run --all-files
+#
+# Regla: el CI corre lo mismo que estos hooks. Si el hook pasa en local, el CI
+# pasa. Si divergen, el hook deja de servir y la gente lo desactiva con
+# --no-verify, que es peor que no tener hooks.
+# =============================================================================
+default_install_hook_types: [pre-commit]
+
+repos:
+  # --- Higiene general ---
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: \.(md|ipynb)$
+      - id: end-of-file-fixer
+        exclude: \.ipynb$
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-added-large-files
+        # 500 KB. Los artefactos binarios commiteados (model.pkl, preprocessor.b)
+        # son una de las penalizaciones explicitas de la rubrica: el modelo se
+        # obtiene del registry, no del control de versiones.
+        args: ["--maxkb=500"]
+      - id: detect-private-key
+
+  # --- Lint + formato (Ruff reemplaza flake8, isort y black) ---
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.3
+    hooks:
+      - id: ruff-check
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # --- Notebooks sin outputs ---
+  # Los outputs de un notebook son ruido ilegible en el diff y filtran
+  # informacion del entorno de quien lo ejecuto (rutas absolutas, nombres de
+  # usuario, a veces tokens en un traceback).
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
+    hooks:
+      - id: nbstripout
+
+  # --- Seguridad ---
+  # Un secreto commiteado no se arregla borrandolo en el commit siguiente: queda
+  # en el historial. Este hook es la unica defensa barata.
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.23.1
+    hooks:
+      - id: gitleaks
+
+  # --- Tipos ---
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy sobre src/
+        entry: uv run mypy
+        language: system
+        pass_filenames: false
+        files: ^src/.*\.py$

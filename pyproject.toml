@@ -135,7 +135,11 @@ disallow_untyped_defs = false
 # pytest
 # =============================================================================
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+# La sesion 8 (LLMOps) tiene su paquete en sesiones/s08-llmops/src y su propio
+# conftest.py que lo agrega al sys.path. Se incluye aqui para que `make test` y el
+# CI la cubran; sus tests corren sin red y sin API key, asi que no agregan
+# requisitos al entorno.
+testpaths = ["tests", "sesiones/s08-llmops/tests"]
 pythonpath = ["src"]
 addopts = "-q --strict-markers"
 markers = [
