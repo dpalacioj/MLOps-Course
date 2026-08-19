@@ -22,7 +22,8 @@
 # ---- ¿Cómo se instala? ----
 #
 # 1. Copia este archivo a la raíz de tu proyecto:
-#       cp 00-Setup/templates/pre-commit-config.yaml .pre-commit-config.yaml
+#       cp sesiones/s01-reproducibilidad/templates/pre-commit-config.yaml \
+#          .pre-commit-config.yaml
 #
 # 2. Instala pre-commit en tu entorno:
 #       uv add --dev pre-commit       (si usas uv)

@@ -1,4 +1,18 @@
 #!/usr/bin/env bash
+# =============================================================================
+# Setup guiado del entorno del curso con uv — macOS / Linux
+# =============================================================================
+#
+#   Uso, desde la RAIZ del repositorio:
+#       chmod +x sesiones/s01-reproducibilidad/scripts/setup_uv_mac.sh
+#       ./sesiones/s01-reproducibilidad/scripts/setup_uv_mac.sh
+#
+#   ESTO NO FUNCIONA EN WINDOWS. `chmod` es un comando POSIX que no existe en
+#   PowerShell ni en Cmd, y el bit de ejecucion no es un concepto de NTFS:
+#   Windows decide que es ejecutable por la extension (.exe, .bat, .ps1), no por
+#   un permiso. En Windows usa setup_uv_windows.ps1, o bien Git Bash / WSL 2 de
+#   forma explicita. Ver troubleshooting-so.md, §4.
+# =============================================================================
 set -euo pipefail
 
 echo "[1/5] Checking Git..."

@@ -1,0 +1,21 @@
+{
+  "BudgetName": "mlops-curso-laboratorio",
+  "BudgetType": "COST",
+  "TimeUnit": "MONTHLY",
+  "BudgetLimit": {
+    "Amount": "10",
+    "Unit": "USD"
+  },
+  "CostTypes": {
+    "IncludeCredit": false,
+    "IncludeDiscount": true,
+    "IncludeOtherSubscription": true,
+    "IncludeRecurring": true,
+    "IncludeRefund": false,
+    "IncludeSubscription": true,
+    "IncludeSupport": true,
+    "IncludeTax": true,
+    "IncludeUpfront": true,
+    "UseBlended": false
+  }
+}

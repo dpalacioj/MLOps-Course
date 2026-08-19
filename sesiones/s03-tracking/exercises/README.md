@@ -1,182 +1,44 @@
-# Ejercicio 01: Agregar Experiment Tracking con MLflow
+# Ejercicios de la sesión 3
 
-## Contexto
+Dos ejercicios guiados, con TODO numerados y **criterios de completitud
+medibles**. Se resuelven en el tramo de taller o como refuerzo antes de la
+entrega del hito.
 
-En el notebook `01_first_steps_without_tracking.ipynb` vimos como entrenar un modelo
-de prediccion de duracion de viajes de taxi **sin ningun sistema de tracking**.
-El resultado fue que no teniamos forma ordenada de guardar parametros, metricas
-ni artefactos.
+| Ejercicio | Enunciado | Notebook | Qué practica | Dataset |
+|---|---|---|---|---|
+| 01 | [`ejercicio-01.md`](ejercicio-01.md) | [`ejercicio-01-agregar-tracking.ipynb`](ejercicio-01-agregar-tracking.ipynb) | Tracking: tags, params, métricas y artifacts sobre un entrenamiento que ya funciona | NYC Green Taxi (el caso guía) |
+| 02 | [`ejercicio-02.md`](ejercicio-02.md) | [`ejercicio-02-model-registry.ipynb`](ejercicio-02-model-registry.ipynb) | Registry: versiones, tags de validación, aliases `champion`/`candidate` y carga por alias | Iris |
 
-En este ejercicio vas a tomar codigo de entrenamiento que **ya funciona** y agregarle
-tracking con MLflow, paso a paso.
+**Por qué el 02 usa Iris:** el tema es el ciclo de vida del modelo en el
+registry, no el modelo. Con Iris cada entrenamiento tarda menos de un segundo, así
+que se pueden hacer dos versiones y mover aliases sin que la clase espere. La
+diferencia de dataset es deliberada, no un descuido.
 
----
+## Antes de empezar (los dos ejercicios)
 
-## Objetivo
-
-Dado un notebook con un modelo `RandomForestRegressor` ya entrenado y evaluado,
-tu tarea es **agregar MLflow tracking** para registrar:
-
-1. **Tags** - metadata del experimento (tipo de problema, familia del modelo, dataset)
-2. **Parametros** - hiperparametros del modelo (`n_estimators`, `max_depth`, `random_state`)
-3. **Metricas** - resultados de evaluacion (`rmse`, `mae`, `r2`)
-4. **Artefactos** - archivos generados (tabla de predicciones CSV, grafica de residuales PNG)
-
-Al finalizar, deberas poder ver todo registrado en la **MLflow UI**.
-
----
-
-## Prerequisitos
-
-Antes de comenzar, asegurate de:
-
-1. **Haber ejecutado la preparacion de datos** (`notebooks/00_data_preparation.ipynb`)
-   para que existan los archivos en `data/processed/`.
-
-2. **Tener el servidor MLflow corriendo.** Abre una terminal aparte y ejecuta:
-
-   ```bash
-   uv run mlflow server \
-       --backend-store-uri sqlite:///mlflow.db \
-       --default-artifact-root ./mlruns \
-       --host 127.0.0.1 \
-       --port 5001
-   ```
-
-   > **Nota:** El puerto 5000 esta ocupado por macOS (AirPlay/AirDrop), por eso usamos 5001.
-
-3. **Verificar** que puedes acceder a `http://127.0.0.1:5001` en tu navegador.
-
----
-
-## Instrucciones paso a paso
-
-Abre el notebook `ejercicio_01_agregar_tracking.ipynb` y sigue estas instrucciones.
-
-### Paso 1: Ejecutar el codigo base (ya esta completo)
-
-Las primeras celdas cargan los datos y entrenan el modelo. **No necesitas modificar nada aqui**,
-solo ejecutalas para tener el modelo entrenado y las metricas calculadas.
-
-Despues de ejecutar, deberias tener en memoria:
-- `X_train`, `y_train`, `X_val`, `y_val` (datos)
-- `rf` (modelo entrenado)
-- `y_pred` (predicciones)
-- `rmse`, `mae`, `r2` (metricas calculadas)
-
-### Paso 2: Configurar la conexion a MLflow
-
-Busca la celda marcada con `# TODO 1` y completa:
-
-```python
-import mlflow
-
-# Conectar al servidor MLflow
-mlflow.set_tracking_uri("http://127.0.0.1:5001")
-
-# Crear/seleccionar un experimento
-mlflow.set_experiment("nyc-taxi-ejercicio-01")
+```bash
+make data      # materializa las particiones del caso guia (solo el ejercicio 01)
+make mlflow    # tracking server en http://127.0.0.1:5001
 ```
 
-**Que hace esto:**
-- `set_tracking_uri` le dice a MLflow **donde** guardar los datos (nuestro servidor local).
-- `set_experiment` crea un contenedor con nombre para agrupar tus runs.
+El **ejercicio 02 necesita el servidor con backend de base de datos**. Con
+`mlflow ui` a secas, o con un file store (`file://mlruns`), el Model Registry no
+existe y los TODO 3 en adelante fallan. `make mlflow` ya usa SQLite.
 
-### Paso 3: Registrar tags
+## Cómo se corrigen
 
-Busca `# TODO 2` y agrega tags dentro del bloque `with mlflow.start_run()`:
+Cada enunciado tiene una tabla **Criterios de completitud** con cantidades
+verificables (3 tags, 3 params, 2 artefactos, 2 versiones…). No es una lista de
+buenas intenciones: se cuenta en la UI o con la celda de verificación que trae
+cada notebook.
 
-```python
-mlflow.set_tag("problem_type", "regression")
-mlflow.set_tag("model_family", "random_forest")
-mlflow.set_tag("dataset", "nyc_green_taxi_2023_01_02")
-```
+Las soluciones de referencia están en
+[`../_soluciones/`](../_soluciones/) — mira ahí **después** de intentarlo, no
+antes.
 
-**Que son los tags:** Etiquetas de texto libre para organizar y filtrar runs.
-No afectan el entrenamiento, pero ayudan a encontrar runs despues.
+## Material de apoyo
 
-### Paso 4: Registrar parametros
-
-Busca `# TODO 3` y registra los hiperparametros del modelo:
-
-```python
-mlflow.log_param("n_estimators", n_estimators)
-mlflow.log_param("max_depth", max_depth)
-mlflow.log_param("random_state", random_state)
-```
-
-**Que son los parametros:** Los valores de configuracion que usaste para entrenar.
-Si manana quieres reproducir este entrenamiento exacto, necesitas estos valores.
-
-### Paso 5: Registrar metricas
-
-Busca `# TODO 4` y registra las metricas de evaluacion:
-
-```python
-mlflow.log_metric("rmse", rmse)
-mlflow.log_metric("mae", mae)
-mlflow.log_metric("r2", r2)
-```
-
-**Que son las metricas:** Los resultados numericos que miden que tan bueno es tu modelo.
-MLflow te permite comparar metricas entre multiples runs.
-
-### Paso 6: Registrar artefactos
-
-Busca `# TODO 5` y registra los archivos generados:
-
-```python
-# a) Tabla de predicciones
-mlflow.log_artifact("predictions.csv")
-
-# b) Grafica de residuales
-mlflow.log_artifact("residuals.png")
-```
-
-**Que son los artefactos:** Cualquier archivo que tu run genera. Pueden ser CSVs,
-graficas PNG, modelos serializados, etc. MLflow los guarda asociados al run.
-
-### Paso 7: Verificar en la UI
-
-1. Abre `http://127.0.0.1:5001` en tu navegador.
-2. Busca el experimento **"nyc-taxi-ejercicio-01"** en la barra lateral.
-3. Haz clic en tu run y verifica que aparezcan:
-   - Los 3 tags en la seccion "Tags"
-   - Los 3 parametros en la seccion "Parameters"
-   - Las 3 metricas en la seccion "Metrics"
-   - Los 2 artefactos en la seccion "Artifacts" (puedes descargarlos)
-
----
-
-## Criterios de completitud
-
-Tu ejercicio esta completo cuando en la MLflow UI puedes ver:
-
-| Elemento    | Cantidad | Ejemplos                          |
-|-------------|----------|-----------------------------------|
-| Tags        | 3        | problem_type, model_family, dataset |
-| Parametros  | 3        | n_estimators, max_depth, random_state |
-| Metricas    | 3        | rmse, mae, r2                     |
-| Artefactos  | 2        | predictions.csv, residuals.png    |
-
----
-
-## Bonus (opcional)
-
-Si terminaste rapido, intenta:
-
-1. **Cambiar hiperparametros** (por ejemplo `max_depth=15`, `n_estimators=200`)
-   y ejecutar de nuevo. Compara los dos runs en la UI.
-2. **Agregar un artefacto extra**: genera una grafica de scatter `y_true vs y_pred`
-   y registrala con `mlflow.log_artifact(...)`.
-3. **Usar `mlflow.autolog()`** en lugar de logging manual. Que registra automaticamente?
-   Que NO registra?
-
----
-
-## Archivos de referencia
-
-Si te atascas, puedes consultar (pero intenta primero por tu cuenta):
-
-- `notebooks/02_experiment_tracking_intro.ipynb` - Ejemplo completo con MLflow
-- `scripts/train_with_basic_mlflow.py` - Version script con logging basico
+- [`../notebooks/02-tracking-con-mlflow.ipynb`](../notebooks/02-tracking-con-mlflow.ipynb) — el ejemplo completo de tracking
+- [`../notebooks/03-hpo-y-registry.ipynb`](../notebooks/03-hpo-y-registry.ipynb) — registry, aliases y model card
+- [`../scripts/train-mlflow-basico.py`](../scripts/train-mlflow-basico.py) — la versión mínima en un script
+- [`../../../docs/adr/002-aliases-en-vez-de-stages.md`](../../../docs/adr/002-aliases-en-vez-de-stages.md) — por qué aliases y no stages

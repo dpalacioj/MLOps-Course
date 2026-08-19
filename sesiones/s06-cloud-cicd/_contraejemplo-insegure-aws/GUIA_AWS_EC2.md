@@ -1,3 +1,20 @@
+<!-- CONTRAEJEMPLO — NO COPIAR -->
+# CONTRAEJEMPLO — NO COPIAR
+
+> **Esta guía se conserva como material didáctico de la sesión 6, no como
+> instructivo.** Lo que describe funciona, y precisamente por eso es útil: enseña a
+> desplegar en EC2 un servicio con el debugger de Werkzeug expuesto, sin validación
+> de entrada, sin `/health` y con el puerto abierto a `0.0.0.0/0`.
+>
+> Lee primero [`README.md`](README.md), que enumera qué está mal y por qué. La forma
+> correcta de desplegar el servicio del curso está en
+> [`../guia-aws.md`](../guia-aws.md).
+>
+> El texto original sigue sin editar a partir de aquí. Sus rutas
+> (`04-Deployment/deploy/web-service-docker`) ya no existen en este repositorio.
+
+---
+
 # Guía para Desplegar Docker en AWS EC2 (Para Principiantes)
 
 Esta guía te ayudará a desplegar tu servicio de predicción de taxis en un servidor AWS EC2 y configurarlo para recibir solicitudes desde Postman.

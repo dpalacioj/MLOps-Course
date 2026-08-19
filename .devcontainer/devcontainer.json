@@ -1,0 +1,75 @@
+{
+  "name": "MLOps UdeM - curso completo",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.11-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/git-lfs:1": {
+      "version": "latest",
+      "autoPull": true
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": false,
+      "upgradePackages": false
+    }
+  },
+  "containerEnv": {
+    "UV_LINK_MODE": "copy",
+    "UV_PROJECT_ENVIRONMENT": "/workspaces/.venv-curso",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONUNBUFFERED": "1",
+    "MLFLOW_TRACKING_URI": "http://127.0.0.1:5001"
+  },
+  "onCreateCommand": "bash .devcontainer/post-create.sh",
+  "postAttachCommand": "uv run python scripts/smoke_test.py --rapido || true",
+  "forwardPorts": [5001, 4200, 8000, 9090, 3000, 9001, 8888],
+  "portsAttributes": {
+    "5001": { "label": "MLflow tracking (S03)", "onAutoForward": "notify" },
+    "4200": { "label": "Prefect server / UI (S04)", "onAutoForward": "silent" },
+    "8000": { "label": "API de inferencia (S05)", "onAutoForward": "notify" },
+    "9090": { "label": "Prometheus (S07)", "onAutoForward": "silent" },
+    "3000": { "label": "Grafana (S07)", "onAutoForward": "silent" },
+    "9001": { "label": "MinIO console", "onAutoForward": "silent" },
+    "8888": { "label": "Jupyter", "onAutoForward": "silent" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-toolsai.jupyter",
+        "charliermarsh.ruff",
+        "tamasfe.even-better-toml",
+        "eamodio.gitlens"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/workspaces/.venv-curso/bin/python",
+        "python.terminal.activateEnvironment": false,
+        "editor.formatOnSave": true,
+        "files.eol": "\n",
+        "files.trimTrailingWhitespace": true,
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit"
+          }
+        }
+      }
+    },
+    "codespaces": {
+      "openFiles": [
+        "sesiones/s01-reproducibilidad/README.md",
+        ".devcontainer/README.md"
+      ]
+    }
+  },
+  "remoteUser": "vscode",
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "8gb",
+    "storage": "32gb"
+  }
+}

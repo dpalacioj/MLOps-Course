@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
+# =============================================================================
+# Setup guiado con Poetry — macOS / Linux
+# =============================================================================
+#
+#   NO FUNCIONA EN WINDOWS: `chmod +x` y `./script.sh` son POSIX. En Windows usa
+#   setup_poetry_windows.ps1, o Git Bash / WSL 2 de forma explicita.
+#   Ver troubleshooting-so.md, §4.
+#
+#   El curso usa uv. Poetry 2.x sigue vivo y mantenido y es una alternativa
+#   valida; este script existe para quien ya lo tiene en su flujo. No mezcles
+#   las dos herramientas en el mismo proyecto.
+# =============================================================================
 set -euo pipefail
 
 echo "[1/5] Checking Git..."

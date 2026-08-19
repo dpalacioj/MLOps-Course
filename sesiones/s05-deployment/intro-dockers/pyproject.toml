@@ -1,0 +1,50 @@
+# =============================================================================
+# Proyecto minimo con uv — reemplaza al requirements.txt de la version anterior
+# =============================================================================
+# Por que este cambio. La version anterior traia:
+#
+#     requirements.txt:  fastapi==0.115.0
+#                        uvicorn[standard]==0.32.0
+#                        jinja2==3.1.4
+#
+# y el Dockerfile hacia `pip install -r requirements.txt`. Tres problemas:
+#
+# 1. Los pines estaban escritos a mano y solo cubrian las tres dependencias
+#    DIRECTAS. Las transitivas (starlette, pydantic, anyio, h11...) quedaban
+#    libres: dos builds del mismo Dockerfile en dos semanas distintas producian
+#    imagenes con arboles de dependencias diferentes. Un `requirements.txt` sin
+#    hashes ni resolucion completa no es un lockfile.
+# 2. Reproducir el entorno en local exigia recordar `pip install -r ...` con el
+#    venv correcto activado.
+# 3. Es un mecanismo distinto al del resto del repositorio, que usa uv. Dos
+#    formas de instalar dependencias en un mismo curso es una fuente garantizada
+#    de "en mi maquina funciona".
+#
+# Ahora: `uv lock` resuelve TODO el arbol y lo escribe en `uv.lock`; local, CI e
+# imagen instalan de ese archivo con `uv sync --locked`. Es el mismo patron del
+# `pyproject.toml` de la raiz, en miniatura.
+#
+# Nota: este proyecto es INDEPENDIENTE del paquete `mlops-curso` de la raiz. Se
+# mantiene aparte a proposito: el ejemplo tiene que arrancar sin instalar mlflow,
+# prefect ni pandas, que es justo lo que lo hace util como primer contacto.
+# =============================================================================
+
+[project]
+name = "gatitos-app"
+version = "2.0.0"
+description = "App minima de FastAPI para el primer contacto con contenedores (S05)."
+requires-python = ">=3.11"
+
+# Restricciones minimas, no pines exactos. La version exacta la fija `uv.lock`.
+# Escribir `==` aqui Y tener un lock es duplicar la decision en dos archivos que
+# se desincronizan; escribir `>=` deja que el lock sea la unica fuente de verdad.
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "jinja2>=3.1.6",
+]
+
+# Sin [build-system]: no hay paquete que construir, es un script con plantillas.
+# `uv sync` lo detecta y no intenta empaquetarlo.
+[tool.uv]
+package = false
