@@ -1,37 +1,146 @@
 name: CI
 
+# El CI anterior terminaba en:
+#     uv run pytest -q || echo "No tests configured yet"
+# Un pipeline que no puede fallar es peor que no tener pipeline: produce
+# confianza injustificada. Ademas estaba rojo (50 errores de ruff y 67 archivos
+# sin formatear) y nadie lo notaba porque el paso de tests nunca fallaba.
+
 on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONUNBUFFERED: "1"
 
 jobs:
-  lint-and-test:
+  calidad:
+    name: Lint, formato y tipos
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+      - uses: actions/checkout@v4
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+          cache-dependency-glob: uv.lock
 
-      - name: Install dependencies
-        run: uv sync --group dev --locked || uv sync --group dev
+      - name: Instalar dependencias
+        run: uv sync --group dev --locked
 
-      - name: Lint with ruff
-        run: uv run ruff check .
+      - name: Lint (ruff)
+        run: uv run ruff check --output-format=github .
 
-      - name: Check formatting
-        run: uv run ruff format --check .
+      - name: Formato (ruff format)
+        run: uv run ruff format --check --diff .
 
-      - name: Run tests
-        run: uv run pytest -q || echo "No tests configured yet"
+      - name: Tipos (mypy)
+        run: uv run mypy
+
+  tests:
+    name: Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Windows en la matriz a proposito: buena parte de los estudiantes
+        # trabaja en Windows y varios de los fallos de la sesion 1 eran
+        # especificos de esa plataforma.
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Instalar dependencias
+        run: uv sync --group dev --locked
+
+      - name: Tests unitarios, de datos y de API
+        run: uv run pytest -m "not slow and not integration" --cov=src/taxi --cov-report=term-missing
+
+  smoke:
+    name: Smoke test del entorno
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true # aqui SI: verifica que los punteros LFS se resuelven
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Instalar dependencias
+        run: uv sync --group dev --locked
+
+      - name: Smoke test
+        run: uv run python scripts/smoke_test.py --rapido
+
+  secretos:
+    name: Escaneo de secretos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  imagen:
+    name: Build y verificacion de la imagen
+    runs-on: ubuntu-latest
+    needs: [calidad]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build (sin push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: mlops-curso/api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: La imagen NO debe correr como root
+        run: |
+          uid=$(docker run --rm --entrypoint sh mlops-curso/api:ci -c 'id -u')
+          echo "UID dentro del contenedor: $uid"
+          if [ "$uid" = "0" ]; then
+            echo "::error::la imagen corre como root"
+            exit 1
+          fi
+
+      - name: La imagen debe responder /health
+        run: |
+          docker run -d --name api -p 8000:8000 \
+            -e TAXI_MODELO_URI=ninguno mlops-curso/api:ci
+          for i in $(seq 1 40); do
+            if curl -sf http://127.0.0.1:8000/health > /dev/null; then
+              echo "healthy en ${i}s"; curl -s http://127.0.0.1:8000/health; echo; exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::/health no respondio en 40s"
+          docker logs api
+          exit 1

@@ -1,25 +1,111 @@
+# =============================================================================
+# pre-commit — Curso MLOps
+# =============================================================================
+# Instalacion:  make setup     (o: uv run pre-commit install)
+# Ejecucion:    uv run pre-commit run --all-files
+#
+# Regla: el CI corre lo mismo que estos hooks. Si el hook pasa en local, el CI
+# pasa. Si divergen, el hook deja de servir y la gente lo desactiva con
+# --no-verify.
+# =============================================================================
+default_install_hook_types: [pre-commit, commit-msg]
+
 repos:
-  # --- Hooks generales de higiene ---
+  # --- Higiene general ---
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
-      - id: trailing-whitespace        # Elimina espacios al final de las lineas
-      - id: end-of-file-fixer          # Asegura newline al final del archivo
-      - id: check-yaml                 # Valida sintaxis YAML
-      - id: check-added-large-files    # Alerta si subes archivos >500KB
-        args: ['--maxkb=500']
-      - id: check-merge-conflict       # Detecta marcadores de conflicto sin resolver
+      - id: trailing-whitespace
+        exclude: \.(md|ipynb)$
+      - id: end-of-file-fixer
+        exclude: \.ipynb$
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-added-large-files
+        # 500 KB. Los artefactos binarios commiteados (model.ubj, preprocessor.b,
+        # lin_reg.bin) fueron uno de los problemas del repo: el modelo se obtiene
+        # del registry, no del control de versiones.
+        args: ["--maxkb=500"]
+      - id: detect-private-key
 
-  # --- Linter rapido (Ruff reemplaza flake8, isort, pyflakes, etc.) ---
+  # --- Lint + formato (Ruff reemplaza flake8, isort y black) ---
+  # NO agregar Black aqui. La doc de Ruff advierte explicitamente contra
+  # alternar los dos formatters en el mismo repositorio.
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.6
+    rev: v0.16.3
     hooks:
-      - id: ruff                       # Lint
+      - id: ruff-check
         args: [--fix, --exit-non-zero-on-fix]
-      - id: ruff-format               # Formateo (reemplaza black)
+      - id: ruff-format
 
-  # --- Seguridad: detecta secretos antes de que lleguen al repo ---
+  # --- Notebooks sin outputs ---
+  # Los notebooks del repo llegaron a tener 82 KB de imagenes en base64 y rutas
+  # absolutas de la autora original en los outputs. Los outputs son ruido en el
+  # diff y filtran informacion del entorno de quien ejecuto.
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
+    hooks:
+      - id: nbstripout
+
+  # --- Seguridad ---
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.22.1
+    rev: v8.23.1
     hooks:
       - id: gitleaks
+
+  # --- Conventional Commits ---
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.6.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args:
+          [
+            feat,
+            fix,
+            docs,
+            style,
+            refactor,
+            perf,
+            test,
+            build,
+            ci,
+            chore,
+            revert,
+          ]
+
+  # --- Verificaciones propias del curso ---
+  - repo: local
+    hooks:
+      - id: sin-rutas-absolutas
+        name: sin rutas absolutas de usuario
+        description: >
+          Bloquea /Users/<algo> y C:\Users\<algo>. El repo tenia la ruta del
+          disco de la autora original en prefect.yaml, lo que hacia fallar
+          `prefect deploy` en cualquier otra maquina.
+        entry: python scripts/hooks/sin_rutas_absolutas.py
+        language: system
+        types_or: [python, yaml, jupyter, markdown, toml]
+
+      - id: mlflow-sin-stages
+        name: MLflow sin stages deprecados
+        description: >
+          Bloquea transition_model_version_stage y models:/<nombre>/Production.
+          El curso ensena aliases + tags; el codigo debe ser coherente con eso.
+        entry: python scripts/hooks/mlflow_sin_stages.py
+        language: system
+        types_or: [python, jupyter]
+        exclude: ^(sesiones/s03-tracking/(notebooks|scenarios)/|scripts/hooks/)
+
+      - id: mypy-src
+        name: mypy sobre src/taxi y scripts
+        entry: uv run mypy
+        language: system
+        pass_filenames: false
+        files: ^(src/taxi|scripts)/.*\.py$

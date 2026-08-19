@@ -1,255 +1,126 @@
 # =============================================================================
-# CLAUDE CODE
+# .gitignore — Curso MLOps
 # =============================================================================
-.claude/
+# Regla de oro: ignoramos ARTEFACTOS (lo que se puede regenerar), nunca
+# CONFIGURACION (lo que define como se regenera).
+#
+# El .gitignore anterior ignoraba globalmente *.json, *.yaml, *.yml, *.txt,
+# *.html, Dockerfile y docker-compose.yml. Eso excluia silenciosamente el
+# metadata.json de los modelos y los DAG de Mage, y rompia dos modulos del
+# curso. Si necesitas ignorar algo, hazlo con la ruta mas especifica posible.
+# =============================================================================
 
-# =============================================================================
-# PYTHON
-# =============================================================================
-
-# Byte-compiled / optimized / DLL files
+# --- Python ---
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
-
-# Distribution / packaging
 .Python
 build/
 develop-eggs/
 dist/
-downloads/
 eggs/
 .eggs/
-lib/
-lib64/
-parts/
 sdist/
-var/
 wheels/
-pip-wheel-metadata/
-share/python-wheels/
 *.egg-info/
-.installed.cfg
 *.egg
 MANIFEST
 
-# PyInstaller
-*.manifest
-*.spec
+# --- Entornos virtuales ---
+.venv/
+venv/
+ENV/
+env/
+.python-version.local
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
+# --- Testing y cobertura ---
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
 .coverage
 .coverage.*
-.cache
-nosetests.xml
+htmlcov/
 coverage.xml
-*.cover
-*.py,cover
 .hypothesis/
-.pytest_cache/
+.tox/
 
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
-# PEP 582
-__pypackages__/
-
-
-# Environments
-.env
-.venv
-env.bak/
-venv.bak/
-venv/
-env/
-ENV/
-.venv/
-.env/
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-
-# =============================================================================
-# DATA SCIENCE SPECIFIC
-# =============================================================================
-
-# Data files
-*.csv
-*.tsv
-*.xlsx
-*.xls
-*.parquet
-*.h5
-*.hdf5
-*.pkl
-*.pickle
-*.joblib
-*.pth
-*.pt
-*.onnx
-*.pb
-*.tflite
-*.mlmodel
-*.model
-#*.bin
-#04-Deployment/deploy/web-service/images
-*.npy
-*.npz
-*.mat
-*.arff
-*.libsvm
-*.txt
-*.json
-*.xml
-*.yaml
-*.yml
-
-# Jupyter notebook outputs
+# --- Jupyter ---
 .ipynb_checkpoints/
 */.ipynb_checkpoints/*
 
-# MLflow
+# --- Secretos (NUNCA commitear) ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials
+.aws/
+.secrets/
+
+# --- Datos (se descargan con `make data`, se verifican por hash) ---
+data/raw/
+data/processed/
+data/interim/
+data/external/
+*.parquet
+*.csv
+*.feather
+!tests/fixtures/**/*.csv
+!tests/fixtures/**/*.parquet
+!proyecto/starter-template/tests/fixtures/**
+
+# --- Modelos y artefactos (se obtienen del registry: models:/<name>@champion)
+models/
+artifacts/
+*.pkl
+*.joblib
+*.ubj
+*.bin
+!*.b
 mlruns/
+mlartifacts/
 mlflow.db
+*.db-journal
+outputs/
+reports/*.html
+!reports/.gitkeep
 
-# Weights & Biases
-wandb/
-
-# TensorBoard
-runs/
-logs/
-tensorboard_logs/
-
-# DVC
-.dvc/
-dvc.lock
-
-# Prefect
+# --- Prefect ---
 .prefect/
+prefect.db
 
-# Airflow
-airflow.cfg
-airflow.db
-logs/
-plugins/
+# --- Evidently ---
+evidently_workspace/
+drift_report*.html
 
-# =============================================================================
-# DEVELOPMENT TOOLS
-# =============================================================================
-
-# Docker
-.dockerignore
-Dockerfile
-docker-compose.yml
-docker-compose.yaml
-
-# Kubernetes
-*.yaml
-*.yml
-!requirements.yaml
-!requirements.yml
-!.pre-commit-config.yaml
-!.github/workflows/*.yml
-!00-Setup/templates/*.yaml
-
-# IDE
+# --- IDE / OS ---
 .vscode/
+!.vscode/settings.example.json
 .idea/
 *.swp
-*.swo
-*~
-
-# Conda
-.conda/
-conda-meta/
-.condarc
-
-# =============================================================================
-# SYSTEM & TEMPORARY FILES
-# =============================================================================
-
-# OS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
+desktop.ini
 
-# Temporary files
-*.tmp
-*.temp
-*.bak
-*.backup
-*.old
-*.orig
+# --- Agentes de codigo ---
+.claude/
 
-# Logs
-*.log
-logs/
-log/
+# --- Terraform (si se agrega IaC) ---
+.terraform/
+*.tfstate
+*.tfstate.*
 
-# Configuration files with sensitive data
-config.ini
-config.yaml
-config.yml
-secrets.json
-.secrets
-.env.local
-.env.production
-
-# Cache directories
-.cache/
-cache/
-
-# Profiling
-*.prof
-*.lprof
-
-
-# Local development
-local_settings.py
-settings_local.py
-
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-
-# Archive files
-*.zip
-*.tar.gz
-*.rar
-*.7z
-
-.cursor/
-
-
-# mlflow
-#models/
-03-Orchestrarion/mlruns/
-
-*.html
-02-Experiment-Tracking/exercises/ejercicio_02_model_registry_solucion.ipynb
-03-Orchestration/Prefect-pipelines/ejercicio_solucion/ejercicio_resuelto.ipynb
-
-03-Orchestration/Prefect-pipelines/ejercicio_solucion/
+# =============================================================================
+# EXCEPCIONES EXPLICITAS
+# Estos archivos SI van al repo aunque coincidan con patrones de arriba.
+# =============================================================================
+!**/metadata.json          # procedencia y checksums de datasets y modelos
+!**/dataset-metadata.json
+!.pre-commit-config.yaml
+!.github/**/*.yml
+!.github/**/*.yaml
+!docker-compose.yml
+!Dockerfile
+!**/Dockerfile
