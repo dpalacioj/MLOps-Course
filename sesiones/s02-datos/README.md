@@ -197,6 +197,16 @@ flowchart LR
     V2 -->|"invalido"| Y["El bug es NUESTRO,<br/>no del proveedor"]
 ```
 
+La herramienta con la que escribimos esos contratos en el curso es **Pandera**
+(ojo: Pand**e**ra, no Pandora — el nombre viene de *pandas*). Es una librería de
+Python para validar DataFrames: en lugar de confiar en que el DataFrame trae lo
+que esperas, lo **declaras como una clase** —qué columnas, qué tipos, qué
+rangos— y Pandera lo verifica cada vez que un dato cruza la frontera. Si algo
+no cumple, lanza un error que dice exactamente qué columna y qué filas fallaron.
+No es la única opción (en la sección 5 la comparamos con Great Expectations y
+con Pydantic), pero es la de mejor relación costo-beneficio para un pipeline en
+Python.
+
 Los dos contratos del caso guía están en
 [`src/taxi/data/contract.py`](../../src/taxi/data/contract.py), y la diferencia entre
 ellos es una decisión, no una repetición:
