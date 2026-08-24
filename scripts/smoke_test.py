@@ -253,6 +253,13 @@ def verificar_hooks() -> None:
         return
     ok("core.hooksPath sin configurar", "pre-commit es el unico sistema de hooks")
 
+    if os.getenv("CI"):
+        aviso(
+            "Hooks de pre-commit instalados",
+            "omitido (CI: los hooks viven en la maquina de cada estudiante)",
+        )
+        return
+
     esperados = {
         "pre-commit": "ruff, gitleaks, nbstripout y los hooks del curso",
         "commit-msg": "formato de conventional commits",

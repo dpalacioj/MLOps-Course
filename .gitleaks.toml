@@ -1,0 +1,15 @@
+# Configuracion de gitleaks del curso.
+#
+# Extiende las reglas por defecto y agrega una allowlist para falsos
+# positivos conocidos. El unico hasta ahora: la cache key
+# `particiones-fijas-v1` (actions/cache en cd.yml y citada en el ADR 007),
+# que la regla generic-api-key confunde con una credencial por su entropia.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Falsos positivos conocidos del curso"
+regexes = [
+  '''particiones-fijas-v\d+''',
+]
