@@ -328,14 +328,48 @@ problema distinto, y es el contenido de
 
 ## 6. Los `hooks` de Git de este repositorio
 
-`make setup` ejecuta `git config core.hooksPath .githooks`, así que
-[`.githooks/`](../../.githooks/) queda activo:
+Un `hook` es un script que **Git ejecuta solo**, en momentos concretos del flujo.
+No lo invocas tú: se dispara al crear un commit, al validar su mensaje o antes de
+un push. Es el eslabón más barato de la cadena de verificación — dos segundos en
+tu terminal en lugar de cuatro minutos de CI, o de un incidente.
 
-- **`commit-msg`** — verifica el formato del mensaje (`conventional commits`);
-- **`pre-push`** — comprobaciones antes de subir.
+`make setup` los instala todos con `pre-commit`, en tres momentos:
 
-Además, `pre-commit` instala sus propios `hooks`. El detalle está en
-[`calidad.md`](calidad.md).
+| Momento | Qué valida |
+|---|---|
+| `pre-commit` | `ruff` (lint y formato), `gitleaks` (secretos), `nbstripout` (notebooks sin `outputs`), tamaño de archivos, y los `hooks` propios del curso |
+| `commit-msg` | formato `conventional commits` |
+| `pre-push` | convención del nombre de la rama |
+
+El detalle de cada uno está en [`calidad.md`](calidad.md) §5.
+
+### Por qué hay un solo sistema de `hooks`
+
+Git admite **un único** lugar donde buscar `hooks`, definido por la variable
+`core.hooksPath`. Este repositorio tenía dos sistemas compitiendo por ese puesto:
+una carpeta `.githooks/` y `pre-commit`. El `make setup` apuntaba
+`core.hooksPath` a `.githooks/` y a continuación intentaba instalar `pre-commit`,
+que responde:
+
+```
+[ERROR] Cowardly refusing to install hooks with `core.hooksPath` set.
+```
+
+Se negaba, y el `make setup` **seguía adelante sin avisar**. Resultado: quedaban
+activas las dos validaciones de `.githooks/` y no se instalaba nada de
+`pre-commit`. El repositorio se quedaba sin `ruff`, sin `gitleaks` y sin
+`nbstripout`, y nadie se enteraba hasta que un secreto llegaba al historial.
+
+Se eliminó `.githooks/`: `pre-commit` ya cubría la validación del mensaje, y la
+del nombre de rama se movió a
+[`scripts/hooks/nombre_de_rama.py`](../../scripts/hooks/nombre_de_rama.py), en el
+`stage` de `pre-push`.
+
+**La lección es de MLOps, no de Git:** un mecanismo de verificación que falla en
+silencio es peor que no tenerlo, porque produce confianza injustificada. Es el
+mismo defecto que tenía el CI de este repositorio con su
+`pytest -q || echo "No tests configured yet"`. Por eso `make smoke` ahora
+comprueba que los `hooks` estén realmente instalados, en lugar de suponerlo.
 
 ---
 

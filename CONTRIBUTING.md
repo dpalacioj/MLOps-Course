@@ -68,12 +68,13 @@ git commit -m "fix(tracking): correct MLflow metric logging"
 git commit -m "docs: update course overview"
 git commit -m "feat!: redesign experiment pipeline"   # breaking change
 
-# Esto sera rechazado por el hook commit-msg
+# Esto sera rechazado por el hook commit-msg de pre-commit
 git commit -m "updated stuff"
 git commit -m "fix bug"           # falta el ':'  y la descripcion
 ```
 
-El hook `.githooks/commit-msg` valida automaticamente el formato.
+El hook `commit-msg` de `pre-commit` valida automaticamente el formato.
+Se instala con `make setup`.
 
 ## Crear Pull Requests
 
@@ -99,7 +100,7 @@ Si clonas este repo desde cero, configura los hooks y el upstream:
 git clone git@github.com:dpalacioj/MLOps-Course.git
 cd MLOps-Course
 git remote add upstream https://github.com/CamilaCortex/MLOps_UdM.git
-git config core.hooksPath .githooks
+make setup   # instala dependencias y los hooks de pre-commit
 ```
 
 ---

@@ -169,7 +169,7 @@ if esperado and actual != esperado:
     logger.warning(
         "HASH DISTINTO para %s ... El proveedor republico el archivo. "
         "Las metricas calculadas con la version anterior ya no son comparables.",
-        ...
+        ...,
     )
 ```
 

@@ -34,9 +34,15 @@ help: ## Muestra los targets disponibles
 # =============================================================================
 setup: ## Instala dependencias, hooks de git y pre-commit
 	$(UV) sync --group dev
-	git config core.hooksPath .githooks
+	@# core.hooksPath NO se configura. Git admite un solo lugar para los hooks, y
+	@# apuntarlo a .githooks/ hacia que `pre-commit install` se negara a instalarse
+	@# ("Cowardly refusing to install hooks with core.hooksPath set"), dejando el
+	@# repositorio sin ruff, gitleaks, nbstripout ni los hooks propios del curso.
+	@# pre-commit es ahora el unico sistema: cubre pre-commit, commit-msg y pre-push.
+	@git config --get core.hooksPath >/dev/null 2>&1 \
+	  && (echo "Limpiando core.hooksPath heredado..."; git config --unset-all core.hooksPath) \
+	  || true
 	$(PY) pre-commit install --install-hooks
-	$(PY) pre-commit install --hook-type commit-msg
 	@command -v git-lfs >/dev/null 2>&1 \
 	  && (git lfs install && git lfs pull) \
 	  || echo "AVISO: git-lfs no esta instalado. Los diagramas .png no se veran."

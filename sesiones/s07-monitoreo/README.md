@@ -199,8 +199,8 @@ La corrección no es subir el alfa —eso solo mueve el problema— sino **separ
 significancia de magnitud**:
 
 ```python
-significativo = p_valor < 0.05          # ¿se distingue del ruido?
-relevante = efecto >= umbral            # ¿es lo bastante grande para importar?
+significativo = p_valor < 0.05  # ¿se distingue del ruido?
+relevante = efecto >= umbral  # ¿es lo bastante grande para importar?
 drift = significativo and relevante
 ```
 
@@ -264,8 +264,8 @@ El snippet que estaba en este módulo **ya no ejecuta**. Verificado con
 `evidently 0.7.21`:
 
 ```python
-from evidently.report import Report                   # ModuleNotFoundError
-from evidently.metric_preset import DataDriftPreset   # ModuleNotFoundError
+from evidently.report import Report  # ModuleNotFoundError
+from evidently.metric_preset import DataDriftPreset  # ModuleNotFoundError
 ```
 
 No es una deprecación con aviso: los módulos fueron eliminados. Cualquier tutorial,
@@ -312,10 +312,10 @@ ref = Dataset.from_pandas(df_referencia, data_definition=esquema)
 cur = Dataset.from_pandas(df_actual, data_definition=esquema)
 
 report = Report([DataDriftPreset(), DataSummaryPreset()], include_tests=True)
-evaluacion = report.run(cur, ref)      # (current, reference)
+evaluacion = report.run(cur, ref)  # (current, reference)
 
 evaluacion.save_html("reports/drift.html")
-resultado = evaluacion.dict()          # {"metrics": [...], "tests": [...]}
+resultado = evaluacion.dict()  # {"metrics": [...], "tests": [...]}
 ```
 
 Para forzar un test clásico en lugar del método por defecto:

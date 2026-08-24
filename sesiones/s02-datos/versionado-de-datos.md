@@ -117,7 +117,7 @@ if destino.exists() and not forzar:
             "  registrado: %s\n  actual:     %s\n"
             "El proveedor republico el archivo. Las metricas calculadas con "
             "la version anterior ya no son comparables.",
-            ...
+            ...,
         )
 ```
 
@@ -401,7 +401,7 @@ from deltalake import DeltaTable, write_deltalake
 write_deltalake("data/viajes", df, mode="append")
 
 dt = DeltaTable("data/viajes")
-print(dt.history())               # cada version, con su timestamp y operacion
+print(dt.history())  # cada version, con su timestamp y operacion
 
 # time travel: como estaba la tabla en la version 3
 antigua = DeltaTable("data/viajes", version=3).to_pandas()

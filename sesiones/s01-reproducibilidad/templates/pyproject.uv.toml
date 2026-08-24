@@ -15,5 +15,3 @@ dev = [
   "black",
   "pre-commit",
 ]
-
-

@@ -8,7 +8,11 @@
 # pasa. Si divergen, el hook deja de servir y la gente lo desactiva con
 # --no-verify.
 # =============================================================================
-default_install_hook_types: [pre-commit, commit-msg]
+# `default_install_hook_types` incluye pre-push porque la validacion del nombre
+# de rama vive aqui desde que se elimino `.githooks/`. Ver el docstring de
+# scripts/hooks/nombre_de_rama.py: git admite un solo `core.hooksPath`, y tener
+# dos sistemas de hooks hacia que pre-commit se negara a instalarse.
+default_install_hook_types: [pre-commit, commit-msg, pre-push]
 
 repos:
   # --- Higiene general ---
@@ -101,7 +105,21 @@ repos:
         entry: python scripts/hooks/mlflow_sin_stages.py
         language: system
         types_or: [python, jupyter]
-        exclude: ^(sesiones/s03-tracking/(notebooks|scenarios)/|scripts/hooks/)
+        # Excluidos, y cada uno por una razon distinta:
+        # - s03-tracking/{notebooks,scenarios}: ahi la API vieja aparece como
+        #   contraejemplo marcado y desactivado, que es material de clase.
+        # - scripts/hooks/: es el propio hook, que contiene los patrones.
+        # - tests/: los tests que verifican que estas APIs NO se usan tienen que
+        #   nombrarlas para poder buscarlas. Excluirlos no abre un hueco: si
+        #   alguien mete un stage en src/, el hook lo atrapa igual.
+        # - _generar_notebooks.py: genera celdas que discuten la API deprecada.
+        exclude: |
+          (?x)^(
+            sesiones/s03-tracking/(notebooks|scenarios)/
+            |scripts/hooks/
+            |tests/
+            |sesiones/.*/_generar_notebooks\.py$
+          )
 
       - id: mypy-src
         name: mypy sobre src/taxi y scripts
@@ -109,3 +127,15 @@ repos:
         language: system
         pass_filenames: false
         files: ^(src/taxi|scripts)/.*\.py$
+
+      - id: nombre-de-rama
+        name: convencion de nombre de rama
+        description: >
+          Valida <tipo>/<descripcion-en-kebab-case> antes de un push. Sustituye
+          a .githooks/pre-push, que quedaba inutilizado junto con el resto de
+          pre-commit por el conflicto de core.hooksPath.
+        entry: python scripts/hooks/nombre_de_rama.py
+        language: system
+        stages: [pre-push]
+        pass_filenames: false
+        always_run: true

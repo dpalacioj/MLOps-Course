@@ -47,5 +47,3 @@ poetry --version
 poetry run python -V
 
 echo "Done. Use 'poetry shell' or prefix commands with 'poetry run'."
-
-

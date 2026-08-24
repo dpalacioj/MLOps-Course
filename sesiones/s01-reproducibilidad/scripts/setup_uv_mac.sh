@@ -48,5 +48,3 @@ else
 fi
 
 echo "Done. Activate later with: source .venv/bin/activate"
-
-

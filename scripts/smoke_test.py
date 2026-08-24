@@ -176,6 +176,57 @@ def verificar_git_lfs() -> None:
         ok("Archivos LFS traidos", f"{len(lineas)} archivos")
 
 
+def verificar_hooks() -> None:
+    """Verifica que los hooks de pre-commit quedaron REALMENTE instalados.
+
+    Existe por un fallo silencioso concreto. `make setup` configuraba
+    `core.hooksPath` apuntando a `.githooks/` y despues corria
+    `pre-commit install`, que se niega cuando esa variable esta puesta:
+
+        [ERROR] Cowardly refusing to install hooks with `core.hooksPath` set.
+
+    El target terminaba sin error y el repositorio se quedaba sin ruff, sin
+    gitleaks, sin nbstripout y sin los hooks propios del curso. Nadie se
+    enteraba hasta que un secreto o un notebook con outputs llegaba al
+    historial.
+    """
+    hooks_path = subprocess.run(
+        ["git", "config", "--get", "core.hooksPath"],
+        cwd=RAIZ,
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    ).stdout.strip()
+
+    if hooks_path:
+        falla(
+            "core.hooksPath sin configurar",
+            f"apunta a '{hooks_path}'. pre-commit se niega a instalarse con eso "
+            "puesto. Corre: git config --unset-all core.hooksPath && make setup",
+        )
+        return
+    ok("core.hooksPath sin configurar", "pre-commit es el unico sistema de hooks")
+
+    esperados = {
+        "pre-commit": "ruff, gitleaks, nbstripout y los hooks del curso",
+        "commit-msg": "formato de conventional commits",
+        "pre-push": "convencion de nombre de rama",
+    }
+    faltantes = [
+        f"{nombre} ({para})"
+        for nombre, para in esperados.items()
+        if not (RAIZ / ".git" / "hooks" / nombre).exists()
+    ]
+    if faltantes:
+        falla(
+            "Hooks de pre-commit instalados",
+            "faltan: " + "; ".join(faltantes) + ". Corre: make setup",
+        )
+    else:
+        ok("Hooks de pre-commit instalados", ", ".join(esperados))
+
+
 def verificar_puertos() -> None:
     for puerto, servicio in PUERTOS:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -338,6 +389,7 @@ def main() -> int:
     verificar_paquete_curso()
     verificar_estructura()
     verificar_git_lfs()
+    verificar_hooks()
     verificar_puertos()
     verificar_mlflow_arranca(args.rapido)
     verificar_prefect(args.rapido)

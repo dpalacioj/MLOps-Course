@@ -24,7 +24,7 @@ El flujo que se ve en la mayoría de los tutoriales y de los proyectos reales:
 # Anti-patrón
 prompt_juez = "Evalúa de 1 a 5 la calidad de este resumen. Responde solo el número."
 puntajes = [int(llm(prompt_juez + resumen)) for resumen in resumenes]
-print(f"Calidad media: {mean(puntajes):.2f}")     # -> 4.31
+print(f"Calidad media: {mean(puntajes):.2f}")  # -> 4.31
 ```
 
 Ese 4.31 tiene cuatro problemas, y ninguno es visible mirando el número:

@@ -603,8 +603,8 @@ la validación válida.
 **2. Features con información del futuro.**
 
 ```python
-d["viajes"].shift(1).rolling(7).mean()   # CORRECTO: los 7 dias ANTERIORES
-d["viajes"].rolling(7).mean()            # LEAKAGE: la ventana incluye HOY
+d["viajes"].shift(1).rolling(7).mean()  # CORRECTO: los 7 dias ANTERIORES
+d["viajes"].rolling(7).mean()  # LEAKAGE: la ventana incluye HOY
 ```
 
 Ocho caracteres de diferencia. Medido: 184,6 (correcto) frente a **167,6** (con

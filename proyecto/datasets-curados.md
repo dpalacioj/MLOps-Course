@@ -339,11 +339,11 @@ curl -s -o /dev/null -w 'HTTP %{http_code} · %{size_download} bytes\n' -L <url>
 # 2-6. Esquema, eje temporal, nulos y particiones
 import pandas as pd
 
-df = pd.read_csv("<archivo>")            # o read_parquet
+df = pd.read_csv("<archivo>")  # o read_parquet
 print(df.shape)
-print(df.dtypes)                          # ¿≥3 categóricas y ≥3 numéricas?
-print(df.isna().sum()[lambda s: s > 0])   # ¿nulos reales?
-print(df["<col_fecha>"].min(), df["<col_fecha>"].max())   # ¿eje temporal?
+print(df.dtypes)  # ¿≥3 categóricas y ≥3 numéricas?
+print(df.isna().sum()[lambda s: s > 0])  # ¿nulos reales?
+print(df["<col_fecha>"].min(), df["<col_fecha>"].max())  # ¿eje temporal?
 ```
 
 Y las dos que no se comprueban con código:

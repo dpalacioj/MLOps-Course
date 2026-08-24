@@ -28,11 +28,19 @@ PATRONES = [
 #: documentamos el error en lugar de esconderlo.
 PERMITIDOS = (
     "docs/auditoria-2026-04.md",
+    "docs/MIGRACION.md",
     "docs/plan-de-mejora/",
     "scripts/hooks/",
     "sesiones/s01-reproducibilidad/07-os-notes.md",
+    "sesiones/s01-reproducibilidad/git.md",
+    "sesiones/s01-reproducibilidad/troubleshooting-so.md",
     "sesiones/s06-cloud-cicd/_contraejemplo-insegure-aws/",
     "CHANGELOG.md",
+    # Los workflows y la documentacion del curso citan la ruta original
+    # (/Users/mdurango/...) al explicar el bug que hacia fallar `prefect deploy`
+    # en cualquier maquina ajena. Es material didactico: el ejemplo pierde fuerza
+    # si se censura la ruta que lo causaba.
+    ".github/workflows/",
 )
 
 

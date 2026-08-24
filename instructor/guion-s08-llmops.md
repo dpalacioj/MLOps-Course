@@ -944,7 +944,7 @@ Mostrar la API vigente de MLflow 3.15, verificada contra el paquete instalado:
 ```python
 version = mlflow.genai.register_prompt(
     name="clasificador-quejas-taxi",
-    template=texto,                      # con placeholders {{ variable }}
+    template=texto,  # con placeholders {{ variable }}
     commit_message="...",
     tags={"huella_sha256": "..."},
 )

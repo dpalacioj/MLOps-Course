@@ -12,8 +12,8 @@ tracking enseñaba aliases como la práctica correcta, y los módulos de
 orquestación y deployment promovían modelos con la API de stages:
 
 ```python
-client.transition_model_version_stage(name, version, stage="Production")   # módulo 03
-model = mlflow.pyfunc.load_model(f"models:/{name}/Production")             # módulo 04
+client.transition_model_version_stage(name, version, stage="Production")  # módulo 03
+model = mlflow.pyfunc.load_model(f"models:/{name}/Production")  # módulo 04
 ```
 
 Un estudiante que leyera los dos módulos no podía saber cuál era la práctica
