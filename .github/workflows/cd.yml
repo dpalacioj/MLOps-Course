@@ -112,8 +112,18 @@ jobs:
           load: ${{ github.event_name == 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          provenance: true
-          sbom: true
+          # provenance y sbom SOLO al publicar. Las attestations obligan a buildx
+          # a producir una lista de manifiestos (un index), y el exporter `docker`
+          # que activa `load: true` no sabe cargarla:
+          #
+          #   ERROR: failed to build: docker exporter does not currently support
+          #          exporting manifest lists
+          #
+          # En un PR la imagen se construye para verificarla y se descarta, asi que
+          # las attestations no aportan nada. En la imagen publicada si: son lo que
+          # permite auditar de donde salio.
+          provenance: ${{ github.event_name != 'pull_request' }}
+          sbom: ${{ github.event_name != 'pull_request' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -150,6 +160,13 @@ jobs:
     outputs:
       promovido: ${{ steps.gate.outputs.promovido }}
       resumen: ${{ steps.gate.outputs.resumen }}
+    # El gate solo puede decidir si hay un tracking server con un @champion
+    # contra el que comparar. Sin el secreto configurado, el job se salta en vez
+    # de fallar: un gate que "falla" por falta de infraestructura no distingue
+    # "el modelo es peor" de "no pude medir", y esa confusion es exactamente lo
+    # que la sesion 6 ensena a evitar. Configura MLFLOW_TRACKING_URI en
+    # Settings > Secrets and variables > Actions para activarlo.
+    if: ${{ needs.imagen.result == 'success' && vars.GATE_ACTIVO == 'true' }}
     env:
       MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
     steps:
@@ -244,7 +261,14 @@ jobs:
     permissions:
       pull-requests: write
     steps:
+      # continue-on-error porque este job corre con `if: always()`: si `imagen`
+      # o `gate` fallan, el artifact no existe y download-artifact aborta el job.
+      # Eso convertia un fallo en dos, y el segundo no aportaba informacion: el
+      # script de abajo ya maneja la ausencia de gate.log con un try/catch.
+      # Un job de reporte no debe poder tumbar el pipeline por no tener nada que
+      # reportar.
       - uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           name: gate-log
           path: .
