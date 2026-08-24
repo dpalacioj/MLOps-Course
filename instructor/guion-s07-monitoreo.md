@@ -548,7 +548,7 @@ dashboards hechos a mano en la UI, y whylogs/WhyLabs OSS (última release: dicie
 
 ### 11.3 Tarea y puente a S08 (5 min)
 
-Hito del proyecto: check de drift con exit code en el CI, umbrales calibrados con su
+Para el proyecto: check de drift con exit code en el CI, umbrales calibrados con su
 ADR, `/metrics` con tres o más métricas graficadas, política de reentrenamiento y
 registro de riesgos.
 

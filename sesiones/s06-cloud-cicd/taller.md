@@ -1,6 +1,6 @@
 # Taller S06 — El gate de promoción y el pipeline que despliega
 
-**Duración:** 55 min en clase. **Se entrega en clase.**
+Se puede terminar en la misma clase. Es opcional y suma al bonus del curso.
 **Sobre:** tu propio repositorio de proyecto (no el del curso).
 **Entregable:** un PR con los workflows, el gate, los logs y el ADR.
 

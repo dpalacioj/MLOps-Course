@@ -847,7 +847,7 @@ también, así que la van a recorrer dos veces antes de armar la suya.
 
 ## 11. Taller, proyecto y puente a S03
 
-**Taller:** [`taller.md`](taller.md), 55 min, se entrega en clase, sobre **tu propio**
+**Taller:** [`taller.md`](taller.md), se puede terminar en clase, sobre **tu propio**
 repositorio.
 
 **Esta sesión es el arranque natural del proyecto del curso.** Es el primero de

@@ -467,7 +467,7 @@ forma de las cinco preguntas de sección 6: qué problema tienes, por qué la es
 resuelve, y qué te cuesta la que elegiste. Un ADR que diga *"usamos DVC porque es el
 estándar"* no cuenta.
 
-Y para el [hito 1](../../proyecto/README.md), que se entrega 5 días después de esta
+Y para la [primera fase del proyecto](../../proyecto/README.md), que arranca con esta
 sesión: la procedencia y el hash van en tu
 [`dataset-card.md`](dataset-card.md), no en un `README` suelto.
 

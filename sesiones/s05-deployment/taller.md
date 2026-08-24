@@ -1,6 +1,6 @@
 # Taller S05 — Servir tu modelo: API contenedorizada y batch trazable
 
-**Duración:** 55 min en clase. **Se entrega en clase.**
+Se puede terminar en la misma clase. Es opcional y suma al bonus del curso.
 **Sobre:** tu propio repositorio de proyecto (no el del curso).
 **Entregable:** un PR con el servicio, la imagen, los tests y el ADR.
 

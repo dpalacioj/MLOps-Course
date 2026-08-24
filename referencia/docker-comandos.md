@@ -521,7 +521,7 @@ docker logs -f gatitos-2
 
 - [Documentación oficial de Docker](https://docs.docker.com/)
 - [Docker Hub](https://hub.docker.com/)
-- [README principal](./README.md) - Guía completa de la práctica
+- [README de la sesión de deployment](../sesiones/s05-deployment/README.md) - guía completa de la práctica
 
 ---
 

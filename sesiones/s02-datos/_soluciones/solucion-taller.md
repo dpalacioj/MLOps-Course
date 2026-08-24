@@ -313,11 +313,11 @@ clase, en orden de prioridad:
 |---|---|---|
 | Imprescindible | 1, 3, 5 (contrato con los tres niveles, `fixtures` rotos, control negativo) | es el núcleo conceptual y lo que se evalúa de verdad |
 | En clase si da tiempo | 2, 4, 7 (pasa sobre el dato real, hash, CI) | son mecánicos con las referencias delante |
-| Tarea, y va al hito 1 | 5 (`split`), 6 (`dataset card`) | requieren medir y escribir; la ficha es la mitad del hito |
+| Tarea, y va directo al proyecto | 5 (`split`), 6 (`dataset card`) | requieren medir y escribir; la ficha es la mitad de la fase 1 |
 
 Recomendación: pedir el PR abierto **al final de la clase** aunque esté incompleto, con
-la descripción diciendo qué falta. Y recordar en voz alta que **el hito 1 se entrega 5
-días después**, así que lo que quede a medias tiene fecha.
+la descripción diciendo qué falta. Y recordar en voz alta que **esto es literalmente la
+fase 1 del proyecto**: nada de este taller se bota, y terminarlo suma al bonus.
 
 ### Los cuatro errores que más PR devuelven, por frecuencia
 

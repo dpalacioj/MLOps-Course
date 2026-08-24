@@ -2,7 +2,7 @@
 
 Dos ejercicios guiados, con TODO numerados y **criterios de completitud
 medibles**. Se resuelven en el tramo de taller o como refuerzo antes de la
-entrega del hito.
+avance del proyecto.
 
 | Ejercicio | Enunciado | Notebook | Qué practica | Dataset |
 |---|---|---|---|---|

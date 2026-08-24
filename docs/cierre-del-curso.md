@@ -21,7 +21,9 @@
 9. [Un dia en la vida de un pipeline en produccion](#9-un-dia-en-la-vida-de-un-pipeline-en-produccion)
 10. [Mapa de decisiones: que herramienta uso?](#10-mapa-de-decisiones-que-herramienta-uso)
 
-> **Guia complementaria:** Para la guia practica paso a paso de Mage, ver [GUIA_MAGE_PASO_A_PASO.md](GUIA_MAGE_PASO_A_PASO.md)
+> **Nota:** la guia practica de Mage se retiro del curso (el proyecto open source
+> quedo sin mantenimiento); la comparacion de orquestadores esta en el README de
+> la [sesion 4](../sesiones/s04-orquestacion/README.md).
 
 ---
 
@@ -983,8 +985,7 @@ flowchart TD
 ---
 
 > **Guias relacionadas:**
-> - [Guia paso a paso de Mage](GUIA_MAGE_PASO_A_PASO.md) - para armar tu primer pipeline visual
-> - [Guia de clase de Orquestacion](GUIA_CLASE_ORQUESTACION.md) - guia del instructor para la clase de Prefect
+> - [Guion de la clase de orquestacion](../instructor/guion-s04-orquestacion.md) - notas del instructor para la clase de Prefect
 
 ---
 

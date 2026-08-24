@@ -1,6 +1,6 @@
 # Taller S02 — Poner el contrato de datos a fallar
 
-**Duración:** 55 min en clase. Se entrega en clase.
+Se puede terminar en la misma clase. Es opcional y suma al bonus del curso.
 **Sobre:** **tu propio** repositorio de proyecto, no el del curso.
 **Entregable:** un PR hacia `main` de tu repositorio, con el CI **verde** corriendo los
 tests de datos, y el enlace al `run` en la descripción.

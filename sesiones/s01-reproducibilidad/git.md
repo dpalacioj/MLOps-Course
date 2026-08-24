@@ -82,8 +82,8 @@ las liste en la misma pantalla.
 
 ## 2. El flujo diario del curso
 
-Una rama por entrega, un PR por entrega. Los hitos del proyecto se entregan **como
-PR, no como zip**: un zip produce una nota, un PR produce comentarios en las líneas
+Una rama por entrega, un PR por entrega. Los avances del proyecto tambien
+conviene compartirlos **como PR, no como zip**: un zip produce una nota, un PR produce comentarios en las líneas
 de código.
 
 ```bash

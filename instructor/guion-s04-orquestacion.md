@@ -718,7 +718,7 @@ alrededor del `log_model`.
 
 ### 12.4 Tarea y puente a S05 (2 min)
 
-Hito 2 del proyecto, cinco días: tracking completo, modelo registrado con
+Para el proyecto, lo que sale de hoy: tracking completo, modelo registrado con
 `@champion`, pipeline orquestado con schedule, model card, CI verde.
 
 Puente: "Ya tienen un modelo que se reentrena y se registra solo. La sesión que

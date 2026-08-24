@@ -360,7 +360,7 @@ está en [`sesiones/s07-monitoreo/gobernanza.md`](../s07-monitoreo/gobernanza.md
 ## 10. Cómo usar esta ficha como plantilla
 
 Copia las diez secciones y rellénalas para tu `dataset`. Lo que se evalúa en el
-[hito 1](../../proyecto/README.md) no es la extensión, es que estas cinco cosas estén y
+[proyecto](../../proyecto/README.md) no es la extensión, es que estas cinco cosas estén y
 sean **verificables**:
 
 1. **Procedencia y licencia** con nombre exacto y URL, más el hash de tus particiones.

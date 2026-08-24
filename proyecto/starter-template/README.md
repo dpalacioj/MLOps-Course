@@ -113,7 +113,7 @@ Tres propiedades del andamiaje que conviene no romper:
 No están en orden de aparición en el código, sino en el orden en que conviene
 hacerlos. Los números coinciden con los del código: `grep -rn "TODO(estudiante)"`.
 
-### Antes del hito 1 (dato y baseline)
+### Primera etapa: dato y baseline
 
 | # | Qué | Dónde |
 |---|---|---|
@@ -135,7 +135,7 @@ hacerlos. Los números coinciden con los del código: `grep -rn "TODO(estudiante
 | 28 | ADR del stack | `docs/adr/000-stack.md` |
 | 29 | Dataset card | `docs/dataset-card.md` |
 
-### Antes del hito 2 (tracking, registry, pipeline)
+### Segunda etapa: tracking, registry y pipeline
 
 | # | Qué | Dónde |
 |---|---|---|
@@ -143,7 +143,7 @@ hacerlos. Los números coinciden con los del código: `grep -rn "TODO(estudiante
 | 14 | Estimador y métrica de tu problema, con baseline honesto | `models/train.py` |
 | 30 | `scripts/model_card.py` que **genere** la model card | `docs/model-card.md` |
 
-### Antes del hito 3 (deployment, CI/CD, gate)
+### Tercera etapa: deployment, CI/CD y gate
 
 | # | Qué | Dónde |
 |---|---|---|
