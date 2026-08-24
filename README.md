@@ -13,29 +13,66 @@ monitoreo y gobernanza.
 
 ## Empieza aquí
 
+### Paso 0 — diagnostica tu máquina
+
+**Antes de instalar nada.** Este script corre con cualquier Python 3.11 o superior,
+sin una sola dependencia, y te dice exactamente qué te falta:
+
 ```bash
 git clone https://github.com/dpalacioj/MLOps-Course.git
 cd MLOps-Course
-
-git lfs install && git lfs pull   # los diagramas del curso viven en Git LFS
-make setup                        # dependencias, hooks de git y pre-commit
-make smoke                        # verifica que el entorno quedó bien
+python3 scripts/smoke_test.py      # en Windows: python scripts\smoke_test.py
 ```
 
-`make smoke` revisa versión de Python, las 17 dependencias clave, los contratos
-de datos, los archivos de Git LFS, los puertos y Docker. Da `OK` o `FAIL` línea
-por línea, y cada `FAIL` dice qué hacer. **No sigas hasta que salga limpio**: la
-mitad de los problemas de la primera clase se diagnostican ahí en veinte
-segundos.
+Va a salir en rojo, y está bien: todavía no has instalado nada. Lo que importa es
+**qué** dice en rojo. Cada línea `FAIL` trae el comando que la arregla.
 
-En Windows, antes de nada:
+Si te dice que no tienes Python 3.11, instálalo con
+[uv](https://docs.astral.sh/uv/) (paso 1) y vuelve aquí.
+
+### Paso 1 — las tres herramientas que el repositorio no puede instalar solo
+
+| Herramienta | Para qué | Cómo |
+|---|---|---|
+| **uv** | gestiona Python y las dependencias. Sin esto no arranca nada | macOS/Linux: `curl -LsSf https://astral.sh/uv/install.sh \| sh`<br>Windows: `powershell -c "irm https://astral.sh/uv/install.ps1 \| iex"` |
+| **git-lfs** | los 12 diagramas del curso. Sin esto se ven como texto | macOS: `brew install git-lfs`<br>Windows: `winget install GitHub.GitLFS`<br>Linux: `sudo apt install git-lfs` |
+| **make** *(opcional)* | atajos. Ya viene en macOS y Linux | Windows: `winget install GnuWin32.Make`, o copia el comando del `Makefile` |
+
+Cierra y reabre la terminal después de instalar `uv`, para que aparezca en el `PATH`.
+
+En Windows, además, antes de correr cualquier `.ps1`:
 
 ```powershell
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
 
-Si el setup se resiste, hay un devcontainer listo en `.devcontainer/` — abre el
-repo en un Codespace o en VS Code con Dev Containers y todo queda instalado.
+### Paso 2 — instala y verifica
+
+```bash
+git lfs install && git lfs pull   # trae los diagramas
+make setup                        # dependencias, hooks de git y pre-commit
+make smoke                        # ahora sí debe salir todo en verde
+```
+
+**Sin `make`** (Windows sin GnuWin32), los dos equivalentes son:
+
+```bash
+uv sync --group dev && uv run pre-commit install
+uv run python scripts/smoke_test.py
+```
+
+**No sigas hasta que `make smoke` salga limpio.** Docker puede quedar en `WARN`:
+no hace falta hasta la sesión 5.
+
+### Si el setup se resiste
+
+Hay un devcontainer listo en `.devcontainer/`: abre el repositorio en un Codespace
+o en VS Code con Dev Containers y el entorno queda montado sin instalar nada en tu
+máquina. Es el plan B, no la ruta principal.
+
+`make smoke` revisa `uv`, `make`, la versión de Python, las 17 dependencias clave,
+los contratos de datos, los archivos de Git LFS, los puertos y Docker. Da `OK`,
+`WARN` o `FAIL` línea por línea, y cada `FAIL` trae el comando que lo arregla.
 
 `make` sin argumentos lista todos los comandos disponibles.
 

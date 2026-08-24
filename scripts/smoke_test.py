@@ -176,6 +176,51 @@ def verificar_git_lfs() -> None:
         ok("Archivos LFS traidos", f"{len(lineas)} archivos")
 
 
+def verificar_herramientas() -> None:
+    """Comprueba las herramientas que el repositorio NO puede instalar por si mismo.
+
+    Este bloque existe por un problema de huevo y gallina: `make setup` instala
+    todo el entorno, pero necesita que `uv` y `make` ya esten ahi. En una maquina
+    recien formateada no hay ninguno de los dos, y el estudiante recibe un
+    "command not found" que no explica nada.
+
+    Este script, en cambio, corre con cualquier Python 3.11+ y sin una sola
+    dependencia instalada. Por eso es el PASO 0: diagnostica la maquina antes de
+    que haya entorno que diagnosticar.
+    """
+    # --- uv: sin esto no hay nada ---
+    if shutil.which("uv") is None:
+        falla(
+            "uv instalado",
+            "es el gestor de entorno del curso y `make setup` no arranca sin el.\n"
+            "         macOS/Linux: curl -LsSf https://astral.sh/uv/install.sh | sh\n"
+            '         Windows:     powershell -c "irm https://astral.sh/uv/install.ps1 | iex"\n'
+            "         Cierra y reabre la terminal despues de instalarlo.",
+        )
+    else:
+        proc = subprocess.run(
+            ["uv", "--version"], capture_output=True, text=True, timeout=30, check=False
+        )
+        ok("uv instalado", proc.stdout.strip() or "responde")
+
+    # --- make: comodidad, no requisito ---
+    if shutil.which("make") is None:
+        if os.name == "nt":
+            aviso(
+                "make disponible",
+                "no viene en Windows. NO es obligatorio: cada target del Makefile es "
+                "un `uv run ...`.\n         Abre el Makefile y copia el comando, o "
+                "instalalo con: winget install GnuWin32.Make",
+            )
+        else:
+            aviso(
+                "make disponible",
+                "en macOS se instala con: xcode-select --install",
+            )
+    else:
+        ok("make disponible", "los atajos del Makefile funcionan")
+
+
 def verificar_hooks() -> None:
     """Verifica que los hooks de pre-commit quedaron REALMENTE instalados.
 
@@ -384,6 +429,7 @@ def main() -> int:
     print(f"{GRIS}{'=' * 72}{FIN}\n")
 
     verificar_python()
+    verificar_herramientas()
     verificar_venv()
     verificar_paquetes()
     verificar_paquete_curso()
