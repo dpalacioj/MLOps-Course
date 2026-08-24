@@ -43,9 +43,25 @@ setup: ## Instala dependencias, hooks de git y pre-commit
 	  && (echo "Limpiando core.hooksPath heredado..."; git config --unset-all core.hooksPath) \
 	  || true
 	$(PY) pre-commit install --install-hooks
-	@command -v git-lfs >/dev/null 2>&1 \
-	  && (git lfs install && git lfs pull) \
-	  || echo "AVISO: git-lfs no esta instalado. Los diagramas .png no se veran."
+	@# Detectar y ejecutar se separan a proposito. Cuando estaban en un solo
+	@# `command -v git-lfs && (git lfs install && git lfs pull) || echo "no esta
+	@# instalado"`, cualquier fallo de los dos comandos de la derecha imprimia
+	@# "git-lfs no esta instalado", que suele ser falso: lo normal es que si este
+	@# instalado y que `git lfs install` solo haya avisado de una configuracion
+	@# heredada. Culpar a la causa equivocada es peor que no diagnosticar.
+	@if ! command -v git-lfs >/dev/null 2>&1; then \
+	  echo "AVISO: git-lfs no esta instalado. Los 12 diagramas .png del curso se"; \
+	  echo "       veran como archivos de texto de 3 lineas. Instalalo con:"; \
+	  echo "         brew install git-lfs      (macOS)"; \
+	  echo "         sudo apt install git-lfs  (Linux)"; \
+	elif ! git lfs install >/dev/null 2>&1; then \
+	  echo "AVISO: git-lfs esta instalado pero 'git lfs install' fallo."; \
+	  echo "       Suele ser una configuracion heredada. Prueba:"; \
+	  echo "         git lfs install --force"; \
+	  git lfs pull || true; \
+	else \
+	  git lfs pull; \
+	fi
 	@echo ""
 	@echo "Listo. Ahora corre: make smoke"
 
