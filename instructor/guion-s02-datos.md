@@ -150,17 +150,32 @@ Escribir en la pizarra, y que se quede las cuatro horas:
 
 ### Acto 2 — La categoría que desaparece (11 min)
 
-Correr la celda de `DictVectorizer` de la sección 2.
+Antes de correr la celda, un minuto para explicar qué vamos a mirar — sin esto la
+demo no se entiende: `DictVectorizer` convierte cada viaje en un vector de ~2.500
+columnas (una por cada ruta y zona que vio en el entrenamiento, más las numéricas),
+y un viaje concreto solo enciende un puñado. Imprimimos únicamente esas posiciones
+encendidas, los **valores no cero**, porque responden "¿qué vio realmente el modelo
+de este viaje?".
+
+Correr la celda de `DictVectorizer` de la sección 2. Transforma dos viajes: uno cuya
+ruta sí estaba en el entrenamiento y uno con una zona nueva.
 
 **Salida esperada:**
 
 ```
 features aprendidas en fit: 2511
 
-valores no cero de la fila transformada: [('dia_semana_pickup', 2.0), ('hora_pickup', 9.0), ('trip_distance', 4.2)]
+viaje CONOCIDO -> 6 valores no cero:
+    (sus 3 numéricas, y un 1 en PU_DO=…, PULocationID=…, DOLocationID=…)
+
+viaje con ruta NUEVA -> 3 valores no cero:
+    dia_semana_pickup = 2.0
+    hora_pickup = 9.0
+    trip_distance = 4.2
 ```
 
-Las **tres** features categóricas valen cero. Sin excepción y sin `warning`.
+**El número para subrayar en el tablero: 6 contra 3.** Los tres que faltan son los
+unos categóricos — toda la geografía del viaje. Sin excepción y sin `warning`.
 
 **Qué preguntar:** *"El modelo va a devolver un número razonable, calculado ignorando la
 mitad de la información del viaje. ¿Cuántas predicciones así puede estar sirviendo su API
