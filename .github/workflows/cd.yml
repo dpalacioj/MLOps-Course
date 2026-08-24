@@ -257,7 +257,10 @@ jobs:
     name: Comentar metricas en el PR
     runs-on: ubuntu-latest
     needs: [imagen, gate]
-    if: always() && github.event_name == 'pull_request'
+    # Solo comenta si el gate corrio de verdad. Con el gate desactivado
+    # (GATE_ACTIVO sin poner), el comentario decia "no pudo medir" en cada
+    # push: ruido que parece error y no informa nada.
+    if: always() && github.event_name == 'pull_request' && needs.gate.result != 'skipped'
     permissions:
       pull-requests: write
     steps:
