@@ -31,7 +31,7 @@ Tu `ruff`, tu `mypy` y tus tests de la S01 no lo detectan. Hoy construyes lo que
 ## 1. Un contrato con ≥ 6 reglas **no triviales**
 
 Sobre el `dataset` de **tu** proyecto. Pandera o Great Expectations Core 1.x, a tu
-elección (comparativa en el [README](README.md) §5).
+elección (comparativa en el [README](README.md) sección 5).
 
 **Qué cuenta como regla no trivial:** una que codifique conocimiento del dominio o del
 proveedor. **Qué no cuenta:** `pa.Field()` sin ningún argumento, o comprobar que una
@@ -139,7 +139,7 @@ Si tu `dataset` no se descarga (te lo dieron una vez), sirve igual: registra el 
 archivo que tienes y su procedencia. Lo que se evalúa es que puedas responder *"¿es
 este el mismo dato con el que medí?"*.
 
-Referencia: [`src/taxi/data/loaders.py`](../../src/taxi/data/loaders.py), §2 de
+Referencia: [`src/taxi/data/loaders.py`](../../src/taxi/data/loaders.py), sección 2 de
 [`versionado-de-datos.md`](versionado-de-datos.md).
 
 ## 5. `Split` temporal (o la justificación escrita)
@@ -166,7 +166,7 @@ pero **descubrirlo en la sesión 7 sí lo hunde**.
 Además, y aunque tu `split` sea correcto: **la tabla de disponibilidad temporal por
 feature**, una fila por feature, con el instante en que su valor queda disponible. Es
 la que detecta `leakage` sin entrenar nada. Plantilla en
-[`dataset-card.md`](dataset-card.md) §7.
+[`dataset-card.md`](dataset-card.md) sección 7.
 
 ## 6. `dataset-card.md`
 
@@ -242,14 +242,14 @@ print('el contrato pasa sobre el dato real')
 
 ## Si acabas antes
 
-1. **Mide el límite de tu contrato**, como hace la §4 del [README](README.md): ¿a
+1. **Mide el límite de tu contrato**, como hace la sección 4 del [README](README.md): ¿a
    partir de qué factor de escala tu contrato deja de detectar el cambio? Es el
    ejercicio más valioso del taller, porque el resultado suele ser incómodo.
 2. Añade un **check de nivel 3** más ambicioso: una relación entre tres columnas.
 3. Deja el contrato como **paso del `pipeline` con `exit code`**, no solo como test:
    `python -m miproyecto.data.validar && echo $?`.
 4. Escribe el **ADR de tu estrategia de versionado de datos**, contra las cinco
-   preguntas de [`versionado-de-datos.md`](versionado-de-datos.md) §6. Si tu respuesta
+   preguntas de [`versionado-de-datos.md`](versionado-de-datos.md) sección 6. Si tu respuesta
    es "hash + partición inmutable y nada más", **defiéndelo**: es una respuesta
    correcta y bien argumentada vale más que un `lake` innecesario.
 5. Adelanta la propuesta del problema y la métrica de negocio del

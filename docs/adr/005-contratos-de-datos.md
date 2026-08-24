@@ -217,7 +217,7 @@ sintéticos, o existen solo porque alguien los inyectó. Los sintéticos se cons
 - Si el volumen del caso guía creciera en órdenes de magnitud: revisar el coste de
   validar y la política de muestreo.
 - Al inicio de cada cohorte: re-verificar las versiones y fechas de la tabla comparativa
-  de `sesiones/s02-datos/README.md` §5. La fila de Great Expectations es la que envejece
+  de `sesiones/s02-datos/README.md` sección 5. La fila de Great Expectations es la que envejece
   más rápido.
 
 ## Referencias

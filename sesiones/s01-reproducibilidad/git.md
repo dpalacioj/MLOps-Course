@@ -209,7 +209,7 @@ proyecto y ajústalo. Lo que **nunca** se commitea, con su razón:
 | `mlruns/`, `mlflow.db`, `mlartifacts/` | el estado del `tracking server`, no el código |
 | `*.pkl`, `*.bin`, `*.ubj`, `*.onnx` | el modelo se obtiene del `registry`, no del control de versiones. En el repositorio anterior había tres artefactos binarios commiteados y la imagen de Docker servía uno de ellos en lugar del promovido |
 | `reports/*.html` | se regeneran con `make drift` |
-| Notebooks con `outputs` | no se ignoran, se **limpian** con `nbstripout` ([`calidad.md`](calidad.md) §4) |
+| Notebooks con `outputs` | no se ignoran, se **limpian** con `nbstripout` ([`calidad.md`](calidad.md) sección 4) |
 
 Trampa real de este repositorio, que vale como lección: el `.gitignore` anterior
 ignoraba globalmente `*.json`, `*.yaml`, `*.yml` y `*.txt`. Con eso desaparecían de
@@ -341,7 +341,7 @@ tu terminal en lugar de cuatro minutos de CI, o de un incidente.
 | `commit-msg` | formato `conventional commits` |
 | `pre-push` | convención del nombre de la rama |
 
-El detalle de cada uno está en [`calidad.md`](calidad.md) §5.
+El detalle de cada uno está en [`calidad.md`](calidad.md) sección 5.
 
 ### Por qué hay un solo sistema de `hooks`
 
@@ -378,9 +378,9 @@ comprueba que los `hooks` estén realmente instalados, en lugar de suponerlo.
 | Síntoma | Causa | Arreglo |
 |---|---|---|
 | `Permission denied (publickey)` | la clave pública no está en GitHub, o la privada no está en el `agent` | `ssh-add ~/.ssh/id_ed25519` y verifica con `ssh -T git@github.com` |
-| El `hook` rechaza tu mensaje de commit | no cumple `conventional commits` | usa uno de los once tipos de §3 |
+| El `hook` rechaza tu mensaje de commit | no cumple `conventional commits` | usa uno de los once tipos de sección 3 |
 | Los `.png` se ven como texto de tres líneas | falta `git lfs pull` (o LFS no estaba instalado al clonar) | `git lfs install && git lfs pull` |
-| `warning: LF will be replaced by CRLF` en Windows | fin de línea distinto entre sistemas | el `hook` `mixed-line-ending --fix=lf` ya lo normaliza; ver [`troubleshooting-so.md`](troubleshooting-so.md) §3 |
+| `warning: LF will be replaced by CRLF` en Windows | fin de línea distinto entre sistemas | el `hook` `mixed-line-ending --fix=lf` ya lo normaliza; ver [`troubleshooting-so.md`](troubleshooting-so.md) sección 3 |
 | Commiteaste un `.env` | secreto en el historial | **rota el secreto** y luego límpialo del historial. Borrarlo en un commit nuevo no basta |
 | El repositorio pesa 800 MB tras tres semanas | binarios commiteados sin LFS | `git lfs migrate import` + `push --force`, avisando a todo el equipo |
 
@@ -389,7 +389,7 @@ comprueba que los `hooks` estén realmente instalados, en lugar de suponerlo.
 ## 8. Autoverificación del bloque
 
 1. ¿Qué contiene `uv.lock` que no contiene `pyproject.toml`, y qué pregunta
-   responde cada uno? (Es de [`entorno.md`](entorno.md) §2, y va aquí porque en el
+   responde cada uno? (Es de [`entorno.md`](entorno.md) sección 2, y va aquí porque en el
    PR los dos se commitean juntos.)
 2. Explica en una frase por qué `.gitattributes` se commitea **antes** que el
    binario.

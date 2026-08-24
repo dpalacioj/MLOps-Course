@@ -110,7 +110,7 @@ Lo que se construye: el entorno del curso, desde cero, con `uv`. Lo que se
   *hecho* (versiones y hashes exactos, resueltos una vez). Los dos se commitean, y
   cada uno responde una pregunta distinta.
 - La diferencia entre `uv add`, `uv pip install` y `uv sync`, demostrada con el
-  experimento de [`entorno.md`](entorno.md) §3: instalas dos paquetes de dos
+  experimento de [`entorno.md`](entorno.md) sección 3: instalas dos paquetes de dos
   maneras, borras `.venv`, sincronizas, y uno de los dos ya no está.
 - Por qué `uv run` es preferible a activar el entorno: en un `cron`, en un `flow`
   de Prefect o en un contenedor **nadie activa nada**.
@@ -254,19 +254,19 @@ Respóndelas sin mirar arriba. Entre paréntesis, dónde está la respuesta.
 
 1. Borras `.venv` y corres `uv sync`. Un compañero instaló `seaborn` con
    `uv pip install seaborn` y otro con `uv add seaborn`. ¿Cuál de los dos entornos
-   vuelve a tener `seaborn`? ¿Por qué? ([`entorno.md`](entorno.md) §3)
+   vuelve a tener `seaborn`? ¿Por qué? ([`entorno.md`](entorno.md) sección 3)
 2. Tu CI usa `uv sync --locked` y falla con un error de `lockfile` desactualizado,
    pero en tu máquina `uv sync` funciona. ¿Qué pasó y cuál es el arreglo correcto?
-   (Pista: el arreglo **no** es quitar `--locked`.) ([`entorno.md`](entorno.md) §4)
+   (Pista: el arreglo **no** es quitar `--locked`.) ([`entorno.md`](entorno.md) sección 4)
 3. Commiteaste un `.png` de 4 MB sin LFS, y tres commits después lo agregaste a
    `.gitattributes`. ¿Qué le pasa a quien clona el repositorio hoy? ¿Se arregla con
-   `git lfs pull`? ([`git.md`](git.md) §5)
+   `git lfs pull`? ([`git.md`](git.md) sección 5)
 4. Tu equipo tiene `ruff format` en `pre-commit` y un compañero tiene el
    "Black Formatter" de VS Code con `formatOnSave`. Describe el diff del próximo PR
-   y por qué el CI va a estar rojo para los dos. ([`calidad.md`](calidad.md) §2)
+   y por qué el CI va a estar rojo para los dos. ([`calidad.md`](calidad.md) sección 2)
 5. `make smoke` te da `FAIL` en "Archivos LFS traídos" pero `OK` en todo lo demás.
    ¿Puedes seguir la sesión 1? ¿Puedes seguir la sesión 4? ¿Por qué es un `FAIL` y
-   no un `WARN`? ([`calidad.md`](calidad.md) §6 y
+   no un `WARN`? ([`calidad.md`](calidad.md) sección 6 y
    [`scripts/smoke_test.py`](../../scripts/smoke_test.py))
 
 ---
@@ -292,7 +292,7 @@ consultó ese día en el índice de PyPI. Cada fila enlaza a su documentación o
 | **conda / mamba** | se distribuye por conda-forge, no por PyPI; verifica con `conda --version` en tu máquina | Sí | **donde `uv` no llega**: dependencias que no son Python. CUDA y `cudatoolkit`, GDAL/PROJ, compiladores de Fortran, R en el mismo entorno. Es su ventaja real y no ha desaparecido | [docs.conda.io](https://docs.conda.io/), [conda-forge.org](https://conda-forge.org/) |
 
 El razonamiento completo, con lo que cada una cuesta, está en
-[`entorno.md`](entorno.md) §6.
+[`entorno.md`](entorno.md) sección 6.
 
 ---
 
@@ -302,14 +302,14 @@ El razonamiento completo, con lo que cada una cuesta, está en
 |---|---|---|
 | `uv update <pkg>` | **el subcomando no existe.** `uv update pandas` responde `error: unrecognized subcommand 'update'` (verificado con `uv 0.8.17`, agosto de 2026). Aparecía dos veces en el material anterior del curso, incluida su tabla resumen | `uv lock --upgrade-package pandas` y después `uv sync` |
 | `\.venv\Scripts\Activate.ps1` (sin el punto inicial) | la ruta empieza en la **raíz del disco**, no en el directorio actual. `07-os-notes.md` del material anterior lo escribía así y era el primer error de la sesión en Windows | `.\.venv\Scripts\Activate.ps1` |
-| `pyenv-win` vía `Invoke-WebRequest` + reinicio de terminal como ruta por defecto en Windows | es el paso más frágil de todo el setup: descarga un `.ps1` de GitHub, lo ejecuta contra la `ExecutionPolicy`, edita el `PATH` del usuario y exige cerrar la terminal. Cada uno de esos cuatro pasos falla en algún alumno | `uv python install 3.11`. `pyenv-win` queda como alternativa documentada en [`troubleshooting-so.md`](troubleshooting-so.md) §5 |
-| `chmod +x setup.sh && ./setup.sh` en Windows | `chmod` no existe en PowerShell y el bit de ejecución no es un concepto de NTFS. Solo funciona dentro de WSL o de Git Bash | el `.ps1` equivalente, o WSL declarado explícitamente ([`troubleshooting-so.md`](troubleshooting-so.md) §4) |
-| Black **y** `ruff format` en el mismo repositorio | la doc de Ruff dice que su formatter "is not intended to be used interchangeably with Black on an ongoing basis, as the formatter *does* differ from Black in a few conscious ways". Dos formatters alternándose producen PRs de cientos de líneas de reformateo y un CI rojo para todo el mundo | uno solo. En este curso, `ruff format` ([`calidad.md`](calidad.md) §2) |
+| `pyenv-win` vía `Invoke-WebRequest` + reinicio de terminal como ruta por defecto en Windows | es el paso más frágil de todo el setup: descarga un `.ps1` de GitHub, lo ejecuta contra la `ExecutionPolicy`, edita el `PATH` del usuario y exige cerrar la terminal. Cada uno de esos cuatro pasos falla en algún alumno | `uv python install 3.11`. `pyenv-win` queda como alternativa documentada en [`troubleshooting-so.md`](troubleshooting-so.md) sección 5 |
+| `chmod +x setup.sh && ./setup.sh` en Windows | `chmod` no existe en PowerShell y el bit de ejecución no es un concepto de NTFS. Solo funciona dentro de WSL o de Git Bash | el `.ps1` equivalente, o WSL declarado explícitamente ([`troubleshooting-so.md`](troubleshooting-so.md) sección 4) |
+| Black **y** `ruff format` en el mismo repositorio | la doc de Ruff dice que su formatter "is not intended to be used interchangeably with Black on an ongoing basis, as the formatter *does* differ from Black in a few conscious ways". Dos formatters alternándose producen PRs de cientos de líneas de reformateo y un CI rojo para todo el mundo | uno solo. En este curso, `ruff format` ([`calidad.md`](calidad.md) sección 2) |
 | `flake8` + `isort` + `black` como trío **nuevo** | tres herramientas, tres configuraciones que hay que mantener de acuerdo, tres ejecuciones. `ruff` cubre las tres familias de reglas. Nada obliga a migrar un proyecto que ya lo tenga y funcione | `ruff check` + `ruff format` |
 | `pip freeze > requirements.txt` como estrategia de reproducibilidad | congela también las dependencias transitivas sin distinguirlas de las tuyas, no lleva hashes y es específico de la plataforma en la que se ejecutó | `uv.lock` (o `pip-compile --generate-hashes`) |
 | `git commit --no-verify` como hábito | es la señal de que los `hooks` tardan demasiado o comprueban algo distinto del CI. El síntoma es real; la solución no es saltárselos | arreglar el `hook`: que sea rápido y que corra exactamente lo del CI |
 | Commitear `.env`, `data/raw/*.parquet` o `model.pkl` | secretos en el historial (que siguen ahí después de borrar el archivo) y un repositorio que crece sin límite. En el repo anterior había tres artefactos binarios commiteados | `.env.example` + LFS para los binarios que **sí** se versionan + `make data` para descargar el resto |
-| Notebooks commiteados con `outputs` | ruido en el diff, filtran rutas absolutas y tokens del entorno de quien ejecutó, y engordan el repositorio (175 KB por un notebook de 33 celdas) | `nbstripout` como `hook` ([`calidad.md`](calidad.md) §4) |
+| Notebooks commiteados con `outputs` | ruido en el diff, filtran rutas absolutas y tokens del entorno de quien ejecutó, y engordan el repositorio (175 KB por un notebook de 33 celdas) | `nbstripout` como `hook` ([`calidad.md`](calidad.md) sección 4) |
 | `python -V; uv --version` como verificación de entorno | no prueba nada de lo que realmente falla: punteros LFS sin traer, puertos ocupados, dependencias declaradas pero no instaladas, contratos que no validan | `make smoke` |
 
 ---

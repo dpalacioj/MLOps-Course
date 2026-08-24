@@ -94,7 +94,7 @@ docs/adr/006-serving-online-vs-batch.md   # Bloque 11
 
 **Archivos:** ninguno. **Terminales:** 0.
 
-1. **Recap por un estudiante** (rotativo, 5 min): qué quedó de S04 — flows, tasks,
+1. **Arranque directo** (5 min): dudas sueltas de S04 si las hay, y en una frase propia lo que quedó — flows, tasks,
    schedules, y el pipeline que **registra pero no promueve**. La pregunta de cierre que
    conecta con hoy: *"el modelo está registrado con el alias `@champion`. ¿Quién lo puede
    usar hoy, aparte de nosotros?"*
@@ -288,7 +288,7 @@ bloque es la diferencia entre los dos.
 
 ### 4.1 Las siete decisiones (12 min)
 
-Recorrer con la tabla del [README §4.1](../sesiones/s05-deployment/README.md) proyectada.
+Recorrer con la tabla del [README sección 4.1](../sesiones/s05-deployment/README.md) proyectada.
 Dedicar tiempo real a tres:
 
 **Multi-stage.** Preguntar: "¿por qué dos etapas si la app es la misma?" Respuesta: `uv`,
@@ -380,7 +380,7 @@ docker inspect --format='{{.Id}}' mlops-curso/api:latest   # OTRO id, mismo nomb
 ¿cómo se dan cuenta?"* Respuesta: no se dan cuenta. Los logs de las dos corridas dicen
 `latest`.
 
-Proyectar la tabla del [README §4.3](../sesiones/s05-deployment/README.md) y cerrar con la
+Proyectar la tabla del [README sección 4.3](../sesiones/s05-deployment/README.md) y cerrar con la
 analogía, que es el punto pedagógico:
 
 > `:latest` es a `@sha256:...` lo que `@champion` es a `versión 7`. Una **referencia
@@ -551,7 +551,7 @@ registry qué versión resolvía en el momento de la carga** y guardarla.
 
 ### 9.1 Cuatro endpoints, cuatro consumidores (5 min)
 
-Proyectar la tabla del [README §3.4](../sesiones/s05-deployment/README.md) y detenerse en
+Proyectar la tabla del [README sección 3.4](../sesiones/s05-deployment/README.md) y detenerse en
 la distinción que más se equivoca:
 
 ```bash
@@ -632,7 +632,7 @@ Nombrar el límite de SQLite —un escritor, sin concurrencia, sin acceso remoto
 
 ## BLOQUE 11 — La decisión y las alternativas (160-165 min)
 
-**Archivos:** [README §2 y §6](../sesiones/s05-deployment/README.md),
+**Archivos:** [README sección 2 y sección 6](../sesiones/s05-deployment/README.md),
 [ADR 006](../docs/adr/006-serving-online-vs-batch.md). **Terminales:** 0.
 
 Cinco minutos, dos tablas, y es el bloque que ordena todo lo anterior.
@@ -688,7 +688,7 @@ vale más que la rúbrica.
 
 ## BLOQUE 13 — Cierre (220-240 min)
 
-**Archivos:** [README §7 y §8](../sesiones/s05-deployment/README.md).
+**Archivos:** [README sección 7 y sección 8](../sesiones/s05-deployment/README.md).
 
 ### 13.1 Autoverificación (7 min)
 
@@ -714,7 +714,7 @@ BentoML, no más FastAPI.**
 
 ### 13.3 Qué NO usar (5 min)
 
-Recorrer la tabla del README §8. Detenerse en tres, y en el porqué:
+Recorrer la tabla del README sección 8. Detenerse en tres, y en el porqué:
 
 - `app.run(debug=True, host="0.0.0.0")` → **ejecución remota de código**. Se ve entero en
   la sesión 6.

@@ -11,9 +11,9 @@
   respaldo por si la consola falla en vivo.
 - Si lo haces tú, es con el **IAM user de tu equipo** y la política mínima de
   [`scripts/politica-iam-minima.json`](scripts/politica-iam-minima.json).
-- **El presupuesto de 10 USD tiene que estar creado antes** (§0). Un presupuesto avisa,
+- **El presupuesto de 10 USD tiene que estar creado antes** (sección 0). Un presupuesto avisa,
   no frena: no existe un "corta el gasto" en AWS.
-- **`teardown.sh` es obligatorio al terminar** (§7). No es opcional, es parte del
+- **`teardown.sh` es obligatorio al terminar** (sección 7). No es opcional, es parte del
   ejercicio.
 - Ninguna credencial se escribe en un archivo de este repositorio. `gitleaks` corre en
   cada PR y escanea el historial completo.
@@ -76,13 +76,13 @@ Doc: [`create-budget` con la CLI](https://docs.aws.amazon.com/code-library/lates
 
 | Paso | Servicio | Necesidad | Equivalente local |
 |---|---|---|---|
-| §3 | **ECR** | guardar la imagen | registry local |
-| §4 | **App Runner** | ejecutar el contenedor y darle una URL | `docker compose` |
-| §5 | **S3** | artifact store de MLflow | MinIO |
-| §6 | **RDS Postgres** | backend store de MLflow | Postgres en Compose |
+| sección 3 | **ECR** | guardar la imagen | registry local |
+| sección 4 | **App Runner** | ejecutar el contenedor y darle una URL | `docker compose` |
+| sección 5 | **S3** | artifact store de MLflow | MinIO |
+| sección 6 | **RDS Postgres** | backend store de MLflow | Postgres en Compose |
 
-Puedes hacer solo §3 y §4 (la API con un modelo que se resuelve del MLflow local o que
-arranca degradado). §5 y §6 son el stack de MLflow gestionado y son los que cuestan
+Puedes hacer solo sección 3 y sección 4 (la API con un modelo que se resuelve del MLflow local o que
+arranca degradado). sección 5 y sección 6 son el stack de MLflow gestionado y son los que cuestan
 dinero de verdad.
 
 **Orden de creación y de destrucción son inversos.** Si esto suena obvio, mira el
@@ -130,7 +130,7 @@ Léelos en paralelo.
 | `AppRunnerListarNoAdmiteRecurso` | `apprunner:ListServices` sobre `*` | otra acción de cuenta. **Compromiso aceptado:** el equipo puede *ver* los nombres de los servicios de los demás. No puede tocarlos, porque el statement anterior acota las acciones que modifican |
 | `PasarSoloElRolDeAccesoAEcr` | `iam:PassRole`, restringido al ARN del rol del equipo **y** con `iam:PassedToService = build.apprunner.amazonaws.com` | **es el permiso más peligroso de la política.** `PassRole` sin restringir permite escalar privilegios: quien pueda pasar un rol de administrador a un servicio que ejecuta código, es administrador |
 | `S3SoloElBucketDelEquipo` | leer y escribir en el bucket del equipo | **dos ARNs, no uno**: el bucket (para `ListBucket`) y `bucket/*` (para los objetos). Confundirlos es el error más común de las políticas de S3: `ListBucket` funciona y `GetObject` falla |
-| `LeerElCostoEsParteDelAprendizaje` | Cost Explorer y Budgets, solo lectura | si el equipo no puede ver lo que gasta, el ejercicio de costo de la §4 del README no se puede hacer |
+| `LeerElCostoEsParteDelAprendizaje` | Cost Explorer y Budgets, solo lectura | si el equipo no puede ver lo que gasta, el ejercicio de costo de la sección 4 del README no se puede hacer |
 | `SaberConQueIdentidadEstoyOperando` | `sts:GetCallerIdentity` | primer comando de cualquier sesión de AWS |
 | `DenyEscaladoDePrivilegiosYRecursosCaros` | **niega** `ec2:*`, `organizations:*`, `rds:Create/DeleteDBInstance` y las acciones de IAM que permiten escalar | un `Deny` explícito, y no la simple ausencia de `Allow`, porque **un `Deny` gana frente a cualquier `Allow`**: sigue valiendo si alguien adjunta otra política por error, que es justo el escenario contra el que protege. `iam:PassRole` **no** está en la lista, a propósito: negarlo anularía el `Allow` acotado de arriba y App Runner no podría crearse |
 
@@ -313,7 +313,7 @@ Cada parte, y por qué:
 | `Port` | `8000` | el `EXPOSE` del `Dockerfile`. Si no coinciden, el servicio nunca pasa el health check |
 | `TAXI_MODELO_URI` | `ninguno` | primer despliegue **sin modelo**: la API arranca degradada, `/health` responde 200 y así se verifica la plataforma antes de meter MLflow en la ecuación |
 | `AutoDeploymentsEnabled` | `false` | con un digest no tendría sentido: el digest no cambia. Con auto-deploy y un tag, App Runner redespliega solo cuando el tag se repunta — cómodo, y exactamente el comportamiento que la sesión 5 argumenta que **no** se quiere en producción |
-| `AccessRoleArn` | el rol de §4.1 | obligatorio para ECR privado |
+| `AccessRoleArn` | el rol de sección 4.1 | obligatorio para ECR privado |
 | `Cpu` / `Memory` | `1 vCPU` / `2 GB` | valores válidos: CPU `0.25\|0.5\|1\|2\|4 vCPU`; memoria `0.5\|1\|2\|3\|4\|6\|8\|10\|12 GB` |
 | `Path=/health` | | **el default de App Runner es `Protocol=TCP` y `Path=/`.** Con TCP basta que el puerto acepte conexiones: un proceso vivo que devuelve 500 en todo pasaría el check. Ponerlo en HTTP contra `/health` es la diferencia entre "el puerto está abierto" y "el servicio funciona" |
 

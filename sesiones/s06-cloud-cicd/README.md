@@ -175,7 +175,7 @@ responde".** En cuatro horas, esa ceremonia se paga con el tiempo de los concept
 
 App Runner se elige por **pedagogía, no por superioridad técnica**. Sus límites hay
 que decirlos: menos control de red que ECS, no está en todas las regiones, y el modelo
-de costo cobra por la memoria provisionada aunque no haya tráfico (ver §4). En una
+de costo cobra por la memoria provisionada aunque no haya tráfico (ver sección 4). En una
 empresa con requisitos de red, ECS o EKS son la respuesta correcta y la traducción es
 directa, porque **la unidad sigue siendo la imagen referenciada por digest**.
 

@@ -90,7 +90,7 @@ Ponerlo en la pizarra. Los `make` targets (`make evals-llm`, `make comparar-prom
 
 **Archivos:** ninguno. **Terminales:** 0.
 
-1. **Recap por un estudiante** (rotativo, 4 min): qué quedó de S07 — drift,
+1. **Arranque directo** (5 min): dudas sueltas de S07 si las hay, y en una frase propia lo que quedó — drift,
    monitoreo, alertas. La pregunta de cierre que conecta con hoy: *"si el modelo es
    una API de otra empresa y puede cambiar sin avisarnos, ¿qué de lo que montamos
    sigue sirviendo?"*
@@ -111,7 +111,7 @@ Ponerlo en la pizarra. Los `make` targets (`make evals-llm`, `make comparar-prom
 
 ## BLOQUE 2 — El dolor (10-25 min)
 
-**Archivos:** `sesiones/s08-llmops/README.md` §"Por qué esta sesión existe".
+**Archivos:** `sesiones/s08-llmops/README.md` sección "Por qué esta sesión existe".
 **Terminales:** 1.
 
 Tres escenas. No se abre ninguna herramienta hasta el bloque 3.
@@ -1408,7 +1408,7 @@ Presentar los cinco criterios de aceptación (5 min) y dejar trabajar. Los ejerc
 
 ## BLOQUE 14 — Cierre del curso (320-340 min)
 
-**Archivos:** `README.md` §"Qué se transfiere y qué cambia". **Terminales:** 0.
+**Archivos:** `README.md` sección "Qué se transfiere y qué cambia". **Terminales:** 0.
 
 ### 14.1 — La tabla, leída al revés (8 min)
 
@@ -1516,7 +1516,7 @@ Misma sección que en las otras sesiones:
       limitado (mejor: virtual, del gateway), `uv sync --extra llmops`, y una corrida de
       prueba hecha **antes** para conocer el costo.
 - [ ] Verificado el estado de las versiones de la tabla de herramientas
-      (README §"Qué NO usar"): envejecen entre cohortes, sobre todo el SDK de `openai`
+      (README sección "Qué NO usar"): envejecen entre cohortes, sobre todo el SDK de `openai`
       y las semantic conventions de OTel.
 - [ ] Verificada la fecha de `config/precios.yaml`. Si está fuera de vigencia, la
       calculadora lo advierte en clase — **lo cual es una buena demo**, si se anuncia.

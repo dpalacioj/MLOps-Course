@@ -24,7 +24,7 @@ qué archivo abrir, qué comando correr y qué salida esperar.
 > deja desmentido en vivo, que es la peor forma de perder autoridad en la sesión que
 > trata sobre no inventarse cosas.
 
-> **Particularidad de esta sesión:** es la primera, así que **no hay recap de un
+> **Particularidad de esta sesión:** es la primera, así que **no hay tarea previa de un
 > estudiante ni revisión del CI de talleres entregados**. Ese ritual empieza en S02.
 > El arranque de hoy es encuadre. Dilo en voz alta, para que quede claro que a partir
 > de la semana que viene alguien va a tener que explicar la sesión anterior.
@@ -205,11 +205,11 @@ el enemigo. **El notebook explora, el paquete decide.**
 
 ## BLOQUE 3 — Instalar `uv` y reconstruir el entorno (40-60 min)
 
-**Archivos:** `entorno.md` §1, §4; `troubleshooting-so.md`. **Terminales:** 1.
+**Archivos:** `entorno.md` sección 1, sección 4; `troubleshooting-so.md`. **Terminales:** 1.
 
 ### 3.1 Las tres preguntas del entorno (5 min)
 
-`entorno.md` §1, la tabla de tres filas. Insistir en que son **preguntas distintas** y
+`entorno.md` sección 1, la tabla de tres filas. Insistir en que son **preguntas distintas** y
 que hacen falta las tres:
 
 - ¿qué intérprete? → `.python-version` + `requires-python`
@@ -230,23 +230,23 @@ tardó en las suyas. La dispersión es el dato interesante, no la media.
 ### 3.3 Los cuatro fallos de Windows (10 min)
 
 **Este es el bloque que salva la clase**, porque la mayoría del grupo está en Windows.
-Recorrer `troubleshooting-so.md` §2, §3, §4 y §6 en pantalla, en este orden:
+Recorrer `troubleshooting-so.md` sección 2, sección 3, sección 4 y sección 6 en pantalla, en este orden:
 
-1. **`ExecutionPolicy`** (§2). La política por defecto es `Restricted` y bloquea
+1. **`ExecutionPolicy`** (sección 2). La política por defecto es `Restricted` y bloquea
    *todo* `.ps1`, incluido `Activate.ps1`. El remedio va en el **paso 1**:
    `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`.
    Decir en voz alta por qué `CurrentUser` y no `LocalMachine` (no necesita
    administrador), y por qué `RemoteSigned` y no `Bypass`.
    *Qué se corrigió:* en el material anterior este remedio estaba en el documento
    nº 7, y el script de setup se ofrecía en el nº 0.
-2. **El punto inicial** (§3). El material anterior escribía
+2. **El punto inicial** (sección 3). El material anterior escribía
    `` `\.venv\Scripts\Activate.ps1` ``, **sin el punto**. Eso apunta a la raíz del
    disco. Escribirlo mal en pantalla, ver el error, y arreglarlo. Vale más que
    explicarlo.
-3. **`chmod +x ./script.sh`** (§4). No funciona en Windows y no es que falte
+3. **`chmod +x ./script.sh`** (sección 4). No funciona en Windows y no es que falte
    configurar algo: `chmod` es POSIX y el bit de ejecución no existe en NTFS. Tres
    salidas: el `.ps1`, Git Bash, o WSL declarado explícitamente.
-4. **`make` no existe en Windows** (§6). `devcontainer`,
+4. **`make` no existe en Windows** (sección 6). `devcontainer`,
    `winget install ezwinports.make`, o los comandos a mano.
 
 Y decir la recomendación de fondo: **`uv python install 3.11`, no `pyenv-win`.** No
@@ -257,11 +257,11 @@ fallo antes de tener un intérprete.
 
 ## BLOQUE 4 — `pyproject.toml` vs `uv.lock`, y el experimento (60-85 min)
 
-**Archivos:** `entorno.md` §2, §3; `pyproject.toml`; `uv.lock`. **Terminales:** 1.
+**Archivos:** `entorno.md` sección 2, sección 3; `pyproject.toml`; `uv.lock`. **Terminales:** 1.
 
 ### 4.1 Intención frente a hecho (8 min)
 
-El diagrama de `entorno.md` §2 en pantalla, y luego los números reales del
+El diagrama de `entorno.md` sección 2 en pantalla, y luego los números reales del
 repositorio:
 
 ```bash
@@ -280,7 +280,7 @@ todo?" (Porque responden preguntas distintas: el `lock` dice *qué se instaló*,
 
 ### 4.2 EL EXPERIMENTO (12 min)
 
-**El bloque central del bloque A.** `entorno.md` §3. Correrlo en vivo, en `/tmp`, no
+**El bloque central del bloque A.** `entorno.md` sección 3. Correrlo en vivo, en `/tmp`, no
 en el repo del curso:
 
 ```bash
@@ -348,7 +348,7 @@ incluida su tabla resumen de comandos.
 habrían sabido que el comando era inventado, sin ejecutarlo?" Respuesta que se busca:
 no se puede. De ahí la regla del curso: **toda tabla de herramientas declara criterio,
 fecha de evaluación y un enlace a la doc oficial por fila.** Mostrar la tabla del
-[README §7](../sesiones/s01-reproducibilidad/README.md#7-alternativas-y-trade-offs)
+[README sección 7](../sesiones/s01-reproducibilidad/README.md#7-alternativas-y-trade-offs)
 como el formato que se les va a pedir en su ADR.
 
 Lo correcto: `uv lock --upgrade-package pandas && uv sync`.
@@ -357,7 +357,7 @@ Lo correcto: `uv lock --upgrade-package pandas && uv sync`.
 
 ## BLOQUE 5 — `make smoke` y alternativas honestas (85-95 min)
 
-**Archivos:** `scripts/smoke_test.py`; `entorno.md` §6, §8. **Terminales:** 1.
+**Archivos:** `scripts/smoke_test.py`; `entorno.md` sección 6, sección 8. **Terminales:** 1.
 
 ### 5.1 Un diagnóstico que puede fallar (6 min)
 
@@ -387,7 +387,7 @@ sesión 2: "un contrato que nunca falla no protege nada".
 
 ### 5.2 Alternativas, sin dogma (4 min)
 
-README §7, la tabla. Los tres puntos que hay que decir, en este orden:
+README sección 7, la tabla. Los tres puntos que hay que decir, en este orden:
 
 1. **Poetry no es legado.** 2.4.1, mayo de 2026, activo y mantenido. Si en su empresa
    hay Poetry funcionando, migrar por migrar es una mala decisión.
@@ -411,11 +411,11 @@ sigan atascados, al `devcontainer`.
 
 ## BLOQUE 6 — Git y `conventional commits` (110-130 min)
 
-**Archivos:** `git.md` §1, §2, §3. **Terminales:** 1.
+**Archivos:** `git.md` sección 1, sección 2, sección 3. **Terminales:** 1.
 
 ### 6.1 SSH en tres comandos (5 min)
 
-`git.md` §1. Correrlo si hay alguien que no lo tenga; si todos lo tienen, mostrarlo y
+`git.md` sección 1. Correrlo si hay alguien que no lo tenga; si todos lo tienen, mostrarlo y
 seguir. La idea que hay que dejar: clave privada se queda, clave pública se registra.
 
 Mencionar la firma de commits con la **misma clave SSH** (`gpg.format ssh`), que es
@@ -424,7 +424,7 @@ veces**, una como *Authentication Key* y otra como *Signing Key*.
 
 ### 6.2 El flujo diario (5 min)
 
-`git.md` §2. Una rama por entrega, un PR por entrega. Vale la pena vender el PR
+`git.md` sección 2. Una rama por entrega, un PR por entrega. Vale la pena vender el PR
 como formato de trabajo tambien para el proyecto: "un zip produce una nota; un PR
 produce comentarios en las líneas de código."
 
@@ -449,7 +449,7 @@ git commit --allow-empty -m "chore: demostrar el hook de commit-msg"
 
 Y ahora sí pasa. Luego deshacerlo: `git reset --hard HEAD~1`.
 
-Recorrer la tabla de los once tipos de `git.md` §3 —son exactamente los que acepta
+Recorrer la tabla de los once tipos de `git.md` sección 3 —son exactamente los que acepta
 [`.pre-commit-config.yaml`](../.pre-commit-config.yaml)— y la tabla de errores
 frecuentes. El caso `!` / `BREAKING CHANGE` merece 60 segundos, porque en la sesión 5
 van a cambiar el nombre de un campo de la API.
@@ -458,7 +458,7 @@ van a cambiar el nombre de un campo de la API.
 
 ## BLOQUE 7 — Git LFS, **antes** del binario (130-145 min)
 
-**Archivos:** `git.md` §5. **Terminales:** 1-2.
+**Archivos:** `git.md` sección 5. **Terminales:** 1-2.
 
 ### 7.1 El problema, con los diagramas del curso (5 min)
 
@@ -487,7 +487,7 @@ donde LFS era el documento nº 10 de 13. Los 12 diagramas de la sesión 4, roros
 
 ### 7.2 El orden, que es el punto (7 min)
 
-`git.md` §5. Los cuatro pasos, y el énfasis en el 3:
+`git.md` sección 5. Los cuatro pasos, y el énfasis en el 3:
 
 ```bash
 git lfs install
@@ -600,7 +600,7 @@ responde la semana que viene.
 uv run pre-commit run --all-files
 ```
 
-Recorrer la tabla de grupos de `calidad.md` §5 y detenerse en los **tres `hooks`
+Recorrer la tabla de grupos de `calidad.md` sección 5 y detenerse en los **tres `hooks`
 propios**, porque cada uno codifica un bug con nombre:
 
 - `sin-rutas-absolutas`: el `prefect.yaml` con `set_working_directory` apuntando al
@@ -646,7 +646,7 @@ formatear— y nadie lo notaba, porque el paso de tests nunca fallaba.
 
 **La frase:** "Un `step` que no puede fallar no es una comprobación, es decoración."
 
-Recorrer los cinco `jobs` (tabla de `calidad.md` §6) y señalar dos decisiones:
+Recorrer los cinco `jobs` (tabla de `calidad.md` sección 6) y señalar dos decisiones:
 
 - **Windows en la matriz de `tests`.** A propósito: cuatro de los fallos de esta
   sesión eran específicos de Windows y ninguno se detectaba.
@@ -697,11 +697,11 @@ desactiva por completo el punto 9.
 | El CI sale verde con los tests rotos | `continue-on-error`, `\|\| true` o `\|\| echo` heredados de un tutorial |
 | `pre-commit` "no hace nada" | falta `pre-commit install`, o se commitea con `--no-verify` |
 | El PR tiene 300 líneas de reformateo | dos formatters: Black en el editor y `ruff format` en el `hook` |
-| `make: command not found` | Windows. `troubleshooting-so.md` §6 |
+| `make: command not found` | Windows. `troubleshooting-so.md` sección 6 |
 | `uv sync` borró un paquete | se instaló con `uv pip install`; nunca se declaró |
 | `smoke_test.py` verde con el entorno roto | usa `pip list` en lugar de `import`, o no llama a `sys.exit(1)` |
-| `UnauthorizedAccess` al correr cualquier `.ps1` | `ExecutionPolicy`. `troubleshooting-so.md` §2 |
-| `Activate.ps1` "no existe" | falta el `.\` inicial. `troubleshooting-so.md` §3 |
+| `UnauthorizedAccess` al correr cualquier `.ps1` | `ExecutionPolicy`. `troubleshooting-so.md` sección 2 |
+| `Activate.ps1` "no existe" | falta el `.\` inicial. `troubleshooting-so.md` sección 3 |
 
 ---
 
@@ -710,7 +710,7 @@ desactiva por completo el punto 9.
 ### 10.1 Autoverificación (7 min)
 
 Las cinco preguntas del
-[README §6](../sesiones/s01-reproducibilidad/README.md#6-autoverificación), en voz
+[README sección 6](../sesiones/s01-reproducibilidad/README.md#6-autoverificación), en voz
 alta y por sorteo. Las dos que más discusión dan:
 
 - la nº 2 (`--locked` en CI): la trampa es que la respuesta fácil —quitar
@@ -720,7 +720,7 @@ alta y por sorteo. Las dos que más discusión dan:
 
 ### 10.2 Alternativas y qué NO usar (5 min)
 
-README §7 y §8. Leer en voz alta los que más daño hacen:
+README sección 7 y sección 8. Leer en voz alta los que más daño hacen:
 
 - `uv update` (no existe);
 - `\.venv\Scripts\Activate.ps1` sin el punto;
@@ -826,7 +826,7 @@ entere.
       sesión pierde toda su autoridad si el material declara una versión y la pantalla
       muestra otra.
 - [ ] **Re-verificadas las últimas releases** de la tabla de alternativas del
-      [README §7](../sesiones/s01-reproducibilidad/README.md#7-alternativas-y-trade-offs)
+      [README sección 7](../sesiones/s01-reproducibilidad/README.md#7-alternativas-y-trade-offs)
       (`uv`, Poetry, `pip-tools`). La fecha de evaluación declarada es agosto de 2026:
       si estás en otra cohorte, actualízala. Es la tabla que envejece más rápido de
       esta sesión, y es la que sostiene el argumento "Poetry no es legado".
@@ -835,5 +835,3 @@ entere.
       Construye uno el día antes: la primera construcción no es instantánea.
 - [ ] Puertos libres en tu máquina: 5001, 4200, 8000.
 - [ ] Decidido si se publica `_soluciones/` (recomendación: **no** antes del taller).
-- [ ] Anunciado quién hace el **recap de esta sesión al empezar la S02**. El ritual
-      empieza la semana que viene y conviene que la persona lo sepa hoy.

@@ -124,26 +124,27 @@ Las decisiones de diseño están documentadas en [`docs/adr/`](docs/adr).
 
 ---
 
-## Estructura del repositorio
+## Qué hay en cada carpeta
 
-```
-sesiones/s01…s08/       Material de clase: README, notebooks, taller y soluciones
-src/taxi/               El caso guía como paquete instalable
-  config.py               particiones, nombres, umbrales — fuente de verdad única
-  data/                   contratos Pandera y descarga con verificación de hash
-  features/contract.py    la ÚNICA definición de features del curso
-  models/                 entrenamiento, HPO, registry, evaluación
-  api/                    FastAPI con Pydantic v2 y métricas Prometheus
-  flows/                  pipelines de Prefect 3
-  monitoring/             detección de drift
-tests/                  308 tests: unitarios, de datos y de API
-scripts/                smoke_test, gate de promoción, model card, hooks
-proyecto/               Proyecto final: enunciado, rúbrica, starter template
-instructor/             Ocho guiones de clase con bloques minutados
-docs/                   ADRs, mapa de migración, cierre del curso
-observabilidad/          Prometheus y dashboards de Grafana versionados
-referencia/             Material opcional de consulta
-```
+| Carpeta | Qué contiene |
+|---|---|
+| `sesiones/s01…s08/` | El material de cada clase. Cada sesión trae su `README.md` (la lectura principal), `notebooks/` para la parte práctica, `taller.md` con el ejercicio, y `_soluciones/` — que conviene no abrir antes de intentar el taller |
+| `src/taxi/` | El caso guía (los taxis de Nueva York) como paquete Python instalable. Es el código que los notebooks importan y el ejemplo vivo de todo lo que el curso enseña: `config.py` reúne las decisiones, `data/` carga y valida, `features/` construye variables, `models/` entrena y registra, `api/` sirve el modelo, `flows/` lo orquesta y `monitoring/` lo vigila |
+| `tests/` | Los tests del paquete: unitarios, de contrato de datos y de la API. `make test` los corre |
+| `scripts/` | Herramientas sueltas: `smoke_test.py` (el diagnóstico del entorno), `promote.py` (el gate de promoción de la sesión 6), `model_card.py`, y los hooks propios del repositorio |
+| `proyecto/` | Todo lo del proyecto final: el enunciado, la rúbrica con la que se califica, la plantilla de peer review, una lista de datasets verificados y un `starter-template/` listo para copiar |
+| `data/` | Aquí caen los datos al correr `make data`. **No se versiona** (salvo `metadata.json`, que registra de dónde vino cada archivo y su hash) |
+| `docs/` | Las decisiones de diseño del repositorio (`adr/`) y el mapa de migración desde la estructura anterior |
+| `observabilidad/` | La configuración de Prometheus y los dashboards de Grafana que usa `make up` (sesión 7) |
+| `instructor/` | Notas de clase del docente, sesión por sesión |
+| `referencia/` | Guías de consulta opcionales (comandos de Docker, etc.). No hacen falta para seguir el curso |
+| `.devcontainer/` | El plan B: abre el repo en GitHub Codespaces y el entorno queda montado sin instalar nada |
+| `.github/workflows/` | El CI del repositorio: lint, tests, build de la imagen y el pipeline de despliegue |
+
+Y los archivos sueltos de la raíz: `pyproject.toml` y `uv.lock` declaran y fijan
+las dependencias, `Makefile` es la lista de comandos (`make` a secas los
+muestra), `Dockerfile` y `docker-compose.yml` arman los servicios locales, y
+`.pre-commit-config.yaml` define los hooks que se instalan con `make setup`.
 
 ---
 

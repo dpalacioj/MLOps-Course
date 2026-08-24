@@ -174,7 +174,7 @@ if esperado and actual != esperado:
 ```
 
 Un hash que se registra y nunca se compara no sirve de nada. La demostración en vivo
-está en [`versionado-de-datos.md`](../versionado-de-datos.md) §2.
+está en [`versionado-de-datos.md`](../versionado-de-datos.md) sección 2.
 
 **Trampa habitual:** el `metadata.json` no aparece en `git ls-files` porque el
 `.gitignore` tiene `*.json` global. Es un bug real de este repositorio, y por eso el
@@ -212,7 +212,7 @@ completar la fase de monitoreo, que vale un 15 % de la rúbrica.
 
 ## Criterio 10 — La medición `TimeSeriesSplit` vs `KFold(shuffle=True)`
 
-Notebook: [`notebooks/02-validacion-temporal-y-leakage.ipynb`](../notebooks/02-validacion-temporal-y-leakage.ipynb) §2.
+Notebook: [`notebooks/02-validacion-temporal-y-leakage.ipynb`](../notebooks/02-validacion-temporal-y-leakage.ipynb) sección 2.
 
 Medido en el caso guía, sobre 144 días de serie diaria de demanda, mismo modelo y
 mismas features:
@@ -253,7 +253,7 @@ estudiante no encuentra ninguno, no ha buscado.
 
 ## Criterio 12 — La tabla de disponibilidad temporal por feature
 
-Referencia: [`dataset-card.md`](../dataset-card.md) §7.
+Referencia: [`dataset-card.md`](../dataset-card.md) sección 7.
 
 La fila que hay que buscar es la que tiene un **matiz**, no la que dice "sí" a todo. En
 el caso guía es `trip_distance`: es la distancia **registrada** por el taxímetro, que
@@ -280,7 +280,7 @@ el CI los corra en cada PR sin depender de que la TLC esté disponible.
 
 ## El bloque que hay que discutir aunque no sea un criterio
 
-**El límite honesto del contrato** ([README](../README.md) §4). Es el contenido más
+**El límite honesto del contrato** ([README](../README.md) sección 4). Es el contenido más
 valioso de la sesión y no se puede evaluar con un `grep`, así que conviene sacarlo en la
 revisión oral:
 

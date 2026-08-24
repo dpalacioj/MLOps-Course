@@ -48,17 +48,66 @@ entregable. El [taller](taller.md) los evalúa uno por uno.
 
 ---
 
-## Estructura de la sesión (240 min)
+## Cómo está organizada la sesión
 
-| Tramo | Min | Qué pasa |
-|---|---|---|
-| Arranque | Recap de S01 por un estudiante (rotativo) y dudas del taller anterior |
-| **El dolor** | 15-40 | [`notebooks/01-el-dolor-de-los-datos.ipynb`](notebooks/01-el-dolor-de-los-datos.ipynb) §1-2. Dos actos: el cambio de unidades y la categoría que desaparece. **No se abre Pandera** |
-| Bloque A | 40-95 | Contratos de datos y los tres niveles de check: §2, §3, §4 de este README |
-| *Pausa* | 95-110 | |
-| Bloque B | 110-165 | Versionado de datos (§6) y `split` temporal + `leakage` (§7) |
-| Taller | 165-220 | [`taller.md`](taller.md). Se entrega en clase |
-| Cierre | 220-240 | Autoverificación (§8), alternativas y trade-offs (§5), qué NO usar (§9), tarea |
+Arrancamos con el problema en vivo, en el
+[notebook 01](notebooks/01-el-dolor-de-los-datos.ipynb): dos fallos de datos que
+no lanzan ningún error. De ahí pasamos a los contratos de datos y los tres
+niveles de check (secciones 2 a 4), y en la segunda mitad, versionado de datos
+(sección 6) y `split` temporal con las tres formas de `leakage` (sección 7). El
+[taller](taller.md) se puede terminar en clase y es, casi tal cual, la primera
+fase del proyecto del curso.
+
+---
+
+## 0. El dataset con el que trabaja todo el curso
+
+Antes de romper nada, conozcamos lo que vamos a romper.
+
+Todas las sesiones usan el mismo dataset: los **viajes de los taxis verdes de
+Nueva York**, publicados por la Taxi and Limousine Commission (TLC), la entidad
+que regula los taxis de la ciudad. Cada fila es **un viaje real**: dónde empezó
+(`PULocationID`, una de las 265 zonas de la ciudad), dónde terminó
+(`DOLocationID`), cuándo (`lpep_pickup_datetime` y `lpep_dropoff_datetime`) y
+cuánto recorrió (`trip_distance`, **en millas** — ese detalle nos va a doler hoy
+mismo). Los taxis verdes son los que operan fuera del centro de Manhattan; un
+mes trae entre 60 y 70 mil viajes, un tamaño con el que se puede entrenar en
+segundos.
+
+De ese registro derivamos las dos variables que modelamos en el curso:
+`duration` (minutos entre recogida y llegada — regresión) y `viaje_largo`
+(¿duró más de 30 minutos? — clasificación).
+
+**¿Por qué este dataset y no otro?** Cuatro razones, y las cuatro son razones
+de MLOps más que de ML:
+
+1. **Es público y sin registro.** Cualquiera lo descarga con un comando, hoy y
+   dentro de cinco años. Nada del curso depende de una cuenta o una API key.
+2. **Llega por particiones mensuales**, como llegan los datos en una empresa.
+   Eso nos da gratis lo que otros cursos tienen que simular: un motivo real
+   para reentrenar (llegó el mes nuevo) y drift real (compararemos enero contra
+   julio en la sesión 7, y la diferencia existe de verdad: verano, tarifas,
+   tráfico).
+3. **Es lo bastante sucio para ser honesto.** Tiene registros corruptos (en
+   enero de 2023 hay un viaje de 120.098 millas), nulos y colas raras. Los
+   contratos de hoy se calibraron contra ese ruido real.
+4. **Es lo bastante pequeño para iterar en clase.** Muestreamos cada mes a
+   60.000 filas y un entrenamiento tarda segundos, no minutos.
+
+Los meses que usa el curso están **fijos** en
+[`src/taxi/config.py`](../../src/taxi/config.py) — nunca "el mes actual",
+porque la TLC publica con retraso y el curso no puede depender de eso:
+
+| Para qué | Meses |
+|---|---|
+| Entrenar | 2023-01, 2023-02, 2023-03 |
+| Validar | 2023-04 |
+| Holdout (el juez del `gate` de la sesión 6) | 2023-05 |
+| "Producción" simulada (monitoreo, sesión 7) | 2023-07 y 2024-01 |
+
+Se descargan con `make data`, quedan en `data/raw/` y su procedencia (URL, hash
+SHA-256, tamaño) queda registrada en `data/raw/metadata.json`. En la sección 8
+volvemos sobre por qué ese registro importa.
 
 ---
 
@@ -125,7 +174,7 @@ Hay tres formas de enterarse, y las tres tienen su sitio en el curso:
 
 | Cómo | Cuándo te enteras | Sesión |
 |---|---|---|
-| El **contrato** rechaza el lote si la zona está fuera de `1-265` | en la frontera, antes de entrenar | esta (§3) |
+| El **contrato** rechaza el lote si la zona está fuera de `1-265` | en la frontera, antes de entrenar | esta (sección 3) |
 | Una **métrica** que cuenta categorías no vistas por `request` | en producción, en tiempo real | S07 (Prometheus) |
 | El **`drift`** de la distribución de `PU_DO` contra la referencia | por lotes, comparando periodos | S07 (Evidently) |
 
@@ -162,7 +211,7 @@ ellos es una decisión, no una repetición:
 **Por qué `strict = False` en los dos.** El parquet de la TLC trae ~20 columnas y solo
 nos importan cinco. Un contrato que exija ausencia de columnas extra se rompe cada vez
 que la TLC agrega un campo, y eso **entrena al equipo a ignorarlo**. Es el mismo
-razonamiento que la cota ancha de §3: un contrato que grita por cosas que no importan
+razonamiento que la cota ancha de sección 3: un contrato que grita por cosas que no importan
 acaba desactivado.
 
 ### El contrato describe, el test verifica
@@ -234,7 +283,7 @@ filtro de negocio de
 
 Está implementado, calibrado con datos reales y documentado en
 [`src/taxi/data/contract.py`](../../src/taxi/data/contract.py). Esta sección **explica
-lo que ya está ahí**; el [notebook 01](notebooks/01-el-dolor-de-los-datos.ipynb) §3 lo
+lo que ya está ahí**; el [notebook 01](notebooks/01-el-dolor-de-los-datos.ipynb) sección 3 lo
 ejercita.
 
 | Nivel | Cómo se escribe | Qué atrapa | Qué **no** puede ver |
@@ -328,7 +377,7 @@ antes de empezar. Es trivial y aparece en datos reales más de lo que nadie espe
 
 ### La tabla que resume el bloque (medida, no estimada)
 
-Salida real del notebook 01 §3 con el `fixture` sintético:
+Salida real del notebook 01 sección 3 con el `fixture` sintético:
 
 | Caso | Veredicto | Check que lo atrapa |
 |---|---|---|
@@ -397,7 +446,7 @@ Un `D` de 0,25 frente a un ruido de 0,007 no deja lugar a dudas. El contrato no 
 vio; el `drift` no tiene ninguna duda.
 
 Y fíjate en el **control negativo**: sin él, "mi detector marcó `drift`" no significa
-nada. Es la misma disciplina que el control negativo del contrato de §2, aplicada al
+nada. Es la misma disciplina que el control negativo del contrato de sección 2, aplicada al
 otro instrumento. La sesión 7 lo llama *calibrar contra el ruido bajo el nulo* y es
 donde se demuestra que un umbral por debajo de su propio ruido garantiza falsos
 positivos.
@@ -420,7 +469,7 @@ con nulos y con zonas inexistentes mientras esperas a acumular un lote para comp
 
 Y hay una consecuencia operativa que se paga en la S07: **el `drift` necesita una
 referencia versionada**. Si no puedes decir con exactitud qué dato usó tu `champion`
-para entrenar, no puedes calcular `drift` contra nada. Eso es §6.
+para entrenar, no puedes calcular `drift` contra nada. Eso es sección 6.
 
 ---
 
@@ -526,7 +575,7 @@ Tres propiedades, cada una con su consecuencia:
 > **Git LFS no es versionado de datos.** LFS resuelve *el tamaño del `blob` en Git*.
 > No da `diff` de tablas, ni `time travel`, ni ramas de datos, ni `lineage`. Es la
 > confusión más común al salir de la sesión 1
-> ([`git.md`](../s01-reproducibilidad/git.md) §5).
+> ([`git.md`](../s01-reproducibilidad/git.md) sección 5).
 
 La guía práctica, con los comandos de DVC y las advertencias de entorno, está en
 **[`versionado-de-datos.md`](versionado-de-datos.md)**.
@@ -588,7 +637,7 @@ pipe = Pipeline([("escala", StandardScaler()), ("modelo", Ridge())])
 Lo mismo con `SimpleImputer` (la media que rellena viene del futuro), `SelectKBest`
 (las features se eligen mirando `test`) y `PCA`.
 
-Medido en el notebook §3, con un 12 % de nulos inyectados: los dos RMSE salen
+Medido en el notebook sección 3, con un 12 % de nulos inyectados: los dos RMSE salen
 **casi iguales** (146,4 frente a 146,6), pero las medias del `imputer` son
 **distintas** (2255,3 con `fit` sobre todo, 2267,6 con `fit` solo en `train`).
 
@@ -657,7 +706,7 @@ responde comparando dos `timestamps` en lugar de discutiéndola en un PR. Va en 
 
 ### El `baseline` tonto, que es la comprobación más rentable
 
-Medido en el notebook §6:
+Medido en el notebook sección 6:
 
 | | RMSE |
 |---|---|
@@ -683,7 +732,7 @@ en un documento aparte que se desactualiza.
 
 **Por qué esto no es burocracia.** Tres razones, en orden de urgencia práctica:
 
-1. **Sin unidades declaradas, el incidente de §1 es inevitable.** La `dataset card`
+1. **Sin unidades declaradas, el incidente de sección 1 es inevitable.** La `dataset card`
    del caso guía dice que `trip_distance` viene en **millas**. Ese es el único sitio
    donde esa información existe: el `float` no la lleva.
 2. **Sin licencia declarada, no sabes si puedes usar el dato.** Es requisito del
@@ -698,7 +747,7 @@ Y la parte que casi nadie escribe: **sesgos conocidos y población representada.
 green taxi no es "los viajes de Nueva York": es una flota con restricciones
 geográficas de recogida, distinta del yellow taxi y de los `for-hire vehicles`. Un
 modelo entrenado con esto no generaliza a Uber ni a Manhattan sur. Está desarrollado
-en la [`dataset-card.md`](dataset-card.md) §5.
+en la [`dataset-card.md`](dataset-card.md) sección 5.
 
 ---
 
@@ -708,18 +757,18 @@ Respóndelas sin mirar arriba. Entre paréntesis, dónde está la respuesta.
 
 1. `trip_distance` pasa de millas a kilómetros y tu `pipeline` no falla. Enumera qué
    de tu `stack` de la sesión 1 —`ruff`, `mypy`, los tests, el CI— lo habría
-   detectado, y explica por qué. (§1)
+   detectado, y explica por qué. (sección 1)
 2. ¿Por qué el contrato **acepta** un viaje de 120.098 millas y **rechaza** que el
    2 % de los viajes pase de 100? Explícalo en términos de las dos preguntas distintas
-   que responden esos dos checks. (§3)
+   que responden esos dos checks. (sección 3)
 3. Tu contrato tiene ocho reglas y todas pasan sobre el lote de hoy. Un proveedor
    multiplicó una columna por 1,6. ¿Lo detectas? ¿Y qué **sí** lo detectaría, en qué
-   momento del ciclo de vida y a costa de qué? (§4)
+   momento del ciclo de vida y a costa de qué? (sección 4)
 4. Tienes hash + partición inmutable. ¿Qué te falta todavía para poder decir *"este
    experimento de marzo usó exactamente este dato"*? ¿Y para poder revertir un `lake`
-   entero después de una carga mala? (§6)
+   entero después de una carga mala? (sección 6)
 5. Añades una feature nueva y tu AUC sube de 0,72 a 0,97, pero su correlación con el
-   `target` es 0,08. ¿Descartas el `leakage`? Justifícalo con lo medido en §7. (§7)
+   `target` es 0,08. ¿Descartas el `leakage`? Justifícalo con lo medido en sección 7. (sección 7)
 
 ---
 
@@ -727,7 +776,7 @@ Respóndelas sin mirar arriba. Entre paréntesis, dónde está la respuesta.
 
 | No usar | Por qué | En su lugar |
 |---|---|---|
-| `train_test_split(..., shuffle=True)` sobre series temporales | pone el futuro en `train` y el pasado en `test`. Medido: 10,1 % de RMSE optimista sobre los mismos datos | corte temporal + `TimeSeriesSplit`, con `gap` si tus ventanas son largas (§7) |
+| `train_test_split(..., shuffle=True)` sobre series temporales | pone el futuro en `train` y el pasado en `test`. Medido: 10,1 % de RMSE optimista sobre los mismos datos | corte temporal + `TimeSeriesSplit`, con `gap` si tus ventanas son largas (sección 7) |
 | `KFold(shuffle=True)` para validar un modelo temporal | ídem | `TimeSeriesSplit` |
 | `df.fillna(0)` por defecto | no es una estrategia, es una decisión oculta: sesga la media e **inventa ceros que el modelo aprende como reales**. Un `0` en `trip_distance` significa "viaje de distancia nula", que es otra cosa que "no lo sé" | decidir **por columna**, distinguiendo el nulo **estructural** (el campo no aplica) del nulo por **fallo de captura**; imputar dentro de un `Pipeline`; y **dejarlo escrito** en la `dataset card` |
 | `mean_squared_error(y, y_pred, squared=False)` | el parámetro `squared` fue deprecado en `scikit-learn` 1.4 y **eliminado** en 1.6. No existe en la 1.9.0 de este curso: lanza `TypeError` | `root_mean_squared_error(y, y_pred)` |
@@ -736,11 +785,63 @@ Respóndelas sin mirar arriba. Entre paréntesis, dónde está la respuesta.
 | Las APIs de Great Expectations 0.18 (`great_expectations init`, `BatchRequest` del flujo antiguo, los YAML de `great_expectations/`) | GX Core 1.x reorganizó el modelo por completo (`Validation Definition`, `Batch Definition`). La mayoría de los tutoriales de la web son de 0.18 y **no ejecutan** | la API 1.x: `Data Context` → `Data Source` → `Batch Definition` → `Expectation Suite` → `Validation Definition` → `Checkpoint`. Ver la [doc oficial](https://docs.greatexpectations.io/) |
 | `ColumnMapping` de Evidently | reemplazado en Evidently 0.7 y **eliminado**. Se adelanta aquí porque aparece en tutoriales de contratos de datos | `DataDefinition` + `Dataset.from_pandas`. Detalle en [S07](../s07-monitoreo/README.md) |
 | Pydantic para validar `DataFrames` | está diseñado para un registro a la vez; validar 60.000 filas creando 60.000 objetos es lento y no expresa checks de distribución | Pandera o GX. Pydantic **sí** para el I/O de la API (S05) |
-| Cotas por fila estrictas como único check | rechazan el lote completo por 37 filas de 68.211 y el equipo aprende a desactivar el contrato | cota ancha por fila + check de **fracción** por distribución (§3) |
-| Un contrato sin control negativo | "detecta el fallo" no demuestra nada: un contrato que rechaza todo también lo detecta | un test que valide varios lotes independientes de datos **buenos** (§2) |
+| Cotas por fila estrictas como único check | rechazan el lote completo por 37 filas de 68.211 y el equipo aprende a desactivar el contrato | cota ancha por fila + check de **fracción** por distribución (sección 3) |
+| Un contrato sin control negativo | "detecta el fallo" no demuestra nada: un contrato que rechaza todo también lo detecta | un test que valide varios lotes independientes de datos **buenos** (sección 2) |
 | Filtrar filas en silencio | si mañana se descarta el 40 % de los datos, nadie se entera | contar y **registrar** cuántas se descartaron, con un aviso por encima de un umbral, como [`loaders.preparar_particion`](../../src/taxi/data/loaders.py) |
-| Git LFS como versionado de datos | resuelve el tamaño del `blob` en Git; no da `diff`, ni `time travel`, ni ramas, ni `lineage` | la estrategia 1 siempre, y DVC / lakeFS / Delta según el problema (§6) |
+| Git LFS como versionado de datos | resuelve el tamaño del `blob` en Git; no da `diff`, ni `time travel`, ni ramas, ni `lineage` | la estrategia 1 siempre, y DVC / lakeFS / Delta según el problema (sección 6) |
 | `datetime.now()` para elegir la partición de datos | acopla el `pipeline` al reloj y rompe la reproducibilidad entre cohortes. Era el bug que impedía arrancar el `pipeline` estrella del curso anterior | particiones **fijas** en `config.py` ([ADR 001](../../docs/adr/001-caso-guia-y-particiones.md)) |
+
+---
+
+## La anatomía de un proyecto de ML
+
+Ya que el proyecto del curso arranca en esta sesión, vale la pena parar un
+momento en algo que casi nunca se enseña: **cómo se organizan las carpetas de un
+proyecto de ML serio**, y por qué cada una existe. Esta es la estructura que van
+a encontrar en la industria, con variaciones menores:
+
+```
+mi-proyecto/
+├── pyproject.toml        que necesita el proyecto (lo vimos en la sesión 1)
+├── uv.lock               exactamente qué quedó instalado
+├── Makefile              los comandos del proyecto, con nombre corto
+├── README.md             qué es esto y cómo se corre
+├── .gitignore            qué NO se versiona
+├── .github/workflows/    el CI: lo que se verifica en cada push
+├── src/mi_paquete/       el código de verdad, como paquete instalable
+│   ├── config.py           las decisiones en un solo lugar
+│   ├── data/               cargar y VALIDAR datos (lo de hoy)
+│   ├── features/           construir variables
+│   ├── models/             entrenar y evaluar
+│   ├── api/                servir el modelo (sesión 5)
+│   └── monitoring/         vigilarlo (sesión 7)
+├── notebooks/            exploración y narrativa — importa de src/, no define lógica
+├── tests/                lo que protege a src/ de nosotros mismos
+├── data/                 los datos NO se versionan; la carpeta sí existe
+│   ├── raw/                tal como llegaron, intocables
+│   └── processed/          lo que produce el pipeline
+├── configs/              parámetros por entorno, si los hay
+├── models/               artefactos locales — tampoco se versionan
+└── docs/                 decisiones, fichas de datos y del modelo
+```
+
+Tres reglas mandan sobre cualquier variante:
+
+1. **La lógica vive en `src/`, no en `notebooks/`.** Un notebook importa
+   funciones del paquete y las usa para explorar; en el momento en que define
+   una función que alguien más necesita, esa función se muda a `src/`. Es la
+   lección completa de la sesión 1 en una frase.
+2. **`data/` y `models/` existen pero no se versionan.** Se versiona el *cómo
+   obtenerlos* (el código, los hashes, el `metadata.json`), no los bytes. Git
+   guarda recetas, no ingredientes.
+3. **La separación `raw/` / `processed/` es sagrada.** Lo que llegó del
+   proveedor no se toca nunca; todo lo derivado se puede borrar y regenerar. Si
+   un archivo de `raw/` cambió, no fue el pipeline: fue el proveedor, y eso es
+   una alerta (sección 8).
+
+Este repositorio sigue esa misma estructura (con `taxi` como nombre del
+paquete), y el [starter template del proyecto](../../proyecto/starter-template/)
+también, así que la van a recorrer dos veces antes de armar la suya.
 
 ---
 

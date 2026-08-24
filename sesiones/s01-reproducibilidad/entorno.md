@@ -277,14 +277,14 @@ ellos fallan en alguien. `uv python install 3.11` es uno.
 `pyenv` sigue teniendo su sitio: si administras un servidor con quince proyectos
 que no usan `uv`, o si necesitas compilar Python con `--enable-optimizations` o con
 una `openssl` concreta. Queda documentado como alternativa en
-[`troubleshooting-so.md`](troubleshooting-so.md) §5.
+[`troubleshooting-so.md`](troubleshooting-so.md) sección 5.
 
 ---
 
 ## 6. Alternativas, con lo que cuestan
 
 La tabla comparativa con criterio, fecha y enlaces está en el
-[README §7](README.md#7-alternativas-y-trade-offs). Aquí va el razonamiento, que es
+[README sección 7](README.md#7-alternativas-y-trade-offs). Aquí va el razonamiento, que es
 lo que se evalúa en el ADR del taller.
 
 ### Poetry — **no es legado**
@@ -305,7 +305,7 @@ lo está: la línea 2.x está activa (2.4.1, 9 de mayo de 2026). Poetry 2.0 adop
 
 La plantilla de Poetry está en
 [`templates/pyproject.poetry.toml`](templates/pyproject.poetry.toml) y su CI de
-ejemplo en [`calidad.md`](calidad.md) §6.
+ejemplo en [`calidad.md`](calidad.md) sección 6.
 
 ### `pip-tools`
 
@@ -365,7 +365,7 @@ Cuatro reglas, cada una con su razón:
 2. **Si un secreto entró al historial, rotarlo es obligatorio.** Borrar el archivo
    en un commit posterior no lo borra del historial: sigue ahí, recuperable con
    `git log -p`. El `hook` de `gitleaks` de este repositorio existe para que ese
-   escenario no ocurra ([`calidad.md`](calidad.md) §5).
+   escenario no ocurra ([`calidad.md`](calidad.md) sección 5).
 3. **En CI los secretos van en GitHub → Settings → Secrets and variables → Actions**
    y se referencian como `${{ secrets.MI_SECRETO }}`. No se imprimen en logs, y se
    pasan como variable de entorno al `step`, no como argumento de línea de comandos
@@ -412,7 +412,7 @@ significa "el CI corre lo mismo que tú".
 | `The lockfile ... is not up to date` en CI | commiteaste `pyproject.toml` sin `uv.lock` | `uv lock` y commitea los dos juntos |
 | `uv sync` borró un paquete que necesitabas | no estaba declarado; `sync` deja el entorno igual al `lock` | `uv add <pkg>` |
 | `python` apunta a 3.14 y el proyecto pide 3.11 | `python -m venv` usa el primer Python del `PATH`, sin preguntar | `uv python install 3.11 && uv python pin 3.11 && uv sync` |
-| En Windows: `UnauthorizedAccess` al activar o al correr un `.ps1` | `ExecutionPolicy` `Restricted`, que es el valor por defecto | `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`. Ver [`troubleshooting-so.md`](troubleshooting-so.md) §2 |
+| En Windows: `UnauthorizedAccess` al activar o al correr un `.ps1` | `ExecutionPolicy` `Restricted`, que es el valor por defecto | `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`. Ver [`troubleshooting-so.md`](troubleshooting-so.md) sección 2 |
 | En Windows: `Activate.ps1` "no existe" | escribiste `\.venv\Scripts\...` sin el punto inicial: eso apunta a la raíz del disco | `.\.venv\Scripts\Activate.ps1` |
 | El notebook no ve las dependencias del proyecto | el kernel de Jupyter apunta a otro intérprete | lánzalo con `uv run jupyter lab`, o registra el kernel del `.venv` |
 | `make: command not found` en Windows | `make` no viene con Windows | `devcontainer`, `winget install ezwinports.make`, o ejecuta los comandos del `target` a mano |

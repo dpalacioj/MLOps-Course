@@ -74,7 +74,7 @@ sesiones/s04-orquestacion/
 
 **Archivos:** ninguno. **Terminales:** 0.
 
-1. **Recap por un estudiante** (rotativo, 5 min): qué quedó de S03 — tracking,
+1. **Arranque directo** (5 min): dudas sueltas de S03 si las hay, y en una frase propia lo que quedó — tracking,
    registry, aliases. La pregunta de cierre que conecta con hoy: *"¿quién ejecutó
    ese entrenamiento y cuándo?"*
 2. **Revisión del CI de los talleres entregados** (7 min): abrir dos PR de
@@ -87,7 +87,7 @@ sesiones/s04-orquestacion/
 
 ## BLOQUE 2 — El dolor (15-40 min)
 
-**Archivos:** ninguno ejecutable; `sesiones/s04-orquestacion/README.md` §1.
+**Archivos:** ninguno ejecutable; `sesiones/s04-orquestacion/README.md` sección 1.
 **Terminales:** 1.
 
 Tres actos. No se abre Prefect hasta el final del bloque.
@@ -671,7 +671,7 @@ el pipeline real si se ejecutaba desde el directorio equivocado.)
 
 ### 12.1 Panorama de orquestadores (8 min)
 
-Usar la tabla de `sesiones/s04-orquestacion/README.md` §5, y **declarar los
+Usar la tabla de `sesiones/s04-orquestacion/README.md` sección 5, y **declarar los
 criterios antes de mostrarla**: modelo mental, encaje con ML, costo de entrada y
 estado del proyecto, evaluados en agosto de 2026.
 
@@ -696,7 +696,7 @@ Airflow, la primera hora se va en el scheduler y la base de datos.
 
 ### 12.2 Autoverificación (7 min)
 
-Las cuatro preguntas del README §6. Se responden en voz alta, por sorteo:
+Las cuatro preguntas del README sección 6. Se responden en voz alta, por sorteo:
 
 1. ¿En qué task pones `retries` y en cuál no, y por qué? ¿Qué diferencia hay entre
    `retry_delay_seconds=2` y `[10, 30, 60]` cuando el fallo es de red?
@@ -709,7 +709,7 @@ Las cuatro preguntas del README §6. Se responden en voz alta, por sorteo:
 
 ### 12.3 Qué NO usar (3 min)
 
-Leer la tabla del README §7: `prefect agent start`,
+Leer la tabla del README sección 7: `prefect agent start`,
 `Deployment.build_from_flow`, `prefect deployment build`, bloques de
 infraestructura, `schedule=` singular, `.deploy()` sin `work_pool_name`, rutas
 absolutas en `prefect.yaml`. Y del lado de MLflow:
@@ -785,5 +785,5 @@ SSO, RBAC y audit logs son de pago. Todo lo de esta clase es open source.
       9.4 tenga qué cargar.
 - [ ] `sqlite3` instalado (para las consultas del bloque 9.4).
 - [ ] Verificado el estado de las versiones de la tabla de orquestadores
-      (README §5): envejecen entre cohortes.
+      (README sección 5): envejecen entre cohortes.
 - [ ] Decidido si se publica `_soluciones/` (recomendación: no antes del taller).

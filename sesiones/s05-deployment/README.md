@@ -344,7 +344,7 @@ que estaba mal en la versión anterior.
 | Decisión | Por qué | Cómo se verifica |
 |---|---|---|
 | Base `python:3.11-slim-bookworm`, versión fija | `latest` cambia bajo tus pies y el build deja de ser reproducible | el `FROM` y el `ARG PYTHON_VERSION` |
-| `uv sync --locked`, **cero** pines a mano | una sola resolución de dependencias para todos los entornos; ver §1 | `--locked` falla si el lock no coincide con `pyproject.toml` |
+| `uv sync --locked`, **cero** pines a mano | una sola resolución de dependencias para todos los entornos; ver sección 1 | `--locked` falla si el lock no coincide con `pyproject.toml` |
 | Multi-stage (`builder` → `runtime`) | `uv`, el cache de compilación y las dev-deps no viajan a la imagen final: menos peso y menos superficie de ataque | `docker history` y el tamaño final |
 | Orden de capas: lock antes que código | editar `main.py` no reinstala 300 MB de paquetes | `docker build` dos veces y mirar los `CACHED` |
 | `.dockerignore` | `data/` y `mlruns/` son cientos de MB que se envían al demonio para nada, e invalidan el cache; y un `.env` copiado por un `COPY . .` **queda en la capa para siempre** | comparar el tamaño del contexto que reporta el build |

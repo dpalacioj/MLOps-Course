@@ -85,7 +85,7 @@ Del JSON generado (`reports/drift_*.json`), una entrada de `detalle`:
 ```
 
 El campo `motivo` es el que se lee en la revisión. Los cuatro estados posibles están en
-el README §3.2; el más informativo es "significativo pero no relevante", que es el que
+el README sección 3.2; el más informativo es "significativo pero no relevante", que es el que
 el criterio por p-valor habría reportado como alerta.
 
 ## Criterio 5 — umbrales calibrados

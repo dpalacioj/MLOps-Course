@@ -209,8 +209,8 @@ Los `hooks` de este repositorio, agrupados por lo que protegen:
 | Higiene | `trailing-whitespace`, `end-of-file-fixer`, `check-yaml`, `check-toml`, `check-json`, `check-merge-conflict`, `check-case-conflict`, `mixed-line-ending --fix=lf` | diffs de ruido, YAML roto que solo se descubre en CI, marcadores `<<<<<<<` olvidados, y el clásico de Windows/macOS: dos archivos que difieren solo en mayúsculas |
 | Tamaño | `check-added-large-files --maxkb=500` | binarios en el historial. El límite es 500 KB porque en el repositorio anterior había tres artefactos de modelo commiteados |
 | Secretos | `detect-private-key`, `gitleaks` | una clave privada o un token en el historial. **Esto es lo que no se puede deshacer** |
-| Estilo | `ruff-check --fix`, `ruff-format` | lo de §2 |
-| Notebooks | `nbstripout` | lo de §4 |
+| Estilo | `ruff-check --fix`, `ruff-format` | lo de sección 2 |
+| Notebooks | `nbstripout` | lo de sección 4 |
 | Mensajes | `conventional-pre-commit` (etapa `commit-msg`) | historial ilegible |
 | Propios del curso | `sin-rutas-absolutas`, `mlflow-sin-stages`, `mypy-src` | ver abajo |
 

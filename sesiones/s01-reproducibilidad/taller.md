@@ -181,9 +181,9 @@ no hay más criterio que ese.
 
 En orden de provecho:
 
-1. Agrega `pre-commit` con `ruff` (la guía está en [`calidad.md`](calidad.md) §5)
+1. Agrega `pre-commit` con `ruff` (la guía está en [`calidad.md`](calidad.md) sección 5)
 2. Móntale un CI mínimo: un workflow de GitHub Actions que corra `uv sync` y
-   `uv run pytest` en cada push ([`calidad.md`](calidad.md) §6 tiene el YAML)
+   `uv run pytest` en cada push ([`calidad.md`](calidad.md) sección 6 tiene el YAML)
 3. Escribe en el README de tu repo, en tres líneas, qué hace y cómo se corre
 
 Estos tres son justo lo que iremos agregando en las próximas sesiones, así que
@@ -197,4 +197,4 @@ nada se pierde si no llegas.
 | `ModuleNotFoundError: taller` | falta el bloque `[tool.hatch...]` o el `uv sync` | agrega el bloque del paso 3 y corre `uv sync` |
 | `pytest: command not found` | lo corriste sin `uv run` y fuera del venv | `uv run pytest` |
 | el push pide contraseña una y otra vez | el remote quedó por HTTPS | `git remote set-url origin git@github.com:TU-USUARIO/taller-mlops.git` |
-| `Permission denied (publickey)` | la llave SSH no está en GitHub o no está cargada | revisa [`git.md`](git.md) §1 |
+| `Permission denied (publickey)` | la llave SSH no está en GitHub o no está cargada | revisa [`git.md`](git.md) sección 1 |

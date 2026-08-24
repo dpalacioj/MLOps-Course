@@ -168,7 +168,7 @@ Los puntos 4 y 5 tienen plantilla en [`plantillas/`](plantillas/).
 
 ## 4. Ejercicio de gobernanza (entra en el taller)
 
-1. **Clasifica tu proyecto.** Con la tabla de §2.1 como guía, decide si tu sistema es
+1. **Clasifica tu proyecto.** Con la tabla de sección 2.1 como guía, decide si tu sistema es
    de riesgo mínimo, de transparencia (art. 50) o de alto riesgo (Anexo I o III).
    Escribe **la fecha de aplicación que te corresponde** y una frase de justificación.
    Si es de riesgo mínimo, dilo y explica qué tendría que cambiar para que no lo fuera.

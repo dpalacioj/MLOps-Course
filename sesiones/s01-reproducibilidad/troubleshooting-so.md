@@ -1,9 +1,9 @@
 # Troubleshooting por sistema operativo: macOS y Windows
 
-> **Documento de consulta, no de lectura lineal.** Busca tu síntoma en la tabla de §1
+> **Documento de consulta, no de lectura lineal.** Busca tu síntoma en la tabla de sección 1
 > y salta a la sección.
 > **Fecha de revisión:** agosto de 2026. Reemplaza a `07-os-notes.md`, que tenía dos
-> errores que hacían fallar la primera hora de clase en Windows (§2 y §3 explican
+> errores que hacían fallar la primera hora de clase en Windows (sección 2 y sección 3 explican
 > cuáles).
 
 Los estudiantes de este curso trabajan mayoritariamente en Windows, y la matriz del
@@ -17,17 +17,17 @@ descubre en el aula.
 
 | Síntoma | Sistema | Sección |
 |---|---|---|
-| `... no se puede cargar porque la ejecución de scripts está deshabilitada` / `UnauthorizedAccess` | Windows | [§2](#2-executionpolicy-el-primer-error-de-la-sesión) |
-| `Activate.ps1` "no existe" o apunta a un sitio raro | Windows | [§3](#3-activar-el-entorno-el-punto-inicial-importa) |
-| `chmod: command not found` / `./script.sh` no arranca | Windows | [§4](#4-los-scripts-sh-no-funcionan-en-windows) |
-| `python` es 3.14 y el proyecto pide 3.11 | ambos | [§5](#5-versión-de-python) |
-| `make: command not found` | Windows | [§6](#6-make-no-existe-en-windows) |
-| Puerto 5000 ocupado, MLflow no arranca | macOS | [§7](#7-puertos-ocupados) |
-| `warning: LF will be replaced by CRLF` | Windows | [§8](#8-fines-de-línea-crlf-vs-lf) |
-| Los `.png` se ven como texto de tres líneas | ambos | [§9](#9-git-lfs) |
-| `xcrun: error: invalid active developer path` | macOS | [§10](#10-macos-command-line-tools) |
-| Rutas con espacios o con acentos que rompen comandos | ambos | [§11](#11-rutas-con-espacios-y-caracteres-no-ascii) |
-| Nada de lo anterior y llevas 10 minutos | ambos | [§12](#12-el-plan-b-el-devcontainer) |
+| `... no se puede cargar porque la ejecución de scripts está deshabilitada` / `UnauthorizedAccess` | Windows | [sección 2](#2-executionpolicy-el-primer-error-de-la-sesión) |
+| `Activate.ps1` "no existe" o apunta a un sitio raro | Windows | [sección 3](#3-activar-el-entorno-el-punto-inicial-importa) |
+| `chmod: command not found` / `./script.sh` no arranca | Windows | [sección 4](#4-los-scripts-sh-no-funcionan-en-windows) |
+| `python` es 3.14 y el proyecto pide 3.11 | ambos | [sección 5](#5-versión-de-python) |
+| `make: command not found` | Windows | [sección 6](#6-make-no-existe-en-windows) |
+| Puerto 5000 ocupado, MLflow no arranca | macOS | [sección 7](#7-puertos-ocupados) |
+| `warning: LF will be replaced by CRLF` | Windows | [sección 8](#8-fines-de-línea-crlf-vs-lf) |
+| Los `.png` se ven como texto de tres líneas | ambos | [sección 9](#9-git-lfs) |
+| `xcrun: error: invalid active developer path` | macOS | [sección 10](#10-macos-command-line-tools) |
+| Rutas con espacios o con acentos que rompen comandos | ambos | [sección 11](#11-rutas-con-espacios-y-caracteres-no-ascii) |
+| Nada de lo anterior y llevas 10 minutos | ambos | [sección 12](#12-el-plan-b-el-devcontainer) |
 
 ---
 
@@ -69,7 +69,7 @@ Tres notas que evitan hacer esto mal:
   la comprobación entera: no los uses como estado permanente.
 - Si tu equipo es gestionado por la universidad, una **política de grupo** puede
   sobrescribir esto y `Set-ExecutionPolicy` fallará en silencio o con un aviso. En
-  ese caso, salta a [§12](#12-el-plan-b-el-devcontainer): no pierdas la clase
+  ese caso, salta a [sección 12](#12-el-plan-b-el-devcontainer): no pierdas la clase
   peleando con una GPO.
 
 > **Qué se corrigió aquí.** En el material anterior, este remedio estaba en
@@ -190,7 +190,7 @@ pyenv local 3.11.9
 
 En Windows, `pyenv-win` **no** es la ruta por defecto de este curso, y la razón es
 operativa: su instalación descarga un `.ps1` crudo de GitHub con
-`Invoke-WebRequest`, lo ejecuta contra la `ExecutionPolicy` de [§2](#2-executionpolicy-el-primer-error-de-la-sesión),
+`Invoke-WebRequest`, lo ejecuta contra la `ExecutionPolicy` de [sección 2](#2-executionpolicy-el-primer-error-de-la-sesión),
 edita el `PATH` del usuario y **exige cerrar y volver a abrir la terminal**. Son
 cuatro puntos de fallo antes de tener un intérprete. Si aun así la necesitas —por
 ejemplo, porque administras proyectos que no usan `uv`—, la referencia oficial es
@@ -204,7 +204,7 @@ de `ExecutionPolicy` va **antes**.
 El repositorio usa el [`Makefile`](../../Makefile) como interfaz única, y `make` no
 viene con Windows. Tres opciones:
 
-1. **`devcontainer`** ([§12](#12-el-plan-b-el-devcontainer)): trae `make`, Docker y
+1. **`devcontainer`** ([sección 12](#12-el-plan-b-el-devcontainer)): trae `make`, Docker y
    todo lo demás. Es lo que se recomienda.
 2. **Instalarlo:** `winget install ezwinports.make` (o `choco install make`). Ojo:
    el `Makefile` de este repositorio declara `SHELL := /bin/bash`, así que necesitas
@@ -253,7 +253,7 @@ mezcla los dos, cada `git diff` muestra archivos completos como modificados aunq
 nadie los tocara.
 
 Este repositorio lo resuelve con el `hook` `mixed-line-ending --fix=lf`
-(ver [`calidad.md`](calidad.md) §5): todo se normaliza a `LF` al commitear. El aviso
+(ver [`calidad.md`](calidad.md) sección 5): todo se normaliza a `LF` al commitear. El aviso
 `warning: LF will be replaced by CRLF` en Windows es informativo, no un error.
 
 Si quieres además que Git convierta al hacer `checkout`:
@@ -283,7 +283,7 @@ git lfs ls-files      # deben aparecer los 12 diagramas
 
 Instalación: `brew install git-lfs` (macOS),
 `winget install GitHub.GitLFS` (Windows), `sudo apt install git-lfs` (Debian).
-Detalle completo en [`git.md`](git.md) §5.
+Detalle completo en [`git.md`](git.md) sección 5.
 
 ---
 

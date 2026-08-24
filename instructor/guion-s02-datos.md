@@ -64,21 +64,19 @@ proyecto/README.md                               Bloques 1.3, 10.3
 
 **Archivos:** ninguno al principio. **Terminales:** 0-1.
 
-### 1.1 Recap por un estudiante (5 min)
+### 1.1 Arranque (3 min)
 
-**Rotativo, y a partir de hoy es el ritual de todas las sesiones.** La persona ya lo
-sabía desde la S01 (era el último punto del checklist de la semana pasada).
-
-Qué quedó de S01: entorno reproducible, `pyproject` frente a `uv.lock`, `hooks` y CI que
-puede fallar. La pregunta de cierre que conecta con hoy es la que se dejó abierta:
+Sin recap formal: dudas sueltas de la S01 si alguien las trae, y directo al tema.
+Lo unico que vale la pena traer de la semana pasada es la pregunta que quedo
+abierta, porque es literalmente el tema de hoy:
 
 > *"`mypy` está en verde, `ruff` está en verde, los tests pasan, el CI está verde. Y mi
 > `pipeline` está entrenando con `trip_distance` en kilómetros. ¿Por qué no lo detectó
 > nada de eso?"*
 
-### 1.2 Revisión del CI de los talleres entregados (7 min)
+### 1.2 Si hubo talleres entregados, mirar un par (5 min)
 
-Abrir dos PR de estudiantes de la S01 y mirar el workflow. Rutina de todas las sesiones.
+El taller es opcional, pero si alguien lo entrego vale la pena abrir uno o dos en pantalla y comentarlos: es gratis pedagogicamente y anima al resto a sumar el bonus.
 Lo que hay que buscar, porque es el fallo nº 1 de la S01:
 
 ```bash
@@ -101,14 +99,14 @@ literalmente esa fase.
 
 ## BLOQUE 2 — El dolor (15-40 min)
 
-**Archivo:** `notebooks/01-el-dolor-de-los-datos.ipynb` §1-2.
+**Archivo:** `notebooks/01-el-dolor-de-los-datos.ipynb` sección 1-2.
 **Terminales:** 1 + notebook.
 
 **No se abre Pandera en este bloque. Ni se menciona.** Dos actos.
 
 ### Acto 1 — Una columna cambia de unidad (14 min)
 
-Abrir el notebook y correr las celdas de la §1. Antes de la celda del RMSE,
+Abrir el notebook y correr las celdas de la sección 1. Antes de la celda del RMSE,
 **detenerse en la tabla comparativa** y preguntar qué se rompió:
 
 **Salida esperada** de la celda de comparación:
@@ -152,7 +150,7 @@ Escribir en la pizarra, y que se quede las cuatro horas:
 
 ### Acto 2 — La categoría que desaparece (11 min)
 
-Correr la celda de `DictVectorizer` de la §2.
+Correr la celda de `DictVectorizer` de la sección 2.
 
 **Salida esperada:**
 
@@ -184,16 +182,16 @@ señalar que las dos últimas son de la S07.
 
 ## BLOQUE 3 — Contratos: qué son y dónde viven (40-58 min)
 
-**Archivos:** `README.md` §2, `src/taxi/data/contract.py`, `tests/conftest.py`.
+**Archivos:** `README.md` sección 2, `src/taxi/data/contract.py`, `tests/conftest.py`.
 **Terminales:** 1.
 
 ### 3.1 La definición, y el diagrama (6 min)
 
-`README.md` §2: un contrato es un esquema **ejecutable y versionado junto al código** que
+`README.md` sección 2: un contrato es un esquema **ejecutable y versionado junto al código** que
 describe cómo se ve un dato válido, y se valida **en la frontera**: donde el dato entra,
 no donde se usa.
 
-El diagrama de §2 en pantalla. Señalar los dos contratos y por qué son dos:
+El diagrama de sección 2 en pantalla. Señalar los dos contratos y por qué son dos:
 
 - si falla `ViajesCrudos`, el problema es **del proveedor** o de la descarga;
 - si falla `ViajesProcesados`, el problema es **nuestro**.
@@ -237,14 +235,14 @@ Y el cuarto, `df_crudo_con_duraciones_extremas`, que enseña la frontera: el con
 
 ## BLOQUE 4 — Los tres niveles de check (58-80 min)
 
-**Archivos:** `README.md` §3, `notebooks/01-...` §3, `tests/data/test_niveles_de_check.py`.
+**Archivos:** `README.md` sección 3, `notebooks/01-...` sección 3, `tests/data/test_niveles_de_check.py`.
 **Terminales:** 1 + notebook.
 
 **Es el bloque central del bloque A.**
 
 ### 4.1 La tabla de los tres niveles (5 min)
 
-`README.md` §3. Insistir en la última columna, que es la que decide por qué hacen falta
+`README.md` sección 3. Insistir en la última columna, que es la que decide por qué hacen falta
 los tres: **qué NO puede ver cada nivel.**
 
 - nivel 1 no ve nada sistemático: si *todas* las filas se desplazan a la vez, cada una
@@ -254,7 +252,7 @@ los tres: **qué NO puede ver cada nivel.**
 
 ### 4.2 La tabla de veredictos, en vivo (8 min)
 
-Correr la celda de `diagnosticar` del notebook §3.
+Correr la celda de `diagnosticar` del notebook sección 3.
 
 **Salida esperada, exacta:**
 
@@ -300,7 +298,7 @@ encima del 35 %.
 
 ### 4.4 La calibración del umbral (5 min)
 
-`README.md` §3, la tabla de calibración:
+`README.md` sección 3, la tabla de calibración:
 
 | Cantidad | Valor |
 |---|---|
@@ -322,7 +320,7 @@ significa nada fuera del green taxi.** El taller **penaliza** copiarlo.
 
 ## BLOQUE 5 — El límite honesto, y el puente a S07 (80-95 min)
 
-**Archivos:** `README.md` §4, `notebooks/01-...` §5. **Terminales:** 1-2.
+**Archivos:** `README.md` sección 4, `notebooks/01-...` sección 5. **Terminales:** 1-2.
 
 **Este es el bloque que más se recuerda de la sesión, y el que separa este material del
 resto.** Todo lo anterior fue sobre un `fixture` sintético.
@@ -334,7 +332,7 @@ resto.** Todo lo anterior fue sobre un `fixture` sintético.
 > *"Voy a coger el parquet REAL de la TLC, multiplicar `trip_distance` por 1,60934 y
 > pasarle el contrato. ¿Lo detecta? Levanten la mano los que digan que sí."*
 
-Van a levantar casi todos la mano. Correr las celdas de la §5.
+Van a levantar casi todos la mano. Correr las celdas de la sección 5.
 
 **Salida esperada, exacta:**
 
@@ -393,7 +391,7 @@ propio ruido garantiza falsos positivos.
 
 ### 5.3 El puente S02 → S07 (3 min)
 
-La tabla de `README.md` §4 en pantalla. La frase que hay que decir:
+La tabla de `README.md` sección 4 en pantalla. La frase que hay que decir:
 
 > **No compiten. Se complementan. Un curso que enseñe solo una de las dos deja
 > justamente el hueco por el que se cuelan los incidentes reales.**
@@ -422,7 +420,7 @@ cotas estrictas, que es la que rompía el curso) y **G** (delegar todo al `drift
 
 ### 6.1 La pregunta correcta (4 min)
 
-`versionado-de-datos.md` §1. El error habitual es preguntar *"¿qué herramienta uso?"*. La
+`versionado-de-datos.md` sección 1. El error habitual es preguntar *"¿qué herramienta uso?"*. La
 pregunta es **"¿qué problema tengo?"**.
 
 La tabla de cuatro filas, y la regla que la ordena: **la estrategia 1 es el mínimo no
@@ -443,7 +441,7 @@ cat data/raw/metadata.json | head -20
 
 Los cinco campos: `url`, `sha256`, `bytes`, `fuente`, `licencia`.
 
-Ahora la demostración que da sentido al hash — `versionado-de-datos.md` §2, pasos 3 a 5:
+Ahora la demostración que da sentido al hash — `versionado-de-datos.md` sección 2, pasos 3 a 5:
 falsear el hash registrado y ver el aviso.
 
 **Salida esperada del paso 4:** un `WARNING` con las dos líneas de hash y la frase
@@ -465,11 +463,11 @@ veía. De ahí el `!**/metadata.json` actual.
 ### 6.3 DVC, lakeFS, Delta/Iceberg: el marco mental (6 min)
 
 **Decirlo explícitamente:** DVC **no está instalado en este entorno** y los comandos de
-`versionado-de-datos.md` §3 están tomados de la doc oficial, **no ejecutados aquí**. Está
+`versionado-de-datos.md` sección 3 están tomados de la doc oficial, **no ejecutados aquí**. Está
 escrito en el aviso de la cabecera del documento. *"Prefiero declararlo a fingir una
 demostración: es la disciplina que esta sesión pide."*
 
-Si quieres demostrarlo, `versionado-de-datos.md` §3.1 explica cómo instalarlo en un
+Si quieres demostrarlo, `versionado-de-datos.md` sección 3.1 explica cómo instalarlo en un
 proyecto de usar y tirar **sin tocar el `uv.lock` del curso**.
 
 Recorrer las tres en marco mental, una frase cada una:
@@ -484,7 +482,7 @@ Recorrer las tres en marco mental, una frase cada una:
   Es lo que permite decir *"la referencia de `drift` es la tabla tal como estaba el 1 de
   marzo"*.
 
-Cerrar con las cinco preguntas de §6 y con la advertencia sobre el error inverso, que en
+Cerrar con las cinco preguntas de sección 6 y con la advertencia sobre el error inverso, que en
 un curso es más frecuente que quedarse corto:
 
 > *"Un `lake` con lakeFS y tres tablas Iceberg para un `dataset` de 40 MB de Kaggle no
@@ -494,7 +492,7 @@ un curso es más frecuente que quedarse corto:
 
 ## BLOQUE 7 — `Split` temporal (130-145 min)
 
-**Archivos:** `notebooks/02-validacion-temporal-y-leakage.ipynb` §1-2, `README.md` §7.
+**Archivos:** `notebooks/02-validacion-temporal-y-leakage.ipynb` sección 1-2, `README.md` sección 7.
 **Terminales:** notebook.
 
 ### 7.1 La regla (3 min)
@@ -504,7 +502,7 @@ En la pizarra:
 > **En producción, el modelo siempre predice sobre el futuro. Cualquier validación que no
 > respete eso mide algo que no va a ocurrir.**
 
-El diagrama ASCII del notebook §1. Y la conexión con el caso guía: `train` 2023-01..03,
+El diagrama ASCII del notebook sección 1. Y la conexión con el caso guía: `train` 2023-01..03,
 `valid` 2023-04, `holdout` 2023-05, nada aleatorio
 ([ADR 001](../docs/adr/001-caso-guia-y-particiones.md)).
 
@@ -570,11 +568,11 @@ Por eso está en la sesión de datos."*
 
 ## BLOQUE 8 — Las tres formas de `leakage` (145-165 min)
 
-**Archivos:** `notebooks/02-...` §3-6, `README.md` §7, `dataset-card.md` §7.
+**Archivos:** `notebooks/02-...` sección 3-6, `README.md` sección 7, `dataset-card.md` sección 7.
 
 ### 8.1 Leakage 1 — preprocesar antes del `split` (7 min)
 
-Correr la celda de la §3 del notebook.
+Correr la celda de la sección 3 del notebook.
 
 **Salida esperada:**
 
@@ -605,7 +603,7 @@ métrica.
 
 ### 8.2 Leakage 2 — features del futuro (5 min)
 
-La celda aritmética de la §4 primero, **antes** de entrenar nada.
+La celda aritmética de la sección 4 primero, **antes** de entrenar nada.
 
 **Salida esperada** (la fila concreta puede variar si cambias `i`):
 
@@ -626,7 +624,7 @@ conteo de hoy no existe."*
 
 ### 8.3 Leakage 3 — el `target` dentro de una feature, y la sorpresa (6 min)
 
-Correr la §5 del notebook.
+Correr la sección 5 del notebook.
 
 **Salida esperada:**
 
@@ -663,13 +661,13 @@ Y su versión operativa, que es lo que se lleva al proyecto: **la tabla de dispo
 temporal por feature**, con el instante en que cada valor queda disponible. Así la
 pregunta se responde comparando dos `timestamps` en lugar de discutiéndola en un PR.
 
-Mostrar la tabla de [`dataset-card.md`](../sesiones/s02-datos/dataset-card.md) §7 y
+Mostrar la tabla de [`dataset-card.md`](../sesiones/s02-datos/dataset-card.md) sección 7 y
 detenerse en la fila con **matiz**: `trip_distance` es la distancia **registrada** por el
 taxímetro, que solo se conoce al final. Para una ETA honesta habría que usar la
 **estimada** de la ruta. *"El curso usa la registrada por simplicidad didáctica, y lo
 declara. Un `leakage` declarado es manejable; uno escondido rompe el sistema."*
 
-Si queda tiempo, el `baseline` tonto de la §6: **277,8** (la media), **266,8** (como
+Si queda tiempo, el `baseline` tonto de la sección 6: **277,8** (la media), **266,8** (como
 ayer), **215,7** (el modelo). *"Si su modelo no le gana a 'como ayer', no tienen un
 modelo. Y si le gana por un factor de 5, sospechen antes de celebrar."*
 
@@ -729,7 +727,7 @@ porque el resultado suele ser incómodo, y es el que demuestra que entendieron e
 ### 10.1 Autoverificación (7 min)
 
 Las cinco preguntas del
-[README §9](../sesiones/s02-datos/README.md#9-autoverificación), en voz alta y por
+[README sección 9](../sesiones/s02-datos/README.md#9-autoverificación), en voz alta y por
 sorteo. Las dos que más discusión dan:
 
 - la **nº 3** (el contrato pasa y una columna se multiplicó por 1,6): la respuesta
@@ -740,7 +738,7 @@ sorteo. Las dos que más discusión dan:
 
 ### 10.2 Alternativas y qué NO usar (5 min)
 
-`README.md` §5 y §10. Leer en voz alta los que más daño hacen:
+`README.md` sección 5 y sección 10. Leer en voz alta los que más daño hacen:
 
 - `train_test_split(shuffle=True)` y `KFold(shuffle=True)` sobre series temporales;
 - **`df.fillna(0)` por defecto** — no es un valor por defecto, es una decisión oculta que
@@ -864,14 +862,13 @@ uno visible, y **ninguno de los dos puede hacer el trabajo del otro**.
       `pyproject.toml`, hay que actualizar el aviso de
       [`versionado-de-datos.md`](../sesiones/s02-datos/versionado-de-datos.md).
 - [ ] **Re-verificadas las versiones y fechas** de las dos tablas comparativas:
-      `README.md` §5 (Pandera / GX / Pydantic) y §6 (las cuatro estrategias de
+      `README.md` sección 5 (Pandera / GX / Pydantic) y sección 6 (las cuatro estrategias de
       versionado). La fecha declarada es el 19 de agosto de 2026. La fila de Great
       Expectations es la que envejece más rápido de la sesión.
 - [ ] Leído el [ADR 005](../docs/adr/005-contratos-de-datos.md) completo. Los bloques 4.2
       y 5.3 son un resumen suyo, y la sección de alternativas descartadas es lo que
       contesta las preguntas difíciles de la clase.
 - [ ] Preparadas **dos PR de la S01** para la revisión de CI del bloque 1.2.
-- [ ] Anunciado quién hace el **recap al empezar la S03**.
 - [ ] Recordado en el aula virtual el **enunciado del proyecto**, con el enlace a
       [`proyecto/README.md`](../proyecto/README.md).
 - [ ] Decidido si se publica `_soluciones/` (recomendación: **no** antes del taller).

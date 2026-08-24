@@ -25,7 +25,7 @@
 | **Fecha de aplicación que le corresponde** | `<2-feb-2025 / 2-ago-2025 / 2-ago-2026 / 2-dic-2027 / 2-ago-2028>` |
 | Qué tendría que cambiar para subir de categoría | `<p. ej.: si el modelo pasara a decidir qué conductores reciben viajes, entraría en el anexo III por empleo>` |
 
-*Fechas y fuentes primarias en [`../gobernanza.md`](../gobernanza.md) §2. Verificadas el
+*Fechas y fuentes primarias en [`../gobernanza.md`](../gobernanza.md) sección 2. Verificadas el
 19 de agosto de 2026; el Digital Omnibus (en vigor el 27-jul-2026) aplazó el alto riesgo.
 Confirma antes de reutilizar este documento.*
 

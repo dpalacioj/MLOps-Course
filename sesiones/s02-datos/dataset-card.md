@@ -60,7 +60,7 @@ Contrastado contra la tabla de
 | Eje temporal explícito | **Sí** | `lpep_pickup_datetime`, `lpep_dropoff_datetime` |
 | ≥ 2 particiones separables (referencia vs producción) | **Sí** | `train` 2023-01..03, `valid` 2023-04, `holdout` 2023-05, producción 2023-07 y 2024-01 |
 | ≤ 500 MB, descargable sin autenticación | **Sí** | ~1,4 MB por mes, HTTPS público sin cuenta |
-| ≥ 3 categóricas y ≥ 3 numéricas, con **nulos reales** | **Sí** | categóricas: `PULocationID`, `DOLocationID`, `payment_type`, `trip_type`, `RatecodeID`. Numéricas: `trip_distance`, `fare_amount`, `total_amount`, `tip_amount`. Nulos reales: §4 |
+| ≥ 3 categóricas y ≥ 3 numéricas, con **nulos reales** | **Sí** | categóricas: `PULocationID`, `DOLocationID`, `payment_type`, `trip_type`, `RatecodeID`. Numéricas: `trip_distance`, `fare_amount`, `total_amount`, `tip_amount`. Nulos reales: sección 4 |
 | Métrica de negocio articulable | **Sí** | error en minutos de la ETA que se le muestra al pasajero; y el coste asimétrico de prometer 10 min y tardar 25 |
 | Licencia que permite uso educativo | **Sí** | datos públicos con atribución |
 
@@ -72,7 +72,7 @@ Contrastado contra la tabla de
 
 ## 3. Esquema y significado de las columnas
 
-Las **unidades no son un detalle**. Es la sección que evita el incidente de la §1 del
+Las **unidades no son un detalle**. Es la sección que evita el incidente de la sección 1 del
 [README](README.md).
 
 ### Columnas que el `pipeline` del curso usa
@@ -90,12 +90,12 @@ Las **unidades no son un detalle**. Es la sección que evita el incidente de la 
 | Columna | Unidades | Nulos | Por qué no se usa |
 |---|---|---|---|
 | `VendorID` | código (1, 2) | 0 % | identifica al proveedor tecnológico del taxímetro. Útil para diagnosticar, no como feature |
-| `passenger_count` | personas | **6,34 %** | lo declara el conductor, no el taxímetro: es poco fiable, y sus nulos son sistemáticos (§4) |
+| `passenger_count` | personas | **6,34 %** | lo declara el conductor, no el taxímetro: es poco fiable, y sus nulos son sistemáticos (sección 4) |
 | `RatecodeID` | código | 6,34 % | ídem |
 | `store_and_fwd_flag` | `Y`/`N` | 6,34 % | metadato de transmisión |
 | `payment_type` | código | 6,34 % | **se conoce al final del viaje**: usarlo para predecir la duración sería `leakage` |
 | `trip_type` | código (1 = `street-hail`, 2 = `dispatch`) | 6,35 % | mismo problema de disponibilidad temporal |
-| `fare_amount`, `total_amount`, `tip_amount`, `extra`, `mta_tax`, `tolls_amount`, `improvement_surcharge`, `congestion_surcharge` | USD | 0-6,34 % | **`LEAKAGE`**: la tarifa se calcula **con** el tiempo del viaje. Ver [README](README.md) §7 |
+| `fare_amount`, `total_amount`, `tip_amount`, `extra`, `mta_tax`, `tolls_amount`, `improvement_surcharge`, `congestion_surcharge` | USD | 0-6,34 % | **`LEAKAGE`**: la tarifa se calcula **con** el tiempo del viaje. Ver [README](README.md) sección 7 |
 | `ehail_fee` | USD | **100 %** | la columna existe y está **completamente vacía** en todas las particiones. Es un buen recordatorio de que "la columna existe" no significa "la columna tiene datos" |
 
 ### Columnas **derivadas** por el `pipeline`
@@ -154,7 +154,7 @@ y produce un patrón de nulos **estructurado**.
 |---|---|---|
 | **Estructural** | el campo **no aplica** a ese registro. `ehail_fee` en un viaje que no fue un `e-hail`; `congestion_surcharge` en un viaje anterior a que existiera el recargo | no se imputa: se modela la ausencia (una categoría "no aplica", o un indicador booleano) |
 | **Fallo de captura** | el valor existía y **se perdió**. El bloque de seis columnas de arriba | se decide por columna, y se **registra** cuántos había |
-| **No visto todavía** | el valor **aún no existe** en el instante de la predicción | **no es un nulo que imputar: es `leakage` si lo usas.** Ver [README](README.md) §7 |
+| **No visto todavía** | el valor **aún no existe** en el instante de la predicción | **no es un nulo que imputar: es `leakage` si lo usas.** Ver [README](README.md) sección 7 |
 
 ### Y por qué `fillna(0)` no es una estrategia
 
@@ -165,7 +165,7 @@ y produce un patrón de nulos **estructurado**.
 > empeora un poco.
 
 Lo correcto: decidir **por columna**, imputar **dentro de un `Pipeline`** (para que el
-`fit` del `imputer` no vea `test` — [README](README.md) §7) y dejar la decisión escrita
+`fit` del `imputer` no vea `test` — [README](README.md) sección 7) y dejar la decisión escrita
 en esta ficha.
 
 **Qué hace el caso guía:** las cinco columnas que el `pipeline` usa **no tienen
@@ -208,7 +208,7 @@ Consecuencias directas, y son limitaciones del **modelo**, no del `dataset`:
 |---|---|---|
 | **Datos declarados por el proveedor, sin auditar** | la propia TLC advierte que no verificó la exactitud de los registros | el contrato de datos no es opcional |
 | **`Timestamps` de otros periodos** dentro del archivo del mes | 2023-01 contiene **4 filas** con `pickup` fuera de enero de 2023; los años presentes son **2009, 2022 y 2023** | cualquier agregación temporal debe recortar al rango **declarado**, no confiar en el nombre del archivo. Es lo que hace el [notebook 02](notebooks/02-validacion-temporal-y-leakage.ipynb) |
-| **Outliers de distancia** | **37 viajes de más de 100 millas** en 68.211 (**0,054 %**), uno de **120.098,84** | motiva la cota ancha por fila + el `check` de fracción ([README](README.md) §3) |
+| **Outliers de distancia** | **37 viajes de más de 100 millas** en 68.211 (**0,054 %**), uno de **120.098,84** | motiva la cota ancha por fila + el `check` de fracción ([README](README.md) sección 3) |
 | **Duraciones imposibles** | viajes de 0 minutos y de varias horas | filtro de negocio `[1, 60]` minutos, **contabilizado** en el log |
 | **Estacionalidad fuerte** | verano frente a invierno; ver [S07](../s07-monitoreo/README.md) | `drift` de datos que **no** es degradación: reentrenar sería perseguir la propia cola |
 | **`target` desbalanceado** | `viaje_largo` positivo en el **6,0 %** (2023-01) a **8,5 %** (2023-05) de los viajes válidos; **7,18 %** agregando las siete particiones | `accuracy` es una métrica inútil aquí: predecir siempre "no" da ~93 %. Hay que usar `precision`/`recall` y un umbral decidido con la matriz de costes |
@@ -273,7 +273,7 @@ Tres propiedades de este diseño que hay que entender:
 
 1. **El `split` es temporal, no aleatorio.** Se entrena con meses anteriores y se
    evalúa con posteriores, porque en producción el modelo siempre predice sobre el
-   futuro ([README](README.md) §7).
+   futuro ([README](README.md) sección 7).
 2. **El `holdout` tiene un rol exclusivo.** 2023-05 no participa en la selección de
    modelo ni de hiperparámetros. Si se usa para tunear, el `gate` de la S06 deja de
    medir generalización y pasa a medir cuánto se sobreajustó la búsqueda al juez.
@@ -287,7 +287,7 @@ Tres propiedades de este diseño que hay que entender:
 
 La tabla que responde *"¿este valor estaba disponible en el momento de la
 predicción?"* sin discutirlo en un PR. Es el instrumento que detecta `leakage` sin
-entrenar nada ([README](README.md) §7), y **se pide en el taller**.
+entrenar nada ([README](README.md) sección 7), y **se pide en el taller**.
 
 Escenario de referencia: se predice la **duración del viaje en el instante de la
 recogida**, para mostrar una ETA al pasajero.
@@ -314,11 +314,11 @@ escondido rompe el sistema.**
 
 **Limitaciones**
 
-- No generaliza a Manhattan sur, ni a `for-hire vehicles`, ni a otras ciudades (§5).
-- `trip_distance` es *post hoc* (§7): el caso guía asume una simplificación.
+- No generaliza a Manhattan sur, ni a `for-hire vehicles`, ni a otras ciudades (sección 5).
+- `trip_distance` es *post hoc* (sección 7): el caso guía asume una simplificación.
 - El bloque de ~6,3 % de registros sin campos declarados por el conductor limita
-  cualquier análisis que los use (§4).
-- Sin `timezone` en los `timestamps` (§5).
+  cualquier análisis que los use (sección 4).
+- Sin `timezone` en los `timestamps` (sección 5).
 - No hay atributos de la persona, así que **no se puede auditar sesgo demográfico
   directamente**; solo por zona, que es un `proxy` imperfecto y correlacionado con
   renta.
@@ -334,7 +334,7 @@ escondido rompe el sistema.**
   como `proxy` demográfico es precisamente el tipo de uso que el
   [AI Act](../s07-monitoreo/gobernanza.md) mira con lupa.
 - **Planificación urbana** sin combinarlo con el `dataset` de FHV, por el sesgo de
-  cobertura de §5.
+  cobertura de sección 5.
 
 **Clasificación regulatoria del caso guía:** predecir la duración de un viaje para
 mostrar una ETA **no** es un sistema de alto riesgo bajo el AI Act. Y eso es
@@ -348,10 +348,10 @@ está en [`sesiones/s07-monitoreo/gobernanza.md`](../s07-monitoreo/gobernanza.md
 
 | Cuándo | Qué se revisa |
 |---|---|
-| Al inicio de cada cohorte | los hashes de `data/raw/metadata.json`; las URL; que las cifras de §3, §5 y §6 sigan siendo las medidas |
+| Al inicio de cada cohorte | los hashes de `data/raw/metadata.json`; las URL; que las cifras de sección 3, sección 5 y sección 6 sigan siendo las medidas |
 | Si el proveedor republica un archivo | el `loader` avisa con `HASH DISTINTO`. Hay que anotarlo aquí y **revisar la comparabilidad** de las métricas históricas |
-| Si cambia `UMBRAL_VIAJE_LARGO_MIN` o el filtro de duración | las tasas de §5 y las filas válidas de §6 |
-| Si se añade una columna al `pipeline` | §3 y §7, **antes** de entrenar con ella |
+| Si cambia `UMBRAL_VIAJE_LARGO_MIN` o el filtro de duración | las tasas de sección 5 y las filas válidas de sección 6 |
+| Si se añade una columna al `pipeline` | sección 3 y sección 7, **antes** de entrenar con ella |
 
 **Responsable:** el equipo docente del curso. En tu proyecto, una persona con nombre.
 
@@ -369,7 +369,7 @@ sean **verificables**:
    decisión escrita. Nada de `fillna(0)` sin justificar.
 4. **Población representada y sesgos conocidos.** Al menos tres, con evidencia medida.
    "No conozco sesgos" no es una respuesta aceptable para ningún `dataset` real.
-5. **Disponibilidad temporal por feature** (§7). Es lo que demuestra que entendiste el
+5. **Disponibilidad temporal por feature** (sección 7). Es lo que demuestra que entendiste el
    `leakage`.
 
 Y un consejo práctico: **escribe la ficha antes de entrenar.** Si la escribes después,

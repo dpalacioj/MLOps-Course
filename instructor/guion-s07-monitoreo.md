@@ -62,7 +62,7 @@ docs/adr/003-umbrales-de-drift.md               Bloques 5 y 11
 
 **Archivos:** ninguno. **Terminales:** 0.
 
-1. **Recap por un estudiante** (rotativo, 5 min): qué quedó de S06 — CI/CD, gate de
+1. **Arranque directo** (5 min): dudas sueltas de S06 si las hay, y en una frase propia lo que quedó — CI/CD, gate de
    promoción, aliases, rollback. La pregunta de cierre que conecta con hoy: *"el modelo
    pasó el gate en marzo. Hoy es agosto. ¿Sigue siendo bueno? ¿Cómo lo sabes?"*
 2. **Revisión del CI de los talleres entregados** (7 min): abrir dos PR de estudiantes,
@@ -135,11 +135,11 @@ cuatro horas:
 
 ## BLOQUE 3 — Taxonomía y label lag (40-60 min)
 
-**Archivos:** `README.md` §2. **Terminales:** 0-1.
+**Archivos:** `README.md` sección 2. **Terminales:** 0-1.
 
 ### 3.1 Los cuatro fenómenos (8 min)
 
-Tabla del README §2. Insistir en la cuarta columna, que es la que decide qué se puede
+Tabla del README sección 2. Insistir en la cuarta columna, que es la que decide qué se puede
 hacer mañana: **¿es observable sin etiquetas?**
 
 - data drift → sí
@@ -153,7 +153,7 @@ mismo origen, mismo destino, misma distancia. ¿Qué test lo detecta?" Ninguno. 
 
 ### 3.2 Label lag (10 min)
 
-Tabla del README §2.2. Recorrerla con los proyectos **de los estudiantes**: que cada uno
+Tabla del README sección 2.2. Recorrerla con los proyectos **de los estudiantes**: que cada uno
 diga en voz alta el label lag del suyo. Es el momento más útil del bloque, porque
 determina qué monitoreo puede construir cada uno.
 
@@ -274,7 +274,7 @@ al `drift_share` de Evidently.
 
 ### 6.1 La tabla de migración (7 min)
 
-README §4.2, en pantalla. Los tres cambios que rompen todo lo que hay en internet:
+README sección 4.2, en pantalla. Los tres cambios que rompen todo lo que hay en internet:
 
 | Antes | Ahora |
 |---|---|
@@ -299,7 +299,7 @@ Por eso el curso lee el `status` de la sección `tests` en lugar de comparar a m
 
 ### 6.3 El adapter (7 min)
 
-Abrir `reporte.desde_evidently`. Una función, un archivo. Diagrama del README §4.4.
+Abrir `reporte.desde_evidently`. Una función, un archivo. Diagrama del README sección 4.4.
 
 **La lección, que no es sobre monitoreo:** depende de la interfaz que **tú** controlas,
 no de la que controla tu proveedor. El material anterior tenía el parsing del dict en el
@@ -420,7 +420,7 @@ Cerrar con la regla de cardinalidad: nunca un label con id de request, zona o ti
 
 ## BLOQUE 9 — Cuándo reentrenar, y gobernanza (165-185 min)
 
-**Archivos:** `README.md` §7, `gobernanza.md`, notebook 01 (pasos 6 y 7).
+**Archivos:** `README.md` sección 7, `gobernanza.md`, notebook 01 (pasos 6 y 7).
 
 ### 9.1 La pregunta ambigua (8 min)
 
@@ -445,13 +445,13 @@ estacional, reentrenar es perseguir la propia cola: el modelo se ajusta a julio,
 septiembre y vuelve a "driftear". La alternativa es **modelar la estacionalidad** y
 entrenar con más de un ciclo.
 
-Tabla de estrategias del README §7, con la última fila subrayada: *no reentrenar,
+Tabla de estrategias del README sección 7, con la última fila subrayada: *no reentrenar,
 modelar el cambio*. Y la regla que no se negocia, heredada de S06: el reentrenamiento
 produce `@candidate`, nunca `@champion`.
 
 ### 9.2 Tres marcos, tres preguntas (7 min)
 
-`gobernanza.md` §1:
+`gobernanza.md` sección 1:
 
 - **AI Act** = qué exige la ley (obligatorio, no certificable);
 - **ISO/IEC 42001** = cómo organizas la gobernanza (voluntario, **certificable**);
@@ -462,7 +462,7 @@ repositorio. El mensaje: no es burocracia añadida; es lo que ya hacen, escrito.
 
 ### 9.3 Las fechas, con la corrección del Omnibus (5 min)
 
-Tabla de `gobernanza.md` §2. Los tres puntos:
+Tabla de `gobernanza.md` sección 2. Los tres puntos:
 
 1. el **AI Omnibus entró en vigor el 27 de julio de 2026** y aplazó el alto riesgo:
    anexo III al **2-dic-2027**, anexo I al **2-ago-2028**;
@@ -475,7 +475,7 @@ porque la información legal caduca. Igual que la tabla de herramientas. Igual q
 snippet de Evidently del bloque 2.
 
 El caso guía **no** es de alto riesgo, y eso es lo didáctico: recorrer la tabla de
-variantes de `gobernanza.md` §2.1 y ver que lo que mueve la clasificación no es la
+variantes de `gobernanza.md` sección 2.1 y ver que lo que mueve la clasificación no es la
 técnica —el mismo XGBoost en todos los casos— sino **sobre quién decide y con qué
 consecuencia**.
 
@@ -527,7 +527,7 @@ drift-vs-estacionalidad de su propio dataset.
 
 ### 11.1 Autoverificación (7 min)
 
-Las cinco preguntas del README §9, en voz alta y por sorteo:
+Las cinco preguntas del README sección 9, en voz alta y por sorteo:
 
 1. Label lag de 12 meses y un proveedor cambia la escala de una feature de 0-100 a 0-1.
    ¿Qué lo detecta hoy y qué no lo detectaría a tiempo?
@@ -539,7 +539,7 @@ Las cinco preguntas del README §9, en voz alta y por sorteo:
 
 ### 11.2 Qué NO usar (3 min)
 
-Tabla del README §10. Los siete que hay que leer en voz alta: la API vieja de Evidently
+Tabla del README sección 10. Los siete que hay que leer en voz alta: la API vieja de Evidently
 (`evidently.report`, `evidently.metric_preset`, `ColumnMapping`, `as_dict()`,
 `TestSuite` suelto), `p < 0.05` como único criterio, drift sintético con `np.random`,
 umbral global para todas las features, labels de alta cardinalidad en Prometheus,
@@ -620,6 +620,6 @@ ninguna de las dos cosas, todavía no es monitoreo."
 - [ ] **Verificadas las fechas del AI Act** contra las fuentes primarias enlazadas en
       `gobernanza.md`. Cambiaron en julio de 2026 y pueden volver a cambiar.
 - [ ] Verificada la última release de whylogs y de Evidently (la tabla de herramientas
-      del README §10 declara fechas: si están desactualizadas, el material pierde
+      del README sección 10 declara fechas: si están desactualizadas, el material pierde
       justamente el argumento que quiere enseñar).
 - [ ] Decidido si se publica `_soluciones/` (recomendación: no antes del taller).

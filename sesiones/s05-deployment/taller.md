@@ -30,7 +30,7 @@ Si tu consumidor puede esperar al próximo corte, **elegir batch es la respuesta
 correcta** y no una salida fácil. Lo que no se acepta es "hice una API porque es lo
 que vimos hoy".
 
-Entregas las **dos** formas de todos modos (§2 y §4), porque el criterio se aprende
+Entregas las **dos** formas de todos modos (sección 2 y sección 4), porque el criterio se aprende
 comparando. Lo que el párrafo decide es cuál es la principal de tu proyecto.
 
 ## 2. El servicio online
@@ -110,7 +110,7 @@ comando, no cuenta.
 | 3 | El `HEALTHCHECK` funciona | `docker ps` muestra `(healthy)`, no `(unhealthy)` ni `(health: starting)` indefinidamente |
 | 4 | **≥4 tests de API pasan**, sin registry ni red | `uv run pytest tests/ -k api` en verde, con el servicio de MLflow **apagado** |
 | 5 | Una consulta SQL muestra predicciones con su versión de modelo | `SELECT model_version, COUNT(*) FROM <tu_tabla> GROUP BY 1;` devuelve ≥1 fila |
-| 6 | Ningún error de la API filtra internals | el test 4 de §5 lo demuestra: el cuerpo del 500 no contiene el texto de la excepción |
+| 6 | Ningún error de la API filtra internals | el test 4 de sección 5 lo demuestra: el cuerpo del 500 no contiene el texto de la excepción |
 | 7 | Cero pines a mano en el `Dockerfile` | `grep -nE "pip install .*==" Dockerfile` no devuelve nada |
 | 8 | El CI del repo del curso sigue verde | el PR de tu proyecto no aplica aquí, pero tu propio CI debe estar en verde |
 

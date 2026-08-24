@@ -25,7 +25,7 @@ nivel suficiente de competencia en IA en su personal, y está en vigor desde feb
 2025 **independientemente del nivel de riesgo**. Para un curso es una obligación fácil
 de cumplir; para una empresa, no es trivial.
 
-*Fechas y fuentes primarias en [`../gobernanza.md`](../gobernanza.md) §2, verificadas el
+*Fechas y fuentes primarias en [`../gobernanza.md`](../gobernanza.md) sección 2, verificadas el
 19 de agosto de 2026. El Digital Omnibus entró en vigor el 27-jul-2026 y aplazó el alto
 riesgo del anexo III de agosto de 2026 a diciembre de 2027.*
 

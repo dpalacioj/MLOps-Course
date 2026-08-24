@@ -7,7 +7,7 @@
 - **Sistema / modelo registrado:** `models:/nyc-taxi-duration@champion`
 - **Responsable de esta política:** instructor del curso (rol: *ML platform owner*)
 - **Última revisión:** 2026-08 · **Próxima revisión:** 2026-11
-- **Clasificación AI Act:** riesgo mínimo (ver `riesgos-resuelto.md` §1)
+- **Clasificación AI Act:** riesgo mínimo (ver `riesgos-resuelto.md` sección 1)
 
 ---
 

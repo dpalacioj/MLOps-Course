@@ -14,16 +14,16 @@
 > # ModuleNotFoundError: No module named 'dvc'
 > ```
 >
-> En consecuencia, **los comandos de DVC de la §3 de este documento no se han
+> En consecuencia, **los comandos de DVC de la sección 3 de este documento no se han
 > ejecutado en este entorno**: están tomados de la [documentación
 > oficial](https://dvc.org/doc) y descritos con el comportamiento que esa
 > documentación declara para la línea 3.x. Lo que **sí** está verificado ejecutando
-> código es todo lo de la §2 (hash + partición inmutable), porque está implementado
+> código es todo lo de la sección 2 (hash + partición inmutable), porque está implementado
 > en [`src/taxi/data/loaders.py`](../../src/taxi/data/loaders.py) y cubierto por la
 > suite de tests.
 >
-> **Cómo usar esto en clase:** la §2 se demuestra en vivo. La §3 se recorre como guía,
-> y si el instructor quiere demostrarla, la §3.1 explica cómo instalar DVC en un
+> **Cómo usar esto en clase:** la sección 2 se demuestra en vivo. La sección 3 se recorre como guía,
+> y si el instructor quiere demostrarla, la sección 3.1 explica cómo instalar DVC en un
 > proyecto de usar y tirar **sin tocar el entorno del curso**. Preferimos declarar
 > esto a fingir una demostración: es exactamente la disciplina que esta sesión pide.
 
@@ -37,10 +37,10 @@ resuelven problemas distintos y **no son sustitutas**.
 
 | Si tu problema es… | La estrategia es… |
 |---|---|
-| *"¿es este el mismo dato con el que medí en marzo?"* | **hash + partición inmutable** (§2). Obligatoria siempre |
-| *"quiero reproducir el experimento de marzo con su dato exacto y su `pipeline`"* | **DVC** (§3) |
-| *"cargué mal 300 GB en el `lake` y necesito revertirlo, sin que nadie lo haya visto"* | **lakeFS** (§4) |
-| *"quiero consultar cómo estaba esta tabla el 1 de marzo, con ACID y `schema evolution`"* | **Delta Lake / Iceberg** (§5) |
+| *"¿es este el mismo dato con el que medí en marzo?"* | **hash + partición inmutable** (sección 2). Obligatoria siempre |
+| *"quiero reproducir el experimento de marzo con su dato exacto y su `pipeline`"* | **DVC** (sección 3) |
+| *"cargué mal 300 GB en el `lake` y necesito revertirlo, sin que nadie lo haya visto"* | **lakeFS** (sección 4) |
+| *"quiero consultar cómo estaba esta tabla el 1 de marzo, con ACID y `schema evolution`"* | **Delta Lake / Iceberg** (sección 5) |
 
 Y la regla que ordena el documento: **la estrategia 1 es el mínimo no negociable y las
 otras tres se apilan encima**, no la reemplazan. Un `dataset` en DVC sin hash de
@@ -463,7 +463,7 @@ hash y particiones fijas declaradas en tu `config.py`. Es el criterio 3 de los
 criterios de aceptación.
 
 Si tu proyecto necesita alguna de las otras tres, **justifícalo en un ADR** con la
-forma de las cinco preguntas de §6: qué problema tienes, por qué la estrategia 1 no lo
+forma de las cinco preguntas de sección 6: qué problema tienes, por qué la estrategia 1 no lo
 resuelve, y qué te cuesta la que elegiste. Un ADR que diga *"usamos DVC porque es el
 estándar"* no cuenta.
 

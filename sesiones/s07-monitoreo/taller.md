@@ -80,7 +80,7 @@ nombres de comandos reales de tu repositorio.
 
 Rellena [`plantillas/riesgos.md`](plantillas/riesgos.md): cinco riesgos, mitigación,
 responsable, y la clasificación tentativa de tu sistema bajo el AI Act con **la fecha
-de aplicación que te corresponde** (ver [`gobernanza.md`](gobernanza.md) §2).
+de aplicación que te corresponde** (ver [`gobernanza.md`](gobernanza.md) sección 2).
 
 ---
 

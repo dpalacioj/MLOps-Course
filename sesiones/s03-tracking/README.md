@@ -310,7 +310,7 @@ vacío.
 **Y la advertencia práctica de la sesión:** verifica el `serialization_format` por
 defecto de `mlflow.sklearn.log_model` en la versión que tengas instalada. En mlflow
 3 es **`skops`**, no `cloudpickle`, y eso puede hacer fallar código que funcionaba —
-con razón (ver §4).
+con razón (ver sección 4).
 
 ---
 

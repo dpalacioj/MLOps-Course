@@ -113,7 +113,7 @@ docs/adr/007-gate-de-promocion.md         # Bloque 5
 
 **Archivos:** ninguno. **Terminales:** 0.
 
-1. **Recap por un estudiante** (rotativo, 5 min): qué quedó de S05 — el servicio, la
+1. **Arranque directo** (5 min): dudas sueltas de S05 si las hay, y en una frase propia lo que quedó — el servicio, la
    imagen, la carga por alias, el digest. La pregunta de cierre que conecta con hoy:
    *"desplegaron a mano. ¿Cuántos pasos eran y en cuáles se pueden equivocar?"*
 2. **Revisión del CI de los talleres entregados** (7 min): abrir dos PR y mirar el
@@ -148,7 +148,7 @@ en el bloque 6.
 
 Mientras corre el build, la pregunta: *"¿en cuáles de estos cinco pasos se pueden
 equivocar?"* Recoger respuestas y completar con la tabla del
-[README §1](../sesiones/s06-cloud-cicd/README.md). La que casi nadie dice: **construir con
+[README sección 1](../sesiones/s06-cloud-cicd/README.md). La que casi nadie dice: **construir con
 cambios sin comitear** — la imagen contiene código que no está en ningún commit.
 
 Y la pregunta que cierra el acto, escrita en el tablero:
@@ -545,7 +545,7 @@ lista de verificación de despliegue.**
 
 ## BLOQUE 8 — La nube: la traducción y la demo (142-158 min)
 
-**Archivos:** [README §2](../sesiones/s06-cloud-cicd/README.md),
+**Archivos:** [README sección 2](../sesiones/s06-cloud-cicd/README.md),
 [`guia-aws.md`](../sesiones/s06-cloud-cicd/guia-aws.md). **Terminales:** 2.
 
 ### 8.1 La tabla que hace la sesión transferible (5 min)
@@ -568,7 +568,7 @@ equivalente directo.** Cambian los comandos, no cambia una idea.
 
 ### 8.2 La demo (9 min) — o la grabación
 
-Seguir [`guia-aws.md`](../sesiones/s06-cloud-cicd/guia-aws.md) §3 y §4, con las variables
+Seguir [`guia-aws.md`](../sesiones/s06-cloud-cicd/guia-aws.md) sección 3 y sección 4, con las variables
 ya exportadas. Los comandos, en orden:
 
 ```bash
@@ -731,7 +731,7 @@ es lo que fija la sesión.
 
 ### 11.1 Autoverificación (7 min)
 
-Las cinco preguntas del [README §7](../sesiones/s06-cloud-cicd/README.md), con 30 segundos
+Las cinco preguntas del [README sección 7](../sesiones/s06-cloud-cicd/README.md), con 30 segundos
 de silencio cada una. **No las respondas.**
 
 Si nadie sabe la 1 —*"su pipeline terminó en verde y desplegó: ¿qué garantiza eso sobre el
@@ -755,7 +755,7 @@ buenos.
 
 ### 11.3 Qué NO usar (5 min)
 
-Recorrer la tabla del README §8. Detenerse en tres:
+Recorrer la tabla del README sección 8. Detenerse en tres:
 
 - **auto-promoción al final del entrenamiento** → el acto 2 del dolor;
 - **`latest` como referencia de despliegue** → el acto 1;

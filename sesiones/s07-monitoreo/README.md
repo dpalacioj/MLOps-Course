@@ -340,7 +340,7 @@ curso **no** compara a mano cuando puede evitarlo: lee el `status` de la secció
 el método que usó.
 
 **Y una consecuencia que hay que asumir explícitamente:** al usar Evidently, los
-umbrales por columna son **los de Evidently**, no los calibrados en §3.3. Sus métodos
+umbrales por columna son **los de Evidently**, no los calibrados en sección 3.3. Sus métodos
 son otros (Wasserstein normalizada, Jensen-Shannon), así que aplicarles un umbral
 calibrado para el `D` del KS sería exactamente la sloppiness que este material critica.
 La salida del check lo dice en su cabecera.
@@ -538,17 +538,17 @@ señalado.
 
 1. Tu modelo de scoring de crédito tiene un label lag de 12 meses. Un proveedor
    cambia la escala de una feature de 0-100 a 0-1. ¿Qué señal lo detecta el mismo día
-   y qué señal no lo detectaría nunca a tiempo? (§2.1, §2.2)
+   y qué señal no lo detectaría nunca a tiempo? (sección 2.1, sección 2.2)
 2. Corres un KS sobre 500.000 filas y obtienes `D = 0.004` con `p = 1e-9`.
-   ¿Alertas? Justifica con números, no con "depende". (§3.2)
+   ¿Alertas? Justifica con números, no con "depende". (sección 3.2)
 3. Explica en una frase por qué `report.run(ref, cur)` y `report.run(cur, ref)`
-   producen reportes distintos sin que ninguno lance error. (§4.2)
+   producen reportes distintos sin que ninguno lance error. (sección 4.2)
 4. Tu dashboard de Grafana está todo en verde: p95 de 9 ms, cero errores 5xx,
    throughput estable. Un usuario reporta que las predicciones "no tienen sentido".
-   ¿Es posible? ¿Qué mirarías y con qué herramienta? (§5)
+   ¿Es posible? ¿Qué mirarías y con qué herramienta? (sección 5)
 5. El check marca drift en `hora_pickup` y en la duración cada julio, tres años
    seguidos. ¿Reentrenas? ¿Qué evidencia adicional pedirías antes de decidir, y qué
-   harías si el patrón se confirma? (§7)
+   harías si el patrón se confirma? (sección 7)
 
 ---
 
@@ -561,7 +561,7 @@ señalado.
 | `ColumnMapping` | reemplazado en 0.7 | `DataDefinition` + `Dataset.from_pandas` |
 | `report.as_dict()` | renombrado | `snapshot.dict()` |
 | `TestSuite` como objeto separado | absorbido por `Report` | `include_tests=True`, o `tests=[...]` por métrica |
-| `p < 0.05` como único criterio | con n de producción alerta siempre; produce alert fatigue | significancia **y** tamaño de efecto (§3.2) |
+| `p < 0.05` como único criterio | con n de producción alerta siempre; produce alert fatigue | significancia **y** tamaño de efecto (sección 3.2) |
 | `np.random.exponential(3)` vs `(5.5)` como "drift" | el resultado nunca es ambiguo, así que no se aprende a decidir | las particiones reales del caso guía |
 | Un umbral global para todas las features | el umbral es una decisión de negocio por feature | `UMBRALES_POR_FEATURE` y [ADR 003](../../docs/adr/003-umbrales-de-drift.md) |
 | Labels de alta cardinalidad en Prometheus (`PU_DO`, request id) | explota el número de series y puede tumbar el servidor de métricas | labels con decenas de valores (`model_version`, `clase`, `tipo`) |

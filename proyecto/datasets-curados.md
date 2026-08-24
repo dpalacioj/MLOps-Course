@@ -1,7 +1,7 @@
 # Datasets curados
 
 Diez datasets **verificados contra los requisitos duros** de
-[`README.md`](README.md) §3. Si eliges de aquí, arrancas sin riesgo de descubrir en
+[`README.md`](README.md) sección 3. Si eliges de aquí, arrancas sin riesgo de descubrir en
 la sesión 7 que tu dataset no permite hacer monitoreo.
 
 **Fecha de verificación: 19 de agosto de 2026.** Todas las URLs de la tabla

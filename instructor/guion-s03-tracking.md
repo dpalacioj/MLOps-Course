@@ -63,7 +63,7 @@ sesiones/s03-tracking/
 
 **Archivos:** ninguno. **Terminales:** 0.
 
-1. **Recap por un estudiante** (rotativo, 5 min): qué quedó de S02 — contrato de
+1. **Arranque directo** (5 min): dudas sueltas de S02 si las hay, y en una frase propia lo que quedó — contrato de
    datos, particiones fijas, tests que fallan en CI. La pregunta que conecta con
    hoy: *"ya sabemos que los datos son válidos; ¿cómo sabemos qué modelo salió de
    ellos?"*
@@ -115,7 +115,7 @@ atasquen en la 2. La 4 es la que duele: el modelo **no existe**, nunca se guard�
 
 Literalmente. Cerrar la ventana y preguntar dónde está el resultado del experimento.
 
-**Cierre del bloque:** la tabla de §1 del README de la sesión —qué falta registrar
+**Cierre del bloque:** la tabla de sección 1 del README de la sesión —qué falta registrar
 para responder cada pregunta— y la advertencia: **"el tracking no mejora su modelo"**.
 Un experimento bien registrado con un modelo malo sigue siendo un modelo malo; la
 diferencia es que se puede descartar con evidencia.
@@ -124,13 +124,13 @@ diferencia es que se puede descartar con evidencia.
 
 ## BLOQUE 3 — Anatomía y topologías (40-55 min)
 
-**Archivos:** [`README.md`](../sesiones/s03-tracking/README.md) §2,
+**Archivos:** [`README.md`](../sesiones/s03-tracking/README.md) sección 2,
 [`scenarios/`](../sesiones/s03-tracking/scenarios/), `src/taxi/config.py`.
 **Terminales:** 2 (aquí se levanta el servidor).
 
 ### 3.1 Las cuatro piezas (5 min)
 
-El diagrama de §2 del README: tracking server, backend store, artifact store,
+El diagrama de sección 2 del README: tracking server, backend store, artifact store,
 registry. **La frase que hay que dejar clavada:** *el Model Registry necesita un
 backend de base de datos; con un file store no existe.*
 
@@ -257,7 +257,7 @@ Ejecutar la celda de las tres peticiones.
 producido una predicción silenciosamente peor. Un error visible cuesta un ticket; un
 error silencioso cuesta un trimestre de decisiones tomadas con predicciones malas."
 
-Cerrar con la tabla de skops vs cloudpickle (§4 del README). Si hay tiempo, provocar
+Cerrar con la tabla de skops vs cloudpickle (sección 4 del README). Si hay tiempo, provocar
 el fallo: quitar `skops_trusted_types` y mostrar
 *"The saved sklearn model references untrusted types"*.
 
@@ -280,7 +280,7 @@ el aula la red o el equipo son peores, baja `--trials`.
 ## BLOQUE 6 — HPO con runs anidados (110-130 min)
 
 **Archivos:** [`notebooks/03-hpo-y-registry.ipynb`](../sesiones/s03-tracking/notebooks/03-hpo-y-registry.ipynb)
-§1 y §2, `src/taxi/models/train.py` (`optimizar_hiperparametros`),
+sección 1 y sección 2, `src/taxi/models/train.py` (`optimizar_hiperparametros`),
 [`scripts/train-mlflow-completo.py`](../sesiones/s03-tracking/scripts/train-mlflow-completo.py).
 
 ### 6.1 Por qué 20 informados le ganan a 200 al azar (5 min)
@@ -320,12 +320,12 @@ Mostrar tres cosas del código:
 
 ## BLOQUE 7 — Registry: aliases y tags (130-150 min)
 
-**Archivos:** notebook 03 §3 a §6, `src/taxi/models/registry.py`,
+**Archivos:** notebook 03 sección 3 a sección 6, `src/taxi/models/registry.py`,
 [`docs/adr/002-aliases-en-vez-de-stages.md`](../docs/adr/002-aliases-en-vez-de-stages.md).
 
 ### 7.1 Un run no es una versión (5 min)
 
-El diagrama de §3 del notebook. Ejecutar:
+El diagrama de sección 3 del notebook. Ejecutar:
 
 ```python
 print(registry.explicar_por_que_no_stages())
@@ -368,7 +368,7 @@ resto del repositorio: no es purismo, es que el curso se contradecía a sí mism
 
 ## BLOQUE 8 — `evaluate` y model card (150-165 min)
 
-**Archivos:** notebook 02 §6, notebook 03 §7, `scripts/model_card.py`.
+**Archivos:** notebook 02 sección 6, notebook 03 sección 7, `scripts/model_card.py`.
 
 ### 8.1 `mlflow.models.evaluate` (5 min)
 
@@ -439,7 +439,7 @@ propia tabla de criterios de completitud.
 
 ### 10.1 Panorama de herramientas (7 min)
 
-La tabla de §5 del README, **declarando los criterios antes de mostrarla**:
+La tabla de sección 5 del README, **declarando los criterios antes de mostrarla**:
 licencia y self-hosting, registry y ciclo de vida, UX de comparación, encaje con el
 stack. Fecha de evaluación: agosto de 2026.
 
@@ -458,7 +458,7 @@ envejece más rápido que los conceptos.
 
 ### 10.2 Autoverificación (7 min)
 
-Las cinco preguntas de §6 del README, en voz alta y por sorteo:
+Las cinco preguntas de sección 6 del README, en voz alta y por sorteo:
 
 1. Te pasan un `run_id` con buen RMSE: **¿qué tiene que tener para que el número sea
    comparable con el tuyo?**
@@ -472,7 +472,7 @@ Las cinco preguntas de §6 del README, en voz alta y por sorteo:
 
 ### 10.3 Qué NO usar (4 min)
 
-Leer la tabla de §7 del README: `transition_model_version_stage`,
+Leer la tabla de sección 7 del README: `transition_model_version_stage`,
 `get_latest_versions`, `models:/<nombre>/Production`, `artifact_path=`,
 `mlflow.evaluate` como nombre canónico, `mean_squared_error(squared=False)`,
 `try/except` alrededor de `log_model`, `run_id` hardcodeado, dos artefactos en lugar
@@ -529,6 +529,6 @@ aprieta el botón. La API es la misma.
       con dos versiones.
 - [ ] `make model-card` probado, y probado también **con el servidor apagado** (modo
       degradado).
-- [ ] Verificado el estado de la tabla de herramientas del README §5: las columnas
+- [ ] Verificado el estado de la tabla de herramientas del README sección 5: las columnas
       de licencia y de estado envejecen entre cohortes.
 - [ ] Decidido si se publica `_soluciones/` (recomendación: no antes del taller).
