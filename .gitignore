@@ -144,3 +144,13 @@ desktop.ini
 !docker-compose.yml
 !Dockerfile
 !**/Dockerfile
+
+# --- Configuracion local de herramientas de IA ---
+# .mcp.json guarda tokens en claro (GITHUB_PERSONAL_ACCESS_TOKEN). Es config de
+# la maquina de cada quien, no del curso, y nunca debe llegar al repositorio.
+.mcp.json
+.claude/settings.local.json
+
+# --- Transferencia de ramas (temporales) ---
+*.bundle
+limpiar-y-finalizar.sh
