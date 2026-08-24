@@ -116,8 +116,18 @@ evidently_workspace/
 drift_report*.html
 
 # --- IDE / OS ---
-.vscode/
-!.vscode/settings.example.json
+# `.vscode/*` y no `.vscode/`: una regla que excluye el DIRECTORIO no admite
+# negaciones de archivos dentro de el (git no entra a un directorio excluido).
+# Es el mismo bug que tenia `models/` con src/taxi/models/.
+.vscode/*
+# ...pero settings.json y extensions.json SI van al repositorio. Fijan el
+# interprete (.venv del proyecto, no el Python del sistema ni conda base),
+# activan ruff como formatter y desaconsejan Black. Sin esto cada estudiante
+# tiene que configurarlo a mano y la pregunta "en que ambiente ejecuto esto?"
+# cuesta 15 minutos de la primera clase, multiplicados por el numero de
+# estudiantes.
+!.vscode/settings.json
+!.vscode/extensions.json
 .idea/
 *.swp
 .DS_Store

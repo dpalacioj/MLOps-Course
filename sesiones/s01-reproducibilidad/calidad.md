@@ -369,7 +369,55 @@ Extensiones que se recomiendan y para qué sirven de verdad:
 | Ruff | `charliermarsh.ruff` | lint y formato **en el editor**, con las reglas de tu `pyproject.toml` |
 | GitLens | `eamodio.gitlens` | `blame` en línea: quién cambió esto y en qué commit |
 
-Ajustes que evitan el problema de §2:
+### El intérprete: la pregunta que todos hacen
+
+**"¿En qué ambiente ejecuto esto?"** La respuesta es siempre la misma: el `.venv`
+que está **dentro del repositorio**, no el Python del sistema ni el `base` de
+conda.
+
+Cómo saber en cuál estás, y es lo único que hay que memorizar:
+
+```bash
+which python     # macOS y Linux
+where python     # Windows
+```
+
+Si la ruta que imprime no termina en `MLOps-Course/.venv/bin/python`, estás en el
+ambiente equivocado. Y la comprobación de fondo:
+
+```bash
+python -c "import taxi; print('ambiente correcto')"
+```
+
+Si eso falla con `ModuleNotFoundError`, el intérprete no es el del proyecto.
+
+**La forma de no pensar nunca en esto:** prefija los comandos con `uv run`.
+
+```bash
+uv run pytest              # usa el .venv del proyecto, sin importar qué esté activado
+uv run python scripts/smoke_test.py
+```
+
+Por eso todos los `targets` del `Makefile` llevan `uv run`: eliminan la clase
+entera de errores de "lo ejecuté en el ambiente equivocado".
+
+Un detalle que confunde: en la terminal puedes ver **dos** ambientes a la vez,
+así:
+
+```
+(mlops-curso) (base) Mac:MLOps-Course usuario$
+```
+
+No está roto. Conda activó `base` al abrir la terminal y encima se activó el
+`.venv` del proyecto. El que manda es el de la izquierda, el último activado.
+
+Este repositorio trae `.vscode/settings.json` versionado, así que al abrir la
+carpeta VS Code ya selecciona el intérprete correcto. Si aun así te lo pregunta:
+`Cmd/Ctrl` + `Shift` + `P` → **Python: Select Interpreter** → el que diga
+`./.venv`. Para un notebook, el selector de `kernel` está arriba a la derecha y
+hay que apuntarlo al mismo `.venv`.
+
+Los ajustes que trae el repositorio:
 
 ```json
 {
