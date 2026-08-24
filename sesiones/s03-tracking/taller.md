@@ -30,7 +30,7 @@ En **tu** código de entrenamiento, dentro de un `mlflow.start_run()`:
 
 - **params**: todos los hiperparámetros más la semilla y el tamaño de cada split.
 - **metrics**: tu métrica técnica principal y al menos dos más. Si tienes una
-  métrica de negocio (del hito 1), va aquí.
+  métrica de negocio (la de tu propuesta de proyecto), va aquí.
 - **tags**: qué datos (particiones o rango de fechas con su hash), qué features,
   y `holdout_evaluado=no`.
 - **artifacts**: al menos una figura de diagnóstico.

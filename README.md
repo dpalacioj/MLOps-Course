@@ -94,36 +94,10 @@ su propio repositorio. No son ocho ejercicios sueltos.
 | 7 | Monitoreo, drift y gobernanza | ¿Cómo sé que el modelo sigue sirviendo, y cuándo reentrenar? | [`sesiones/s07-monitoreo`](sesiones/s07-monitoreo) |
 | 8 | LLMOps | ¿Qué cambia y qué no cuando el modelo es un LLM? | [`sesiones/s08-llmops`](sesiones/s08-llmops) |
 
-### Carga real, declarada
-
-Esta tabla es la **única fuente de verdad** sobre tiempos. Si algún otro
-documento dice otra cosa, este manda.
-
-| Sesión | Aula | Trabajo autónomo |
-|---|---|---|
-| S1 a S8 | 4 h cada una = **32 h** | 3 h por sesión = 24 h |
-| Hitos del proyecto (3) | — | 4 h cada uno = 12 h |
-| Entrega final + peer review | — | 10 h |
-| **Total** | **32 h** | **~46 h** |
-
-Es una carga alta para un posgrado, y está medida en lugar de ser una sorpresa.
-
-### Formato de cada sesión
-
-| Tramo | Min | Qué pasa |
-|---|---|---|
-| Arranque | 0-15 | Recap de la sesión anterior por un estudiante + revisión del CI de los talleres |
-| **El dolor** | 15-40 | Demo en vivo de lo que se rompe *sin* la herramienta de hoy |
-| Bloque A | 40-95 | Concepto → implementación guiada |
-| Pausa | 95-110 | |
-| Bloque B | 110-165 | Concepto → implementación guiada |
-| Taller | 165-220 | Los estudiantes trabajan; se entrega en clase |
-| Cierre | 220-240 | Autoverificación, alternativas y trade-offs, **qué NO usar**, tarea |
-
-Dos reglas del formato. **Primero el dolor**: nunca se abre una herramienta antes
-de sentir el problema que resuelve. Y **el cierre nombra lo deprecado**: cada
-sesión dice explícitamente qué APIs y qué herramientas ya no se usan, con fecha.
-Eso es lo que separa un curso de posgrado de un tutorial.
+Cada sesión arranca mostrando el problema antes que la herramienta, tiene una
+parte práctica que se trabaja en clase, y cierra revisando qué alternativas
+existen y qué prácticas ya quedaron viejas. Aparte de las horas de clase, cuenten
+con unas horas semanales para el proyecto.
 
 ---
 
@@ -198,22 +172,18 @@ fija; el nightly avisa si alguna se rompe.
 
 ## Evaluación
 
-| Componente | Peso | Cómo se verifica |
-|---|---|---|
-| Talleres de sesión (8, se descarta el más bajo) | 30 % | El CI del repositorio del estudiante |
-| Hitos del proyecto (3: tras S2, S4 y S6) | 15 % | PR revisado |
-| Proyecto final — instructor | 40 % | [`proyecto/rubrica-instructor.md`](proyecto/rubrica-instructor.md) |
-| Proyecto final — peer review recibido | 10 % | Promedio recortado |
-| Participación en peer review | 5 % | Completó sus 2 revisiones |
+La nota del curso sale del **proyecto final en grupo**: un sistema de ML de punta
+a punta con tracking, pipeline, deployment y monitoreo. El enunciado completo,
+la rúbrica y el mecanismo de peer review están en
+[`proyecto/`](proyecto/README.md).
 
-La rúbrica del instructor está publicada desde el primer día, con anclas escritas
-para los niveles 1, 3 y 5 de cada dimensión y la columna de qué comando mira el
-instructor para asignar el puntaje.
+Los talleres de cada sesión son opcionales y funcionan como **bonus**: entregarlos
+con juicio a lo largo del semestre puede sumar hasta 1.0 unidad a la nota final.
+No entregarlos no resta.
 
-El proyecto final tiene [requisitos duros de dataset](proyecto/README.md): sin eje
-temporal no hay split honesto, ni drift, ni reentrenamiento. Hay una
-[lista curada de datasets](proyecto/datasets-curados.md) verificados contra esos
-requisitos.
+Para elegir dataset hay una [lista ya verificada](proyecto/datasets-curados.md),
+y en [`proyecto/starter-template/`](proyecto/starter-template/) hay un esqueleto
+de repositorio para quien prefiera no arrancar de cero.
 
 ---
 

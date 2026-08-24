@@ -21,9 +21,9 @@ Recuerda el resultado de la sesión: un cambio de unidades no lanza excepciones,
 produce nulos, no cambia tipos, y degrada la métrica lo justo para que nadie lo note.
 Tu `ruff`, tu `mypy` y tus tests de la S01 no lo detectan. Hoy construyes lo que sí.
 
-> **Este taller es casi literalmente el [hito 1 del
+> **Este taller es casi literalmente la [fase 1 del
 > proyecto](../../proyecto/README.md), que se entrega 5 días después de esta sesión.**
-> No es trabajo desechable: es el hito, menos la propuesta del problema y la métrica de
+> No es trabajo desechable: es la fase 1 del proyecto, menos la propuesta del problema y la métrica de
 > negocio. Aprovéchalo.
 
 ---
@@ -157,7 +157,7 @@ Entrega la medición: el RMSE (o tu métrica) con `TimeSeriesSplit` **y** con
 2. qué usas en su lugar para que `train` y `test` sean independientes (¿agrupación por
    entidad con `GroupKFold`? ¿estratificación?);
 3. **cómo vas a simular referencia vs producción en la sesión 7**, porque sin dos
-   particiones separables no puedes medir `drift` y eso vale un 15 % de la rúbrica del
+   particiones separables no puedes medir `drift`, y el monitoreo es una de las dimensiones de la rúbrica del
    proyecto.
 
 El punto 3 es el importante: un `dataset` sin eje temporal no descalifica tu proyecto,
@@ -253,7 +253,7 @@ print('el contrato pasa sobre el dato real')
    es "hash + partición inmutable y nada más", **defiéndelo**: es una respuesta
    correcta y bien argumentada vale más que un `lake` innecesario.
 5. Adelanta la propuesta del problema y la métrica de negocio del
-   [hito 1](../../proyecto/README.md). Con eso, el hito queda hecho.
+   [proyecto](../../proyecto/README.md). Con eso, la fase 1 del proyecto queda hecha.
 
 ---
 

@@ -1,6 +1,7 @@
 # Rúbrica del instructor — proyecto final
 
-**Vale el 40 % de la nota del curso.** Esta rúbrica se publica al inicio, no al
+Con esta rúbrica se califica la parte del instructor (el 70 % de la nota del
+proyecto). Se publica al inicio, no al
 final: no hay criterios secretos. Si un aspecto de tu proyecto no aparece en las
 siete dimensiones de abajo, no se califica.
 

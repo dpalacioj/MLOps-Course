@@ -87,15 +87,15 @@ grep -rn -E "continue-on-error|\|\| *true|\|\| *echo" .github/workflows/
 
 Y comprobar que `uv.lock` está commiteado en el mismo commit que el `pyproject.toml`.
 
-### 1.3 Encuadre de hoy y del hito 1 (3 min)
+### 1.3 Encuadre de hoy y del proyecto (3 min)
 
 "La semana pasada conseguimos que el **código** dé siempre el mismo resultado dado el
 mismo dato. Hoy atacamos la otra mitad, que es la que rompe los sistemas de ML de
 verdad: **qué pasa cuando el dato cambia y nadie se da cuenta.**"
 
-Y decirlo ahora, no al final: **el hito 1 del proyecto se entrega 5 días después de hoy**
+Y decirlo ahora, no al final: **lo que hacemos hoy es exactamente la fase 1 del proyecto**
 ([`proyecto/README.md`](../proyecto/README.md)), y el taller de hoy **es** casi
-literalmente ese hito.
+literalmente esa fase.
 
 ---
 
@@ -698,7 +698,7 @@ en clase.
    justificación, y el tercero es el importante: cómo simularán referencia vs producción
    en la S07. *"Un `dataset` sin eje temporal no descalifica su proyecto; descubrirlo en la
    sesión 7 sí lo hunde."*
-6. **El hito 1 se entrega en 5 días** y es esto más la propuesta del problema y la ficha.
+6. Esto, más la propuesta del problema y la ficha del dataset, **es la fase 1 del proyecto ya resuelta**.
 
 Quien acabe antes: el extra 1, que es **medir el límite de su propio contrato** (¿a partir
 de qué factor de escala deja de detectarlo?). Es el ejercicio más valioso del taller
@@ -767,9 +767,9 @@ Cerrar mostrando el [ADR 005](../docs/adr/005-contratos-de-datos.md): la decisi�
 escrita, con las ocho alternativas descartadas y **la limitación declarada** en las
 consecuencias.
 
-### 10.3 Tarea, hito 1 y puente a S03 (6 min)
+### 10.3 Tarea, proyecto y puente a S03 (6 min)
 
-**Tarea:** terminar el taller y dejar el CI verde. Y el **hito 1 del proyecto, que se
+**Tarea:** terminar el taller si quedó a medias. Y avanzar en la **fase 1 del proyecto, que se
 entrega en 5 días** ([`proyecto/README.md`](../proyecto/README.md)): el taller de hoy más
 la propuesta del problema, la métrica de negocio y la `dataset card` completa.
 
@@ -872,6 +872,6 @@ uno visible, y **ninguno de los dos puede hacer el trabajo del otro**.
       contesta las preguntas difíciles de la clase.
 - [ ] Preparadas **dos PR de la S01** para la revisión de CI del bloque 1.2.
 - [ ] Anunciado quién hace el **recap al empezar la S03**.
-- [ ] Recordada en el aula virtual la **fecha del hito 1** (hoy + 5 días), con el enlace a
+- [ ] Recordado en el aula virtual el **enunciado del proyecto**, con el enlace a
       [`proyecto/README.md`](../proyecto/README.md).
 - [ ] Decidido si se publica `_soluciones/` (recomendación: **no** antes del taller).

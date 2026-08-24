@@ -52,7 +52,7 @@ entregable. El [taller](taller.md) los evalúa uno por uno.
 
 | Tramo | Min | Qué pasa |
 |---|---|---|
-| Arranque | 0-15 | Recap de S01 por un estudiante (rotativo) + revisión del CI de los talleres entregados |
+| Arranque | Recap de S01 por un estudiante (rotativo) y dudas del taller anterior |
 | **El dolor** | 15-40 | [`notebooks/01-el-dolor-de-los-datos.ipynb`](notebooks/01-el-dolor-de-los-datos.ipynb) §1-2. Dos actos: el cambio de unidades y la categoría que desaparece. **No se abre Pandera** |
 | Bloque A | 40-95 | Contratos de datos y los tres niveles de check: §2, §3, §4 de este README |
 | *Pausa* | 95-110 | |
@@ -744,13 +744,13 @@ Respóndelas sin mirar arriba. Entre paréntesis, dónde está la respuesta.
 
 ---
 
-## 11. Taller, hito 1 y puente a S03
+## 11. Taller, proyecto y puente a S03
 
 **Taller:** [`taller.md`](taller.md), 55 min, se entrega en clase, sobre **tu propio**
 repositorio.
 
-**Hito 1 del proyecto — se entrega 5 días después de esta sesión.** Es el primero de
-los tres hitos y vale un 5 % de la nota. El enunciado y la definición de "hecho" están
+**Esta sesión es el arranque natural del proyecto del curso.** Es el primero de
+los pasos del proyecto. El enunciado completo está
 en [`proyecto/README.md`](../../proyecto/README.md). Lo que pide, y que coincide casi
 punto por punto con el taller de hoy:
 
@@ -763,7 +763,7 @@ punto por punto con el taller de hoy:
 - `split` temporal, o justificación escrita si tu `dataset` no tiene eje temporal;
 - métrica de negocio y métrica técnica, y la relación entre las dos.
 
-Si haces el taller bien, el hito 1 es el taller más la ficha y la propuesta del
+Si haces el taller bien, ya tienes adelantada la primera fase del proyecto: el taller más la ficha y la propuesta del
 problema. Plantillas útiles:
 [`dataset-card.md`](dataset-card.md) de esta sesión y
 [`proyecto/starter-template/`](../../proyecto/starter-template/).

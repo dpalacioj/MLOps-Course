@@ -484,7 +484,7 @@ versión instalada. En mlflow 3 es `skops`, y eso puede romper código que funci
 
 ### 10.4 Tarea y puente a S04 (2 min)
 
-El taller se entrega hoy. Y se enuncia lo que de aquí va al **hito 2 del proyecto**
+El taller se puede entregar hoy mismo. Y se enuncia lo que de aquí aplica directo al **proyecto**
 (que se entrega después de S05, e incluye también lo de S04 y S05): tracking
 completo, modelo registrado con `@champion`, model card generada y CI verde.
 

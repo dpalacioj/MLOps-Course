@@ -1,226 +1,158 @@
 # Solución de referencia — Taller S01
 
-> **No publicar antes del taller.**
-> Enunciado: [`../taller.md`](../taller.md).
+El repositorio terminado queda así:
 
-El repositorio del curso cumple los diez criterios, así que sirve de solución
-ejecutable. Esta página recorre los diez y señala **qué archivo** los satisface y
-**con qué comando** se comprueba, para que la revisión de los PR de los estudiantes
-sea mecánica y no una discusión de gustos.
-
----
-
-## Criterio 1 — El workflow del CI pasa
-
-Archivo: [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml).
-
-Cinco `jobs`: `calidad`, `tests` (matriz ubuntu + windows), `smoke`, `secretos`,
-`imagen`. Para el taller basta con `calidad`, `tests` y `smoke`.
-
-**Cómo revisar el PR de un estudiante:** el `check` verde no es suficiente. Abre el
-`run` y comprueba que ningún paso tenga `continue-on-error`, `|| true` o `|| echo`.
-Es el error que más se repite, porque las plantillas que circulan por internet lo
-traen.
-
-```bash
-# Búsqueda rápida en el PR del estudiante
-grep -rn -E "continue-on-error|\|\| *true|\|\| *echo" .github/workflows/
-# Cualquier resultado es motivo de devolución.
+```
+taller-mlops/
+├── .gitignore
+├── Makefile
+├── pyproject.toml
+├── uv.lock
+├── src/
+│   └── taller/
+│       ├── __init__.py
+│       └── limpieza.py
+└── tests/
+    └── test_limpieza.py
 ```
 
-## Criterio 2 — `make smoke` sale OK, y falla cuando debe
+## Los archivos completos
 
-Archivos: [`Makefile`](../../../Makefile) (`target` `smoke`) y
-[`scripts/smoke_test.py`](../../../scripts/smoke_test.py).
+### `pyproject.toml`
 
-```bash
-make smoke ; echo "exit code: $?"     # 0
+```toml
+[project]
+name = "taller"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas>=2.0",
+    "scikit-learn>=1.5",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.8",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/taller"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 ```
 
-**La comprobación que de verdad importa** es la segunda: que el diagnóstico pueda
-fallar. Inyecta un fallo y verifica el exit code:
+### `.gitignore`
 
-```bash
-# Simula una dependencia que falta, en un entorno de usar y tirar
-cd /tmp && rm -rf prueba && git clone <url> prueba && cd prueba
-uv sync                                 # sin --group dev: falta ruff, pytest...
-uv run python scripts/smoke_test.py ; echo "exit code: $?"   # != 0
+```
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
 ```
 
-Un `smoke_test.py` que imprime avisos y siempre devuelve `0` no cumple el criterio.
-La estructura correcta está al final del script del curso:
+(El del taller pedía solo `.venv/`; estas tres líneas extra evitan que los
+caches de Python y de las herramientas ensucien el `git status`.)
+
+### `src/taller/limpieza.py`
 
 ```python
-fallos = sum(1 for e, _, _ in resultados if e == "FAIL")
-if fallos:
-    return 1
-return 0
+import pandas as pd
+
+
+def filtrar_duracion(df: pd.DataFrame, minimo: float = 1.0, maximo: float = 60.0) -> pd.DataFrame:
+    """Deja solo los viajes con duracion en [minimo, maximo] minutos."""
+    return df[(df["duration"] >= minimo) & (df["duration"] <= maximo)].reset_index(drop=True)
 ```
 
-Nota sobre `WARN` vs `FAIL`, que es una decisión de diseño que conviene comentar en
-clase: Docker ausente es `WARN` (no se necesita hasta S05); punteros de Git LFS sin
-resolver es `FAIL` (rompe la S04). La distinción tiene que estar razonada, no ser
-casual.
-
-## Criterio 3 — `pytest` corre ≥ 2 tests
-
-Referencia: [`tests/`](../../../tests/), con 308 tests. Para el taller bastan dos,
-pero **tienen que significar algo**. Ejemplos del repositorio, uno de cada tipo:
-
-- **Coherencia de constantes** —
-  [`tests/unit/test_config_y_convenciones.py`](../../../tests/unit/test_config_y_convenciones.py):
-  que las particiones no se solapen, que el holdout no esté en `train`, que el
-  puerto de MLflow sea uno solo en todo el repositorio.
-- **Determinismo** —
-  [`tests/unit/test_determinismo.py`](../../../tests/unit/test_determinismo.py):
-  la misma entrada, dos veces, produce exactamente lo mismo.
-
-Un test aceptable, escrito desde cero, se parece a esto:
+### `tests/test_limpieza.py`
 
 ```python
-def test_las_particiones_no_se_solapan() -> None:
-    """El holdout no puede estar en train: si esta, el gate no mide nada."""
-    etiquetas = [p.etiqueta for p in PARTICIONES_TRAIN]
-    assert PARTICION_TEST.etiqueta not in etiquetas
-    assert PARTICION_VALID.etiqueta not in etiquetas
+import pandas as pd
+
+from taller.limpieza import filtrar_duracion
+
+
+def test_filtra_fuera_de_rango():
+    df = pd.DataFrame({"duration": [0.5, 10.0, 30.0, 90.0]})
+    resultado = filtrar_duracion(df)
+    assert list(resultado["duration"]) == [10.0, 30.0]
+
+
+def test_no_modifica_el_original():
+    df = pd.DataFrame({"duration": [0.5, 10.0]})
+    filtrar_duracion(df)
+    assert len(df) == 2
 ```
 
-`assert True`, `assert 1 == 1` y un test que solo comprueba que un `import`
-funciona no cuentan. Lee los dos tests del estudiante; es lo único que no se puede
-automatizar de este criterio.
+### `Makefile`
 
-## Criterio 4 — `ruff check` sin errores
+```make
+setup:
+	uv sync
 
-Configuración: [`pyproject.toml`](../../../pyproject.toml), sección `[tool.ruff]`.
+test:
+	uv run pytest
+
+lint:
+	uv run ruff check .
+
+format:
+	uv run ruff format .
+```
+
+## Verificación
+
+Desde un clon limpio:
 
 ```bash
-uv run ruff check .
-uv run ruff format --check --diff .
+uv sync && uv run pytest
+# 2 passed
 ```
 
-Detalle a mirar en el PR: que la configuración esté en `pyproject.toml` y no en un
-`.ruff.toml` separado (una configuración menos que sincronizar), y que
-`select` incluya al menos `E`, `F` e `I`. Si solo trae los `defaults`, el lint no
-está ordenando imports y el primer PR con conflictos de `import` lo va a demostrar.
+## Notas para quien corrige (o para el compañero que revisa)
 
-## Criterio 5 — Existe `uv.lock` y está commiteado
+- Lo primero es la prueba de fuego: clonar y correr `uv sync && uv run pytest`
+  **sin leer nada más**. Si eso falla, el resto no importa todavía.
+- El error más común es `.venv/` commiteado (pesa cientos de MB) o `uv.lock`
+  ignorado. Los dos son la misma confusión: qué se versiona y qué se regenera.
+- El segundo más común es el `Makefile` con espacios en lugar de tabs. El mensaje
+  `missing separator` no ayuda a nadie que no lo haya visto antes.
+- Si el paquete no importa (`ModuleNotFoundError: taller`), casi siempre falta el
+  bloque `[tool.hatch.build.targets.wheel]` o el `uv sync` posterior.
 
-```bash
-ls -la uv.lock
-git log --oneline -1 -- uv.lock
-grep -c '^\[\[package\]\]' uv.lock     # nº de paquetes resueltos de verdad
+## Los retos opcionales, resueltos
+
+**Pre-commit mínimo** — `.pre-commit-config.yaml`:
+
+```yaml
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.3
+    hooks:
+      - id: ruff-check
+      - id: ruff-format
 ```
 
-Y la comprobación indirecta, que es la buena: el CI instala con
-`uv sync --group dev --locked`. Si el `lock` estuviera desfasado o ausente, ese paso
-falla. Con Poetry el equivalente es `poetry install` con `poetry.lock` commiteado.
+y `uv run pre-commit install`.
 
-**Motivo de devolución:** un `requirements.txt` generado con `pip freeze` presentado
-como `lockfile`. No lleva hashes, no distingue dependencias directas de transitivas
-y es específico de la plataforma donde se ejecutó.
+**CI mínimo** — `.github/workflows/ci.yml`:
 
-## Criterio 6 — El entorno se reconstruye desde cero
-
-Esto lo demuestra el `job` del CI, que parte de una máquina limpia. Pero el
-instructor debería hacerlo una vez a mano con un PR de muestra, porque es lo que
-hará quien haga `peer review`:
-
-```bash
-cd /tmp && rm -rf verificacion
-git clone <url-del-estudiante> verificacion && cd verificacion
-make setup && make smoke && make test
+```yaml
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync
+      - run: uv run ruff check .
+      - run: uv run pytest
 ```
-
-## Criterio 7 — El ADR tiene contexto, decisión y consecuencias
-
-Ejemplo completo: [`adr-000-stack.md`](adr-000-stack.md).
-Referencias del repositorio, con la forma que se espera:
-[ADR 001](../../../docs/adr/001-caso-guia-y-particiones.md) (particiones),
-[ADR 002](../../../docs/adr/002-aliases-en-vez-de-stages.md) (registry),
-[ADR 003](../../../docs/adr/003-umbrales-de-drift.md) (umbrales).
-
-Rúbrica de este criterio, en orden de importancia:
-
-| Señal | Qué significa |
-|---|---|
-| Las tres secciones existen y tienen contenido | mínimo |
-| Hay al menos una alternativa **descartada con razón** | el estudiante consideró opciones |
-| La razón no es "es el más popular" ni "el profesor lo usa" | la decisión es suya |
-| **Hay una consecuencia negativa** | entendió que toda decisión cuesta algo |
-| Las versiones están nombradas | el ADR se puede fechar y revisar |
-
-La ausencia de consecuencias negativas es el fallo más común y el más informativo:
-un ADR con solo ventajas no es un ADR, es una justificación escrita después.
-
-## Criterio 8 — El `Makefile` es la interfaz única
-
-Comprobación: los pasos del CI son `make <target>`, o los mismos comandos que el
-`Makefile` ejecuta. Si el CI corre `pytest --cov ...` y el `Makefile` corre
-`pytest -q`, hay dos definiciones de "los tests pasan".
-
-En este repositorio el `Makefile` lo dice en su encabezado:
-
-```
-# Interfaz unica del repositorio. El CI usa exactamente estos mismos targets,
-# de modo que "pasa en mi maquina" y "pasa en CI" significan lo mismo.
-```
-
-## Criterio 9 — Un solo formatter
-
-```bash
-grep -rn -i "black" pyproject.toml .pre-commit-config.yaml .vscode/ 2>/dev/null
-```
-
-Si aparece Black junto con `ruff format`, se devuelve con la explicación de
-[`calidad.md`](../calidad.md) §2. Ojo también con `.vscode/settings.json`
-commiteado: `"editor.defaultFormatter": "ms-python.black-formatter"` cuenta como
-segundo formatter, porque se lo impone a todo el equipo.
-
-## Criterio 10 — Sin secretos ni binarios grandes
-
-```bash
-git ls-files | grep -E '\.(pkl|bin|ubj|onnx|parquet|h5)$'   # vacío, o todo en LFS
-git ls-files | grep -E '^\.env$'                            # vacío
-ls .env.example                                             # existe
-git lfs ls-files                                            # lo que sí está en LFS
-uv run pre-commit run detect-private-key --all-files
-uv run pre-commit run check-added-large-files --all-files
-```
-
-Si algo apareció, la conversación no es "bórralo": es **rota el secreto**. Un
-`token` que estuvo en un commit público está comprometido para siempre, y borrarlo
-en un commit posterior no lo saca del historial.
-
----
-
-## Errores más frecuentes en los PR, por orden de frecuencia
-
-1. **CI verde que no comprueba nada** — `continue-on-error` o `|| echo` heredados de
-   un tutorial. Es el fallo nº 1 y el más peligroso, porque produce confianza
-   injustificada.
-2. **`uv.lock` sin commitear**, o commiteado en un commit distinto del
-   `pyproject.toml`.
-3. **`smoke_test.py` que no puede fallar** — imprime avisos y devuelve siempre 0.
-4. **ADR sin consecuencias negativas.**
-5. **Dos formatters** — casi siempre Black en el editor.
-6. **Paquete sin `src/` layout** — funciona en local por el directorio de trabajo, y
-   falla en CI con `ModuleNotFoundError`.
-7. **Constantes duplicadas** — el mismo umbral en `train.py` y en `predict.py`. Es el
-   bug que la sesión 1 previene y el que reaparece en la sesión 5.
-
----
-
-## Tiempos del taller, para el instructor
-
-El taller son 55 minutos y **no** alcanza para hacer los nueve puntos de cero. Lo
-que se espera al final de la clase, en orden de prioridad:
-
-| Prioridad | Puntos | Por qué |
-|---|---|---|
-| Imprescindible | 1, 2, 3 (paquete, `lock`, `Makefile`) | sin esto no se puede seguir el curso |
-| En clase si da tiempo | 4, 5, 8 (`smoke`, `ruff`/`hooks`, CI) | son mecánicos con las plantillas |
-| Tarea | 6, 7, 9 (LFS, tests, ADR) | requieren pensar; el ADR es el más valioso y el que más tiempo pide |
-
-Recomendación: pedir el PR abierto **al final de la clase** aunque esté incompleto,
-con la descripción diciendo qué falta. Un PR incompleto y declarado se revisa; uno
-que llega tres días tarde y completo no enseña la disciplina de entregar.

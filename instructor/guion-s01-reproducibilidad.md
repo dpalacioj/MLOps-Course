@@ -93,12 +93,13 @@ y mostrar **solo la tabla del contexto**: cada módulo del curso anterior usaba 
 La frase: "No van a aprender de taxis. Van a poder comparar el número de la sesión 3
 con el de la sesión 7, que es lo que hace que MLOps signifique algo."
 
-### 1.3 El proyecto y el hito 1 (4 min)
+### 1.3 El proyecto del curso (4 min)
 
-[`proyecto/README.md`](../proyecto/README.md): 70 % de la nota, dominio libre, se
-entrega como PR. **El hito 1 se entrega 5 días después de la sesión 2**, e incluye la
-`dataset card` y el contrato de datos. Es decir: la elección del `dataset` empieza
-**hoy**, en la tarea de esta sesión.
+[`proyecto/README.md`](../proyecto/README.md): el proyecto en grupo es el 100 %
+de la nota del curso, con dominio libre. Los talleres de cada sesión son
+opcionales y suman un bonus de hasta 1.0 sobre la nota final. Conviene decir las
+dos cosas hoy, en la primera clase, para que nadie se lleve sorpresas. Y la
+elección del `dataset` empieza ya: es lo primero que traba a los grupos.
 
 Recomendación explícita: **no usar el caso guía en el proyecto**. El repositorio ya lo
 resuelve, así que copiar es trivial y aprender es cero.
@@ -423,9 +424,9 @@ veces**, una como *Authentication Key* y otra como *Signing Key*.
 
 ### 6.2 El flujo diario (5 min)
 
-`git.md` §2. Una rama por entrega, un PR por entrega. Y la política del curso: **los
-hitos se entregan como PR, no como zip.** "Un zip produce una nota; un PR produce
-comentarios en las líneas de código."
+`git.md` §2. Una rama por entrega, un PR por entrega. Vale la pena vender el PR
+como formato de trabajo tambien para el proyecto: "un zip produce una nota; un PR
+produce comentarios en las líneas de código."
 
 Sobre `rebase` vs `merge`: explicar la regla que lo hace seguro (*nunca reescribas una
 rama que otra persona ya tiene*) y decir en voz alta que **`merge origin/main` no baja
@@ -738,10 +739,9 @@ Es exactamente lo que se les va a exigir en su ADR y en su `dataset card`.
 
 ### 10.3 Tarea y puente a S02 (6 min)
 
-**Tarea:** terminar el taller, CI verde en el fork, y **elegir el `dataset` del
-proyecto** leyendo los requisitos duros de
-[`proyecto/README.md`](../proyecto/README.md). Recordar la fecha: **hito 1 = S02 + 5
-días**.
+**Tarea:** terminar el taller si quedó a medias (suma al bonus) y **empezar a
+mirar el `dataset` del proyecto** con el enunciado de
+[`proyecto/README.md`](../proyecto/README.md) al lado.
 
 **El puente, que conviene dejar montado como un cliffhanger:**
 

@@ -1,0 +1,25 @@
+flowchart TB
+    E["Editas archivos"] --> A["git add"]
+    A --> C["git commit"]
+    C --> H1{{"HOOK 1 · pre-commit"}}
+
+    H1 -->|"falla"| X1["RECHAZADO. El commit no existe.<br/>ruff · gitleaks · nbstripout<br/>archivo mayor a 500 KB<br/>rutas absolutas · APIs deprecadas<br/><i>arreglas y vuelves a commitear</i>"]
+    H1 -->|"pasa"| H2{{"HOOK 2 · commit-msg"}}
+
+    H2 -->|"falla"| X2["RECHAZADO<br/>el mensaje no cumple<br/>conventional commits<br/><i>reescribes el mensaje</i>"]
+    H2 -->|"pasa"| OK["Commit creado<br/>ya esta en tu historial"]
+
+    OK --> P["git push"]
+    P --> H3{{"HOOK 3 · pre-push"}}
+
+    H3 -->|"falla"| X3["RECHAZADO<br/>la rama no se llama<br/>tipo/descripcion-kebab-case<br/><i>git branch -m feat/lo-que-sea</i>"]
+    H3 -->|"pasa"| R[("Repositorio remoto")]
+
+    R --> CI["CI en GitHub<br/>vuelve a correr TODO<br/>en una maquina limpia"]
+
+    classDef hook fill:#e8daef,stroke:#6c3483,color:#4a235a,font-weight:bold
+    classDef malo fill:#fadbd8,stroke:#a93226,color:#78281f
+    classDef bueno fill:#d5f5e3,stroke:#1e8449,color:#145a32
+    class H1,H2,H3 hook
+    class X1,X2,X3 malo
+    class OK,R,CI bueno

@@ -22,42 +22,36 @@ resultado sin que tú estés delante?**
 
 Al terminar la sesión debes poder:
 
-1. **Reconstruir** el entorno del curso desde cero con dos comandos
-   (`make setup && make smoke`) y **explicar** qué garantiza `pyproject.toml` y qué
-   garantiza `uv.lock`, que no es lo mismo.
-2. **Demostrar** con un experimento —borrar `.venv` y sincronizar— cuál de las
-   dependencias que instalaste sobrevive y cuál desaparece, y **decir por qué**.
-3. **Convertir** un análisis que vive en un notebook caótico en un paquete Python
-   instalable, y **verificar** que la métrica es la misma en los tres estados.
-4. **Configurar** el trío `ruff` + `mypy` + `pre-commit` de modo que el `hook` local
-   y el CI ejecuten **lo mismo**, y argumentar por qué divergir los dos convierte el
-   `hook` en algo que la gente desactiva con `--no-verify`.
-5. **Versionar** un binario con Git LFS **antes** de commitearlo, y explicar qué le
-   pasa a quien clona sin LFS instalado.
-6. **Escribir** un ADR de una página que declare el stack elegido, las alternativas
-   descartadas y el costo de haberse equivocado.
-7. **Diagnosticar** un entorno roto con `make smoke` en lugar de con `python -V`.
+1. Reconstruir el entorno del curso desde cero (`make setup && make smoke`) y
+   explicar qué garantiza `pyproject.toml` y qué garantiza `uv.lock`, que no es
+   lo mismo.
+2. Crear un proyecto propio con `uv`: dependencias declaradas, lockfile
+   versionado y `.venv` fuera de git.
+3. Explicar por qué un notebook con estado oculto no es reproducible, y qué gana
+   un análisis al convertirse en paquete.
+4. Armar un `Makefile` básico y decir para qué sirve tener una interfaz única de
+   comandos.
+5. Diagnosticar un entorno roto con `make smoke` en lugar de con `python -V`.
 
-Criterio de logro: los siete se verifican con un comando o con un archivo
-entregable. El taller los revisa uno por uno con [criterios que corre el
-CI](taller.md#criterios-de-aceptación).
+El taller de hoy ([`taller.md`](taller.md)) pone en práctica los puntos 2, 3 y 4
+sobre un repositorio propio, desde cero.
 
 ---
 
-## Estructura de la sesión (240 min)
+## Cómo está organizada la sesión
 
-| Tramo | Min | Qué pasa |
-|---|---|---|
-| Arranque | 0-15 | Encuadre del curso, del caso guía y del proyecto. **En esta sesión no hay recap ni revisión de CI: no hay sesión anterior.** A partir de S02 el arranque es siempre recap por un estudiante + revisión del CI de los talleres entregados |
-| **El dolor** | 15-40 | [`notebooks/01-del-notebook-al-paquete.ipynb`](notebooks/01-del-notebook-al-paquete.ipynb). El mismo análisis en tres estados. No se abre `uv` hasta el bloque A |
-| Bloque A | 40-95 | Entorno reproducible: [`entorno.md`](entorno.md) |
-| *Pausa* | 95-110 | |
-| Bloque B | 110-165 | Git, LFS y calidad automática: [`git.md`](git.md) + [`calidad.md`](calidad.md) |
-| Taller | 165-220 | [`taller.md`](taller.md). Se entrega en clase |
-| Cierre | 220-240 | Autoverificación, alternativas y trade-offs, qué NO usar, tarea |
+Arrancamos con el problema, no con las herramientas: el notebook
+[`01-del-notebook-al-paquete.ipynb`](notebooks/01-del-notebook-al-paquete.ipynb)
+muestra el mismo análisis en tres estados y por qué dos de ellos no son de fiar.
+Después viene el entorno reproducible ([`entorno.md`](entorno.md)), luego git y
+la calidad automática ([`git.md`](git.md) y [`calidad.md`](calidad.md)), y
+cerramos con el taller ([`taller.md`](taller.md)), que se puede terminar en
+clase.
 
-Material de apoyo permanente: [`troubleshooting-so.md`](troubleshooting-so.md)
-(macOS vs Windows) y el [`devcontainer`](../../.devcontainer/) como plan B.
+Si algo del entorno se atraviesa, [`troubleshooting-so.md`](troubleshooting-so.md)
+tiene los errores típicos de macOS y Windows, y el
+[`devcontainer`](../../.devcontainer/) es el plan B para seguir la clase mientras
+se arregla la máquina.
 
 ---
 
@@ -154,7 +148,7 @@ sesiones/s01-reproducibilidad/
 ├── git.md                    Bloque B: flujo diario, conventional commits, LFS
 ├── calidad.md                Bloque B: ruff, mypy, pre-commit, nbstripout, CI
 ├── troubleshooting-so.md     macOS vs Windows (consulta, no lectura lineal)
-├── taller.md                 el taller, con criterios verificables por CI
+├── taller.md                 el taller: un repositorio propio desde cero
 ├── notebooks/
 │   ├── 01-del-notebook-al-paquete.ipynb   el dolor: tres estados del mismo analisis
 │   └── _generar_notebooks.py              fuente del notebook (se edita aqui)
@@ -322,10 +316,10 @@ El razonamiento completo, con lo que cada una cuesta, está en
 
 ## 9. Tarea y puente a S02
 
-**Tarea (antes de S02):** terminar el taller si quedó a medias y dejar el CI verde
-en tu fork. Además, elegir un `dataset` candidato para el proyecto y leer los
-[requisitos duros del dataset](../../proyecto/README.md). El **hito 1 del proyecto
-se entrega 5 días después de la sesión 2**, y el `dataset` es la mitad de ese hito.
+**Para antes de la próxima clase:** si el taller quedó a medias, terminarlo (es
+corto y suma al bonus). Y algo más importante: ir pensando en el `dataset` del
+proyecto del curso — en [`proyecto/README.md`](../../proyecto/README.md) está el
+enunciado completo y una lista de datasets ya verificados.
 
 **Puente:** hoy conseguimos que el entorno sea reproducible. Eso significa que el
 **código** produce siempre el mismo resultado *dado el mismo dato*. La sesión que

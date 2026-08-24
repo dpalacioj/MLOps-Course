@@ -265,7 +265,7 @@ lista "curada" con enlaces muertos es peor que no tener lista.
   guía del curso.** El repositorio ya lo resuelve de punta a punta, así que copiar es
   trivial y aprender es cero. La rúbrica evalúa tu sistema, no tu capacidad de
   reproducir el nuestro. Úsalo solo si tienes una razón concreta (por ejemplo, atacar
-  un problema distinto sobre los mismos datos), y dilo en la propuesta del hito 1.
+  un problema distinto sobre los mismos datos), y dilo en el README del proyecto.
 - **Otras trampas:** el esquema cambió en 2015 y en 2022 (`ehail_fee` quedó todo
   nulo, aparecieron columnas de congestión); las columnas de `yellow` y `green` se
   llaman distinto (`tpep_` vs `lpep_`); hay viajes con `trip_distance = 0` y
@@ -353,6 +353,6 @@ Y las dos que no se comprueban con código:
 - ¿la licencia está publicada, con nombre y URL? "Estaba en internet" no es una
   licencia.
 
-Documenta las respuestas en `docs/dataset-card.md` del hito 1. La plantilla de
+Documenta las respuestas en `docs/dataset-card.md` de tu proyecto. La plantilla de
 [`starter-template/docs/dataset-card.md`](starter-template/docs/dataset-card.md) ya
 trae la tabla de requisitos para llenar.
