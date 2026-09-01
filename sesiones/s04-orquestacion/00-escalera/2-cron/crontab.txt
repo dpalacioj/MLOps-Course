@@ -1,0 +1,65 @@
+# =============================================================================
+# Peldano 2 de la escalera — CRON: "ejecuta codigo a cierta hora"
+# =============================================================================
+# Plantilla de referencia. NO se instala sola.
+#
+# Para la demo de clase no hace falta copiar nada de aqui: `./programar.sh`
+# calcula la hora, arma la linea con tu ruta y la instala. Este archivo es para
+# LEER las cinco columnas y ver las tres frecuencias juntas.
+#
+# Por que las rutas de abajo dicen /RUTA/ABSOLUTA/AL/REPO en vez de una ruta de
+# verdad: cron ejecuta con el HOME como directorio de trabajo, asi que la ruta
+# tiene que ser absoluta, y una ruta absoluta escrita aqui seria la del disco de
+# quien escribio el archivo. Ese es exactamente el bug que documenta
+# scripts/hooks/sin_rutas_absolutas.py. `./programar.sh` la resuelve en tiempo
+# de ejecucion, que es la forma correcta.
+#
+# Formato de las cinco columnas:
+#
+#     * * * * *
+#     | | | | |
+#     | | | | +-- dia de la semana (0-6, 0 = domingo)
+#     | | | +---- mes (1-12)
+#     | | +------ dia del mes (1-31)
+#     | +-------- hora (0-23)
+#     +---------- minuto (0-59)
+# =============================================================================
+
+# Cron arranca con un PATH minimo (normalmente /usr/bin:/bin) y no lee tu
+# ~/.bashrc ni tu ~/.zshrc. `correr.sh` ya exporta el PATH por su cuenta, asi que
+# esta linea es redundante con el envoltorio; se deja porque es la forma canonica
+# de arreglarlo cuando el comando va directo en el crontab, sin envoltorio.
+PATH=/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin
+
+# --- Opcion A: la demo de clase --------------------------------------------
+# Dispara UNA vez, a una hora concreta: la de dentro de cuatro minutos. Es la
+# que instala `./programar.sh --instalar`, con el minuto y la hora ya calculados
+# y un comentario de marca al final para poder borrarla despues.
+#
+#   48 10 * * * /RUTA/ABSOLUTA/AL/REPO/.../2-cron/correr.sh  # escalera-mlops-demo
+#
+# Ojo: "una vez" es una forma de hablar. Un crontab no tiene disparo unico, asi
+# que esa linea vuelve a disparar MANANA a la misma hora, y al dia siguiente, y
+# al siguiente. Por eso hay que borrarla: `./programar.sh --quitar`.
+
+# --- Opcion B: el caso real del Acto 3 -------------------------------------
+# "Hay que reentrenar cada lunes a las 3 a.m."
+0 3 * * 1 /RUTA/ABSOLUTA/AL/REPO/sesiones/s04-orquestacion/00-escalera/2-cron/correr.sh
+
+# --- Opcion C: el anti-patron, para mirarlo y no copiarlo -------------------
+# Cada dos minutos. Sobre un entrenamiento completo es lo que discute la seccion
+# 4 del README de la sesion: no aporta senal (las particiones son mensuales e
+# inmutables), cuesta 720 descargas y 720 entrenamientos al dia, ensucia el
+# registry y ensena el habito equivocado.
+# */2 * * * * /RUTA/ABSOLUTA/AL/REPO/sesiones/s04-orquestacion/00-escalera/2-cron/correr.sh
+
+# --- Zona horaria -----------------------------------------------------------
+# Sin esto, las cinco columnas se interpretan en la zona de la maquina, que en un
+# servidor suele ser UTC. "Las 3 a.m." de quien escribe el crontab y "las 3 a.m."
+# del servidor no son la misma hora.
+# CRON_TZ=America/Bogota
+
+# --- Lo que esta plantilla NO puede darte ----------------------------------
+# No hay linea de crontab que agregue un reintento, un aviso cuando falle, un
+# historial de corridas anteriores, un parametro distinto por corrida, ni una
+# forma de evitar que dos corridas se pisen. Eso es el peldano 3.

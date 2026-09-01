@@ -1,7 +1,7 @@
 
 # Guia de Cierre: Como se Conecta Todo en MLOps
 
-> **Para quien es esta guia:** Personas que completaron los modulos de Experiment Tracking (MLflow) y Orquestacion (Prefect/Mage) y quieren entender como se conecta todo, como se usa en produccion real, y que pasa cuando hay plataformas como Databricks o SageMaker en la ecuacion.
+> **Para quien es esta guia:** Personas que completaron los modulos de Experiment Tracking (MLflow) y Orquestacion (Prefect) y quieren entender como se conecta todo, como se usa en produccion real, y que pasa cuando hay plataformas como Databricks o SageMaker en la ecuacion.
 
 ---
 
@@ -21,9 +21,13 @@
 9. [Un dia en la vida de un pipeline en produccion](#9-un-dia-en-la-vida-de-un-pipeline-en-produccion)
 10. [Mapa de decisiones: que herramienta uso?](#10-mapa-de-decisiones-que-herramienta-uso)
 
-> **Nota:** la guia practica de Mage se retiro del curso (el proyecto open source
-> quedo sin mantenimiento); la comparacion de orquestadores esta en el README de
-> la [sesion 4](../sesiones/s04-orquestacion/README.md).
+> **Nota:** esta guia habla de Prefect porque es el orquestador que el curso
+> ejecuta. La implementacion en Mage se retiro (su ultima release open source es
+> de enero de 2026 y el foco comercial se movio a Mage Pro): el detalle esta en
+> [MIGRACION.md](MIGRACION.md). La comparacion de los ocho orquestadores, con
+> criterios declarados y fecha de evaluacion, vive en la seccion 5 del
+> [README de la sesion 4](../sesiones/s04-orquestacion/README.md), que es el
+> unico lugar donde se mantiene.
 
 ---
 
@@ -44,7 +48,7 @@ Todo el curso sigue un camino logico. Cada modulo resuelve un problema que el an
 
  ┌─────────────┐             ┌─────────────┐              ┌─────────────┐
  │ - Cargar    │             │ - MLflow     │              │ - Prefect   │
- │   datos     │────────────>│ - Parametros │─────────────>│ - Mage      │
+ │   datos     │────────────>│ - Parametros │─────────────>│ - Flows     │
  │ - Entrenar  │             │ - Metricas   │              │ - Pipelines │
  │ - Evaluar   │             │ - Modelos    │              │ - Schedules │
  └─────────────┘             └─────────────┘              └─────────────┘
@@ -103,7 +107,7 @@ flowchart LR
  │                                                                  │
  │   Modulo 01 = Aprender a HACER el pan                           │
  │   Modulo 02 = Tener un CUADERNO DE RECETAS (MLflow)             │
- │   Modulo 03 = Tener una FABRICA AUTOMATIZADA (Prefect/Mage)     │
+ │   Modulo 03 = Tener una FABRICA AUTOMATIZADA (Prefect)          │
  └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -120,7 +124,7 @@ flowchart TB
         direction TB
         M1["Modelo de ML\n(datos + algoritmo)"]
         M2["MLflow\n(tracking de experimentos)"]
-        M3["Prefect / Mage\n(orquestacion de pipelines)"]
+        M3["Prefect\n(orquestacion de pipelines)"]
     end
 
     R1 -.- M1
@@ -250,22 +254,23 @@ flowchart TB
 
 ```
  ┌──────────────────────────────────────────────────────────────────┐
- │                    QUE APRENDIMOS                                │
+ │                    QUE APRENDIMOS DE PREFECT                     │
  │                                                                  │
- │  Prefect (code-first)              Mage (UI-first)              │
- │  ─────────────────────             ──────────────────            │
+ │  Autoria                        Operacion                        │
+ │  ───────                        ─────────                        │
  │                                                                  │
- │  @flow y @task                     @data_loader                 │
- │  Reintentos automaticos            @transformer                 │
- │  Cache de resultados               @data_exporter               │
- │  Artefactos (tablas, markdown)     Tests integrados (@test)     │
- │  Cron scheduling                   UI en navegador              │
- │  Deploy con parametros             Bloques individuales         │
- │  Secrets para API keys             Pipeline visual              │
+ │  @flow y @task                  Reintentos con backoff           │
+ │  Grafo por dependencias         Caching de resultados            │
+ │  Parametros con defaults        Estado por paso                  │
+ │  Artefactos (tabla, markdown)   Schedules con timezone           │
+ │  Variables y Secrets            serve(), deploy(), work pools    │
  │                                                                  │
- │  Pipeline completo:                Pipeline identico:            │
- │  Cargar → Validar → Features       Cargar → Validar → Features  │
- │  → Optuna → XGBoost → MLflow       → Optuna → XGBoost → MLflow │
+ │  Pipeline completo:                                              │
+ │  Cargar → Validar → Features → Optuna → XGBoost → MLflow         │
+ │                                                                  │
+ │  La comparacion con Airflow, Dagster, ZenML, Metaflow, Flyte,    │
+ │  Kubeflow y Mage esta en la seccion 5 del README de la sesion 4, │
+ │  con criterios declarados y fecha de evaluacion.                 │
  │                                                                  │
  └──────────────────────────────────────────────────────────────────┘
 ```
@@ -280,7 +285,7 @@ flowchart TB
  ┌──────────────────────────────────────────────────────────────────┐
  │                                                                  │
  │     ORQUESTADOR                          MLFLOW                 │
- │     (Prefect/Mage)                       (Tracking)             │
+ │     (Prefect)                            (Tracking)             │
  │                                                                  │
  │     CUANDO se ejecuto?          ──   QUE parametros use?        │
  │     EN QUE ORDEN?               ──   QUE metricas obtuve?      │
@@ -301,7 +306,7 @@ flowchart TB
 
 ```mermaid
 flowchart TD
-    subgraph ORQUESTADOR["ORQUESTADOR (Prefect o Mage)"]
+    subgraph ORQUESTADOR["ORQUESTADOR (Prefect)"]
         direction TB
         O1["Paso 1: Cargar datos"] --> O2["Paso 2: Validar"]
         O2 --> O3["Paso 3: Features"]
@@ -484,7 +489,7 @@ flowchart TB
  ├──────────────────┼──────────────┼──────────────┼──────────────┤
  │                  │              │              │              │
  │  Orquestacion    │ Prefect      │ Databricks   │ SageMaker    │
- │                  │ Mage         │ Workflows    │ Pipelines    │
+ │                  │              │ Workflows    │ Pipelines    │
  │                  │              │ (Jobs)       │ Step Func.   │
  │                  │              │              │              │
  ├──────────────────┼──────────────┼──────────────┼──────────────┤
@@ -556,7 +561,7 @@ flowchart TB
 flowchart TD
     subgraph APRENDISTE["Lo que aprendiste (fundamentos)"]
         ML["MLflow\n(tracking)"]
-        PF["Prefect/Mage\n(orquestacion)"]
+        PF["Prefect\n(orquestacion)"]
         OP["Optuna\n(optimizacion)"]
         XG["XGBoost/sklearn\n(modelos)"]
     end
@@ -595,7 +600,7 @@ flowchart TD
  ┌──────────────────────────────────────────────────────────────────┐
  │                                                                  │
  │  "Mi empresa NO tiene plataforma de ML"                         │
- │  → Usa MLflow + Prefect/Mage (lo que aprendiste)               │
+ │  → Usa MLflow + Prefect (lo que aprendiste)                    │
  │  → Es gratis, flexible, y lo controlas tu                       │
  │                                                                  │
  │  "Mi empresa tiene Databricks"                                  │
@@ -675,8 +680,8 @@ flowchart TD
  ┌──────────────────────────────────────────────────────────────────┐
  │  NIVEL 1: REINTENTOS (lo que ya sabemos)                        │
  │                                                                  │
- │  Prefect: @task(retries=3, retry_delay_seconds=30)              │
- │  Mage: Configuracion por bloque                                 │
+ │  Prefect: @task(retries=3, retry_delay_seconds=[1, 2, 4])       │
+ │  El backoff creciente no es opcional: ver s04/00-intro-prefect/ │
  │                                                                  │
  │  Util para: errores temporales (red, API lenta, timeout)        │
  │  Limitacion: si el problema es permanente, reintenta en vano    │
@@ -685,8 +690,7 @@ flowchart TD
  │                                                                  │
  │  Prefect Cloud: Notificaciones nativas a Slack, email, webhook  │
  │  Prefect open-source: Automations + webhooks personalizados     │
- │  Mage: Callbacks configurables por pipeline                     │
- │  Databricks: Alertas nativas en Jobs                            │
+  │  Databricks: Alertas nativas en Jobs                            │
  │  SageMaker: CloudWatch Alarms                                   │
  │                                                                  │
  │  Ejemplo conceptual en Prefect:                                 │
@@ -726,7 +730,7 @@ flowchart LR
 
     subgraph HERRAMIENTAS["Con que Herramienta"]
         direction TB
-        H1["Prefect Dashboard\nMage Logs\nDatabricks Jobs"]
+        H1["Prefect Dashboard\nAirflow UI\nDatabricks Jobs"]
         H2["Validadores del pipeline\n(lo que ya hicimos)\nGreat Expectations"]
         H3["MLflow Metrics\n+ comparacion con baseline\nEvidently AI"]
         H4["CloudWatch, Datadog\nPrometheus + Grafana"]
@@ -877,7 +881,7 @@ flowchart TD
 
     Q2{"Somos cuantas\npersonas?"}
 
-    Q2 -- "Solo yo" --> SOLO["MLflow local (Escenario 1)\n+ Prefect local\no Mage para explorar"]
+    Q2 -- "Solo yo" --> SOLO["MLflow local (Escenario 1)\n+ Prefect local"]
     Q2 -- "2-10 personas" --> EQUIPO["MLflow server (Escenario 2)\n+ Prefect con dashboard\nlocal o Prefect Cloud"]
     Q2 -- "Equipo grande" --> GRANDE["MLflow en AWS (Escenario 3)\n+ Prefect Cloud\no Airflow si ya lo usan"]
 
@@ -903,7 +907,7 @@ flowchart TD
  │  @flow, @task                →  Conceptos identicos en          │
  │  (Prefect)                      Databricks Workflows,           │
  │                                 SageMaker Pipelines,            │
- │                                 Airflow DAGs, Mage blocks.      │
+ │                                 Airflow DAGs, Dagster assets.   │
  │                                 Cambia la SINTAXIS, no la IDEA. │
  │                                                                  │
  │  Optuna trials               →  Funciona en cualquier lugar.    │
@@ -932,8 +936,8 @@ flowchart TD
                  │                 │                 │
            ┌─────┴─────┐   ┌─────┴─────┐    ┌─────┴─────┐
            │           │   │           │    │           │
-        MLflow     Model  Prefect    Mage  Alertas   Data
-        Tracking   Registry  Mage    Airflow  (Slack)  Drift
+        MLflow       Model Prefect  Airflow Alertas   Data
+       Tracking    Registry Flows   Dagster (Slack)   Drift
            │           │   │           │    │           │
            │     ┌─────┘   └─────┐     │    │     ┌────┘
            │     │               │     │    │     │

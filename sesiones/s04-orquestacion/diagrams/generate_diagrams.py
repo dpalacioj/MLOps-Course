@@ -286,35 +286,35 @@ def diagram_02_five_pillars():
 
     pillars = [
         (
-            1.5,
+            1.1,
             "1. Definir\nPasos",
             "Cada paso es una\nfuncion con @task",
             COLORS["prefect_blue"],
             COLORS["light_blue"],
         ),
         (
-            3.5,
+            3.05,
             "2. Conectar\nen Flujo",
             "Los pasos forman\nun grafo con @flow",
             COLORS["teal"],
             COLORS["light_teal"],
         ),
         (
-            5.5,
+            5.0,
             "3. Automatizar\nEjecucion",
             "Cron, intervalos,\ntriggers",
             COLORS["orange"],
             COLORS["light_orange"],
         ),
         (
-            7.5,
+            6.95,
             "4. Observar\ny Reaccionar",
             "Dashboard, logs,\nartefactos",
             COLORS["purple"],
             COLORS["light_purple"],
         ),
         (
-            9.5,
+            8.9,
             "5. Manejar\nErrores",
             "Retries, alertas,\nfallbacks",
             COLORS["error"],
@@ -323,11 +323,11 @@ def diagram_02_five_pillars():
     ]
 
     # Base line
-    ax.plot([1, 10], [3.5, 3.5], color=COLORS["light_gray"], lw=3, zorder=0)
+    ax.plot([0.7, 9.3], [3.5, 3.5], color=COLORS["light_gray"], lw=3, zorder=0)
 
     for x, title, desc, color, bg_color in pillars:
         # Pillar box
-        draw_box(ax, x, 6.5, 1.7, 2.0, "", bg_color, border_color=color, style="round,pad=0.15")
+        draw_box(ax, x, 6.5, 1.6, 2.0, "", bg_color, border_color=color, style="round,pad=0.12")
         ax.text(
             x,
             7.1,
@@ -373,9 +373,10 @@ def diagram_02_five_pillars():
 
     # Bottom label
     ax.text(
-        5.5,
+        5.0,
         2.5,
-        "Estos principios aplican a CUALQUIER orquestador:\nPrefect, Airflow, Mage, Dagster, Kestra...",
+        "Estos principios aplican a CUALQUIER orquestador:\n"
+        "Prefect, Airflow, Dagster, ZenML, Metaflow, Flyte, Kubeflow...",
         fontsize=12,
         ha="center",
         va="center",
@@ -1427,118 +1428,242 @@ def diagram_11_prefect_mlflow():
 
 
 def diagram_12_ecosystem():
-    """Panorama de orquestadores"""
-    fig, ax = setup_figure((16, 10), "12 - Panorama: Orquestadores de ML/Data")
+    """Panorama de orquestadores, alineado con la seccion 5 del README de S04.
 
-    # Timeline / complexity axis
-    ax.annotate(
-        "",
-        xy=(9.5, 1.5),
-        xytext=(0.5, 1.5),
-        arrowprops={"arrowstyle": "->", "color": COLORS["gray"], "lw": 2},
-    )
+    Bug corregido: este diagrama contradecia la tabla del README. Ponia a Mage
+    como primera opcion del eje, etiquetada "Prototipos / Ensenanza", cuando el
+    README advierte que su ultima release open source es de enero de 2026 y que
+    la implementacion en Mage se elimino del repositorio. Mostraba cuatro
+    herramientas de las ocho de la tabla, y las ordenaba con un conteo de
+    estrellas de GitHub hardcodeado y sin fecha: el dato que envejece peor, y que
+    ademas no es uno de los cuatro criterios declarados.
+
+    Ahora: las ocho herramientas de la tabla, separadas en las dos familias que
+    el README distingue, ordenadas por costo de entrada, con el estado del
+    proyecto y sin contar estrellas. Si la tabla del README cambia, este diagrama
+    tiene que regenerarse con ella.
+    """
+    fig, ax = setup_figure((17, 10), "12 - Panorama de orquestadores (evaluado en agosto de 2026)")
+
     ax.text(
         5,
-        0.8,
-        "Complejidad de setup / Curva de aprendizaje",
-        fontsize=11,
-        ha="center",
-        color=COLORS["gray"],
-        style="italic",
-    )
-    ax.text(0.5, 1.1, "Facil", fontsize=9, color=COLORS["success"])
-    ax.text(9.0, 1.1, "Complejo", fontsize=9, color=COLORS["error"])
-
-    # Orchestrators positioned by complexity
-    orchestrators = [
-        (
-            1.5,
-            5,
-            "Mage",
-            "UI visual\nTipo notebook\n~8k stars",
-            COLORS["mage_purple"],
-            "Prototipos\nEnseñanza",
-        ),
-        (
-            3.5,
-            5,
-            "Prefect",
-            "Code-first\nPython nativo\n~18k stars",
-            COLORS["prefect_blue"],
-            "ML/DS\nStartups",
-        ),
-        (
-            5.7,
-            5,
-            "Dagster",
-            "Assets-first\nTipado fuerte\n~12k stars",
-            COLORS["dagster_blue"],
-            "Data Eng\nContratos",
-        ),
-        (
-            8,
-            5,
-            "Airflow",
-            "DAGs, standard\nEmpresarial\n~38k stars",
-            COLORS["airflow_teal"],
-            "Enterprise\nETL complejo",
-        ),
-    ]
-
-    for x, y, name, desc, color, usecase in orchestrators:
-        # Main card
-        draw_box(
-            ax, x, y, 1.8, 3.0, "", COLORS["white"], border_color=color, style="round,pad=0.15"
-        )
-        ax.text(x, y + 1.1, name, fontsize=14, ha="center", fontweight="bold", color=color)
-        ax.text(x, y + 0.1, desc, fontsize=8, ha="center", color=COLORS["gray"])
-
-        # Use case badge
-        draw_box(ax, x, y - 1.0, 1.5, 0.55, usecase, color, fontsize=8)
-
-    # Highlight Prefect
-    highlight = FancyBboxPatch(
-        (2.45, 3.3),
-        2.1,
-        3.4,
-        boxstyle="round,pad=0.15",
-        facecolor="none",
-        edgecolor=COLORS["success"],
-        linewidth=3,
-        linestyle="--",
-    )
-    ax.add_patch(highlight)
-    ax.text(
-        3.5,
-        7.0,
-        "Usado en\neste curso",
-        fontsize=10,
-        ha="center",
-        fontweight="bold",
-        color=COLORS["success"],
-        bbox={
-            "boxstyle": "round,pad=0.2",
-            "facecolor": COLORS["light_green"],
-            "edgecolor": COLORS["success"],
-        },
-    )
-
-    # Key insight
-    ax.text(
-        5,
-        8.5,
-        "La herramienta importa menos que entender el concepto.\n"
-        "Los 5 pilares de orquestacion aplican a TODAS estas herramientas.",
+        8.8,
+        "El criterio de este curso es el COSTO DE ENTRADA, no la popularidad.\n"
+        "Los 5 pilares de la seccion 1 aplican a las ocho herramientas.",
         fontsize=12,
         ha="center",
+        va="center",
         color=COLORS["prefect_dark"],
         fontweight="bold",
         bbox={
-            "boxstyle": "round,pad=0.5",
+            "boxstyle": "round,pad=0.4",
             "facecolor": COLORS["light_blue"],
             "edgecolor": COLORS["prefect_blue"],
         },
     )
+
+    ANCHO, ALTO = 1.8, 2.1
+
+    # (x, nombre, modelo mental, estado, nota, color, relleno, color_nota)
+    generales = [
+        (
+            1.25,
+            "Mage",
+            "notebook-como-pipeline,\nedicion visual por bloques",
+            "ultima release OSS:\nenero de 2026",
+            "verificar antes de\ncada cohorte",
+            COLORS["gray"],
+            COLORS["light_gray"],
+            COLORS["error"],
+        ),
+        (
+            3.45,
+            "Prefect",
+            "flows y tasks en\nPython puro",
+            "3.8.x, releases frecuentes",
+            "usado en este curso",
+            COLORS["prefect_blue"],
+            COLORS["light_blue"],
+            COLORS["success"],
+        ),
+        (
+            5.9,
+            "Dagster",
+            "assets: el dato\nproducido, no la tarea",
+            "1.13.x, activo",
+            "",
+            COLORS["dagster_blue"],
+            COLORS["light_purple"],
+            COLORS["gray"],
+        ),
+        (
+            8.3,
+            "Airflow",
+            "DAGs, y un ecosistema\nenorme de operadores",
+            "3.3.x, activo",
+            "autoria: airflow.sdk",
+            COLORS["airflow_teal"],
+            COLORS["light_teal"],
+            COLORS["gray"],
+        ),
+    ]
+    ml_first = [
+        (
+            2.3,
+            "ZenML",
+            "pipelines tipados, con\nstacks intercambiables",
+            "activo",
+            "",
+            COLORS["purple"],
+            COLORS["light_purple"],
+            COLORS["gray"],
+        ),
+        (
+            4.5,
+            "Metaflow",
+            "flows como clases\ncon pasos",
+            "activo",
+            "Netflix / Outerbounds",
+            COLORS["teal"],
+            COLORS["light_teal"],
+            COLORS["gray"],
+        ),
+        (
+            6.6,
+            "Flyte",
+            "tareas tipadas y\nversionadas, en K8s",
+            "activo",
+            "LF AI & Data",
+            COLORS["orange"],
+            COLORS["light_orange"],
+            COLORS["gray"],
+        ),
+        (
+            8.7,
+            "Kubeflow",
+            "componentes en\ncontenedores, en K8s",
+            "activo",
+            "solo si ya viven en K8s",
+            COLORS["error"],
+            COLORS["light_red"],
+            COLORS["gray"],
+        ),
+    ]
+
+    def fila(tarjetas, y, titulo, subtitulo, atenuar=()):
+        ax.text(
+            0.1,
+            y + 1.78,
+            titulo,
+            fontsize=11,
+            ha="left",
+            va="center",
+            fontweight="bold",
+            color=COLORS["prefect_dark"],
+        )
+        ax.text(
+            0.1,
+            y + 1.52,
+            subtitulo,
+            fontsize=9,
+            ha="left",
+            va="center",
+            style="italic",
+            color=COLORS["gray"],
+        )
+        for x, nombre, modelo, estado, nota, color, relleno, color_nota in tarjetas:
+            gris = nombre in atenuar
+            draw_box(
+                ax,
+                x,
+                y,
+                ANCHO,
+                ALTO,
+                "",
+                relleno,
+                border_color=color,
+                style="round,pad=0.1",
+                alpha=0.6 if gris else 1.0,
+            )
+            ax.text(
+                x,
+                y + 0.72,
+                nombre,
+                fontsize=13,
+                ha="center",
+                va="center",
+                fontweight="bold",
+                color=color,
+            )
+            ax.text(
+                x, y + 0.12, modelo, fontsize=7.5, ha="center", va="center", color=COLORS["black"]
+            )
+            ax.text(
+                x,
+                y - 0.48,
+                estado,
+                fontsize=7.5,
+                ha="center",
+                va="center",
+                style="italic",
+                color=COLORS["error"] if gris else COLORS["gray"],
+            )
+            if nota:
+                ax.text(
+                    x,
+                    y - 0.85,
+                    nota,
+                    fontsize=7.5,
+                    ha="center",
+                    va="center",
+                    fontweight="bold",
+                    color=color_nota,
+                )
+
+    fila(
+        generales,
+        6.0,
+        "ORQUESTADORES GENERALES",
+        "la unidad de trabajo es la tarea; el pegamento con MLflow lo escribes tu",
+        atenuar=("Mage",),
+    )
+    fila(
+        ml_first,
+        2.7,
+        "ML-FIRST",
+        "disenados alrededor del ciclo de vida del modelo",
+    )
+
+    # Prefect, enmarcado: el recuadro abraza la tarjeta, sin etiqueta flotante
+    # encima (la nota "usado en este curso" va dentro de la tarjeta).
+    ax.add_patch(
+        FancyBboxPatch(
+            (3.45 - ANCHO / 2 - 0.16, 6.0 - ALTO / 2 - 0.16),
+            ANCHO + 0.32,
+            ALTO + 0.32,
+            boxstyle="round,pad=0.1",
+            facecolor="none",
+            edgecolor=COLORS["success"],
+            linewidth=3,
+            linestyle="--",
+            zorder=4,
+        )
+    )
+
+    # El eje: costo de entrada
+    draw_arrow(ax, 0.35, 1.05, 9.65, 1.05, color=COLORS["gray"], lw=2)
+    ax.text(
+        5,
+        0.55,
+        "Costo de entrada: que hay que levantar y aprender para la primera corrida en produccion",
+        fontsize=10,
+        ha="center",
+        va="center",
+        style="italic",
+        color=COLORS["gray"],
+    )
+    ax.text(0.4, 1.3, "bajo", fontsize=9, ha="left", color=COLORS["success"], fontweight="bold")
+    ax.text(9.6, 1.3, "muy alto", fontsize=9, ha="right", color=COLORS["error"], fontweight="bold")
 
     save_fig(fig, "12_panorama_orquestadores")
 

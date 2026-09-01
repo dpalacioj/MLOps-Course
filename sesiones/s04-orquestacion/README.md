@@ -25,8 +25,11 @@ Al terminar la sesión, cada estudiante puede:
 
 ## Contenidos
 
+Las carpetas van en el orden en que se abren:
+
 | Carpeta | Qué hay |
 |---|---|
+| [`00-escalera/`](00-escalera/) | **Se abre primero.** Los tres peldaños ejecutables: script → cron → orquestador, con el mismo pipeline en los tres y la medición de qué se repite en cada uno |
 | [`00-intro-prefect/`](00-intro-prefect/) | Progresión escalonada de Prefect: `@flow` → `@task` → retries → `serve` → cron → parámetros → varios flows → `deploy` → `prefect.yaml` |
 | [`01-pipeline-ml/`](01-pipeline-ml/) | Ejecución y análisis del pipeline del caso guía, medición del caching, consultas SQL sobre las predicciones y el ejercicio de clasificación |
 | [`_soluciones/`](_soluciones/) | Soluciones de referencia del ejercicio y del taller |
@@ -45,8 +48,42 @@ implementado tres veces, con features distintas en cada copia.
 | 4. Deployment | [08](diagrams/08_deployment.png), [09](diagrams/09_arquitectura.png) | ¿cómo corre sin mí? |
 | 5. Aplicación | [10](diagrams/10_pipeline_ml_completo.png), [11](diagrams/11_prefect_mlflow.png), [12](diagrams/12_panorama_orquestadores.png) | ¿cómo se ve esto en un sistema real? |
 
-Los `.png` están en Git LFS: si se ven como archivos de texto de tres líneas,
-falta `git lfs pull`.
+## El recorrido
+
+Las carpetas van en el orden de la tabla de arriba, y dentro de
+[`00-intro-prefect/`](00-intro-prefect/) el orden está en su propio README, en una
+tabla de nueve pasos. Lo que no es obvio es dónde entran los diagramas y cuándo hace
+falta la segunda terminal:
+
+| # | Se abre | Para qué |
+|---|---|---|
+| 1 | sección 1 de este README y [`00-escalera/`](00-escalera/), con los diagramas [01](diagrams/01_el_problema.png) y [02](diagrams/02_cinco_pilares.png) | tres formas de romper un pipeline hecho a mano, y los tres peldaños corriendo: script, cron y orquestador sobre el mismo código |
+| 2 | [`00-intro-prefect/`](00-intro-prefect/), pasos 1 a 3 | `@flow`, `@task`, el grafo por dependencias de datos, y reintentos con backoff |
+| 3 | [`00-intro-prefect/`](00-intro-prefect/), workflows de artifacts, contexto, variables y secretos | qué le queda al orquestador después de correr, y dónde **no** va un secreto |
+| 4 | [`00-intro-prefect/`](00-intro-prefect/), pasos 4 a 7 | `serve()`, el dashboard, los schedules y los parámetros editables. **Aquí empieza la segunda terminal** |
+| 5 | [`01-pipeline-ml/`](01-pipeline-ml/) | el pipeline del caso guía: caching medido, no afirmado, y trazabilidad de las predicciones en SQL |
+| 6 | [`00-intro-prefect/`](00-intro-prefect/), pasos 8 y 9 | `deploy()` con work pool y los deployments declarativos del `prefect.yaml` |
+| 7 | sección 4 de este README | el trigger de Continuous Training, que es una decisión de diseño y no un cron |
+| 8 | [`taller.md`](taller.md), y el [`ejercicio/`](01-pipeline-ml/ejercicio/) para quien acabe antes | el entregable |
+
+**Los pasos 4 a 7 de `00-intro-prefect/` bloquean la terminal**, y eso está marcado en
+la tabla de esa carpeta. Un `serve()` se queda corriendo en primer plano a propósito:
+es la diferencia entre ejecutar un flow y **servirlo**. La primera terminal se queda
+con el servidor de Prefect, la segunda es la de trabajo, y una tercera si quieres
+tener la UI de MLflow a la vista en el paso 5.
+
+## Antes de clase
+
+```bash
+git lfs pull   # sin esto los 12 diagramas son archivos de texto de tres lineas
+make data      # las particiones del caso guia
+make mlflow    # el tracking server de S03, para el paso 5
+```
+
+El servidor de Prefect y su UI se levantan en el paso 4, no antes:
+`prefect server start` deja la UI en <http://127.0.0.1:4200>, y esa terminal queda
+ocupada. Los comandos exactos están en
+[`00-intro-prefect/README.md`](00-intro-prefect/README.md).
 
 ---
 
@@ -62,6 +99,13 @@ Antes de abrir la herramienta, el problema. Tres actos, en vivo:
    la máquina de alguien.
 3. **"Hay que correrlo cada lunes a las 3 a.m."** ¿Quién se levanta? ¿Y quién se
    entera si falla?
+
+La primera respuesta al tercer acto es siempre `cron`, y es una buena respuesta.
+[`00-escalera/`](00-escalera/) la lleva hasta el final: el mismo pipeline de tres
+pasos ejecutado como script pelado, como línea de crontab y como flow, para ver
+con números en pantalla dónde se acaba cada peldaño. Ahí está también la parte
+que no se suele decir —el orquestador cuesta overhead— y las cuatro condiciones
+bajo las cuales quedarse en `cron` es lo correcto.
 
 Los tres problemas son de **operación**, no de modelado. La orquestación es la
 capa que los resuelve, y sus cinco piezas aplican a cualquier herramienta:
@@ -152,6 +196,11 @@ anti-patrón** — y esto estaba en el repo, documentado como buena práctica:
 La discusión completa está en el docstring de `src/taxi/flows/deploy.py`, y el
 taller pide argumentar el trigger propio en un ADR.
 
+Nada de esto es un argumento contra `cron` en general: es un argumento contra usar
+una frecuencia como sustituto de una razón. Las cuatro condiciones bajo las cuales
+`cron` sigue siendo la herramienta adecuada están en
+[`00-escalera/2-cron/README.md`](00-escalera/2-cron/README.md).
+
 ---
 
 ## 5. Panorama de orquestadores
@@ -164,6 +213,14 @@ proyecto* — versión vigente y actividad de releases.
 
 **Fecha de evaluación: 19 de agosto de 2026.** Las versiones envejecen; el
 criterio, menos. Verifica la columna de estado antes de cada cohorte.
+
+> Esta tabla es la **única** fuente de la comparación en todo el repositorio. El
+> diagrama [12](diagrams/12_panorama_orquestadores.png) la refleja: si cambias una
+> fila aquí, regenera el diagrama con
+> `python diagrams/generate_diagrams.py` (o solo `diagram_12_ecosystem()`). La
+> versión anterior del diagrama había divergido —presentaba a Mage como opción
+> recomendada para enseñar, mostraba cuatro de las ocho herramientas y las
+> ordenaba por estrellas de GitHub, que no es uno de los criterios.
 
 | Herramienta | Modelo mental | Sweet spot | Costo de entrada | Estado (ago-2026) | Doc oficial |
 |---|---|---|---|---|---|

@@ -35,6 +35,15 @@ src/taxi/flows/                      # EL pipeline, una sola vez
 sesiones/s04-orquestacion/
 ├── README.md                        # Bloques 2 y 12: el porqué y el panorama
 ├── taller.md                        # Bloque 11
+├── 00-escalera/                     # Bloque 2: los tres peldaños, ejecutables
+│   ├── README.md                    # la tabla comparativa y la medición
+│   ├── pasos.py                     # los 3 pasos, iguales en los 3 peldaños
+│   ├── 1-script.py                  # Bloque 2, Acto 1 (python puro)
+│   ├── 2-cron/
+│   │   ├── programar.sh             # Bloque 2, Acto 3: la coreografia de 4 min
+│   │   ├── correr.sh                # el envoltorio (PATH, cwd, log)
+│   │   └── crontab.txt              # las 5 columnas, para leer
+│   └── 3-orquestador.py             # Bloque 2, cierre (@flow con retries)
 ├── 00-intro-prefect/
 │   ├── README.md                    # la progresión, en tabla
 │   ├── flows/
@@ -87,15 +96,26 @@ sesiones/s04-orquestacion/
 
 ## BLOQUE 2 — El dolor (15-40 min)
 
-**Archivos:** ninguno ejecutable; `sesiones/s04-orquestacion/README.md` sección 1.
-**Terminales:** 1.
+**Archivos:** `sesiones/s04-orquestacion/README.md` sección 1, y la carpeta
+`00-escalera/`. **Terminales:** 1.
 
 Tres actos. No se abre Prefect hasta el final del bloque.
 
+> **Sobre `00-escalera/`.** Es este bloque hecho ejecutable: el mismo pipeline de
+> tres pasos como script pelado, como línea de crontab y como flow. Su README
+> trae la tabla comparativa, la medición de los tres peldaños y —importante para
+> no vender humo— la nota de que en esa maqueta el orquestador es *más lento*,
+> porque el overhead es fijo y el ahorro es proporcional a lo que cuesten los
+> pasos. Se puede dictar el bloque sin abrirla, pero es la carpeta que responde
+> "¿por qué no simplemente un cron?" con números en vez de con autoridad.
+
 ### Acto 1 — El fallo a mitad de camino (8 min)
 
-Lanzar el entrenamiento del caso guía y, mientras descarga, **cortar la red**
-(desactivar el WiFi) para provocar un fallo real:
+Dos formas de provocarlo. La primera es más dramática; la segunda no depende de
+nada y es la que conviene si la clase es remota o el WiFi es del auditorio.
+
+**Opción dramática** — lanzar el entrenamiento del caso guía y, mientras descarga,
+**cortar la red** (desactivar el WiFi):
 
 ```bash
 uv run taxi train
@@ -103,6 +123,18 @@ uv run taxi train
 
 El script muere con un `ConnectionError`. Reactivar la red y relanzarlo: vuelve a
 empezar desde cero.
+
+**Opción determinista** — el peldaño 1 de la escalera, con el fallo inyectado:
+
+```bash
+ESCALERA_FALLAR_EN=3 uv run python sesiones/s04-orquestacion/00-escalera/1-script.py
+uv run python sesiones/s04-orquestacion/00-escalera/1-script.py
+```
+
+El primero muere en el paso 3; el segundo repite los pasos 1 y 2 enteros.
+
+Falla siempre, en el mismo paso, sin red y en tres segundos y medio. Los pasos 1
+y 2 habían terminado bien y se repiten enteros al relanzar.
 
 **Qué preguntar:** "¿Cuánto de lo que acabábamos de hacer se conservó? Nada.
 ¿Cuánto de eso hacía falta repetir? Nada."
@@ -121,11 +153,75 @@ lo que falta.
 > "Hay que reentrenar cada lunes a las 3 a.m. ¿Quién se levanta? ¿Y quién se
 > entera si falla?"
 
-Aparece `cron` como primera respuesta. Escribir en la pizarra qué **no** resuelve
-`cron`: no sabe si falló, no reintenta, no deja registro de la ejecución, no pasa
-parámetros y no muestra qué corrió antes.
+Aparece `cron` como primera respuesta, y hay que **darle la razón**: es una buena
+respuesta y lleva cuarenta años funcionando. El punto del acto es llevarla hasta
+donde se acaba, no descartarla de entrada.
 
-### Cierre del bloque (3 min)
+Este acto tiene una **coreografía de cuatro minutos**: se programa el cron al
+empezar, se habla mientras espera, y dispara solo delante de la clase. Ese
+disparo es el acto entero; dicho no convence, visto sí.
+
+#### Minuto 0 — programarlo (1 min)
+
+Terminal 1. El script resuelve su propia ubicacion, asi que **no hace falta
+`cd`**: funciona desde donde estes, con la ruta completa desde la raiz del repo
+o con `./programar.sh` si ya estas dentro de la carpeta.
+
+```bash
+sesiones/s04-orquestacion/00-escalera/2-cron/programar.sh --instalar
+```
+
+Imprime la hora exacta a la que va a disparar. **Decirla en voz alta y escribirla
+en la pizarra**: "a las 10:48 esto va a correr solo, sin que yo toque nada". Sin
+ese anuncio, cuando aparezca el bloque nadie va a notar que pasó algo.
+
+Terminal 2, y se deja a la vista el resto del acto:
+
+```bash
+tail -f "$HOME/escalera-cron.log"
+```
+
+#### Minutos 1 a 3 — hablar mientras espera (3 min)
+
+Abrir `correr.sh` y mostrar las tres piezas que hacen falta para que la línea de
+crontab funcione de verdad. Son la sorpresa del acto: cron no lee tu `~/.zshrc`,
+arranca con un PATH mínimo, trabaja desde tu `HOME`, y manda la salida al correo
+local que nadie lee. El script del peldaño 1 **no cambió una línea**; todo esto es
+andamiaje alrededor.
+
+Después la tabla de once filas del README de esa carpeta. Los primeros seis
+síntomas se arreglan con configuración; los cinco últimos —no avisa, no
+reintenta, no deja historia, no acepta parámetros, no conoce los pasos de
+adentro— tienen todos la misma columna de arreglo: **escribirlo a mano**. Ahí es
+donde entra el peldaño 3.
+
+#### Minuto 4 — dispara
+
+El bloque aparece solo en el `tail -f`. Callarse dos segundos y dejar que lo vean.
+
+> **La pregunta:** "Acabo de conseguir la mitad de lo que pedía el enunciado: corre
+> sin que nadie se levante. ¿Qué mitad me falta?" La respuesta que se busca es
+> *"que alguien se entere si falla"*, y es literalmente la fila 7 de la tabla.
+
+#### Al terminar el bloque
+
+```bash
+./programar.sh --quitar
+```
+
+No es opcional y conviene decirlo en voz alta: un crontab no tiene disparo único,
+así que esa línea volvería a disparar mañana a la misma hora. Es el hábito que se
+está enseñando.
+
+> **Antes de clase, si tu repo está en `~/Documents` (macOS).** Hay que darle
+> **Acceso total al disco** a `/usr/sbin/cron`, o el job falla con
+> `Operation not permitted` y la coreografía se cae en el minuto 4. Está en el
+> [checklist del Anexo B](#anexo-b--checklist-antes-de-clase) y `programar.sh` lo
+> detecta y lo avisa, pero el permiso pide contraseña y hay que darlo a mano.
+> **Ensáyalo una vez**: es el único paso de la sesión que depende de un permiso
+> del sistema operativo.
+
+### Cierre del bloque (3 min, o 5 con el peldaño 3)
 
 > Ver: ![01 - El Problema](../sesiones/s04-orquestacion/diagrams/01_el_problema.png)
 > y ![02 - Los 5 Pilares](../sesiones/s04-orquestacion/diagrams/02_cinco_pilares.png)
@@ -134,6 +230,23 @@ parámetros y no muestra qué corrió antes.
 Dagster, Kubeflow. La herramienta cambia; el concepto, no. Y una advertencia
 antes de empezar: la orquestación no mejora su modelo. Un pipeline orquestado que
 entrena sobre datos malos entrena sobre datos malos, con más puntualidad."
+
+**Opcional (2 min): cerrar la escalera con el peldaño 3.** Es el mismo fallo del
+Acto 1, sobre el mismo código, ahora sobrevivido:
+
+```bash
+ESCALERA_FALLAR_EN=3 uv run python sesiones/s04-orquestacion/00-escalera/3-orquestador.py
+```
+
+Lo que hay que señalar en la salida, y nada más: `descargar` y `preparar` en
+`Completed`, `resumir` con `Retry 1/2 will start 1 second(s) from now`, el segundo
+intento pasando, y el flow en `Completed`. **Los pasos 1 y 2 no se repitieron.**
+
+Si se decide hacerlo aquí, el bloque termina en el minuto 42 en vez del 40, y el
+Bloque 3 se acorta: los estudiantes ya vieron `@flow` y `@task`. Si no, se deja
+para el Bloque 3, que es donde aparecen igual, y el cierre se queda en 3 minutos.
+Cualquiera de las dos funciona; lo que no funciona es hacerlo aquí y además
+dictar el Bloque 3 completo.
 
 ---
 
@@ -775,6 +888,15 @@ SSO, RBAC y audit logs son de pago. Todo lo de esta clase es open source.
 - [ ] `make setup` y `make smoke` en verde en la máquina del instructor.
 - [ ] `git lfs pull` ejecutado: los 12 diagramas se abren como imágenes.
 - [ ] Puertos libres: 4200 (Prefect), 5001 (MLflow).
+- [ ] **La coreografía de cron del bloque 2, ensayada una vez.** Es el único paso
+      de la sesión que depende de un permiso del sistema operativo:
+      `sesiones/s04-orquestacion/00-escalera/2-cron/programar.sh` avisa si hace falta (funciona desde cualquier directorio). Si el repo está en `~/Documents`, `~/Desktop` o `~/Downloads` en
+      macOS, hay que darle **Acceso total al disco** a `/usr/sbin/cron` (Ajustes
+      del Sistema → Privacidad y seguridad → Acceso total al disco → `+` →
+      `Mayús-Cmd-G` → `/usr/sbin/cron`). Sin eso el job falla con
+      `Operation not permitted`. Ensáyalo con `--instalar`, espera el disparo,
+      comprueba el log, y `--quitar`.
+- [ ] `crontab -l` sin entradas de ensayos anteriores (`./programar.sh --quitar`).
 - [ ] `uv run prefect version` responde 3.8.x.
 - [ ] `uv run prefect config set PREFECT_API_URL=http://127.0.0.1:4200/api` hecho.
 - [ ] Work pool creado: `uv run prefect work-pool create curso-mlops --type process`.
