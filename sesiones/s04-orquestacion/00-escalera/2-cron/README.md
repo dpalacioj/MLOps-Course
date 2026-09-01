@@ -23,24 +23,104 @@ que hay que construir alrededor para que se ejecute sin nadie delante.
 
 ## Antes de clase, si estás en macOS (una sola vez)
 
-**Si el repositorio está en `~/Documents`, `~/Desktop` o `~/Downloads`, la demo
-falla sin este paso.** Esas tres carpetas están protegidas por TCC. Tu terminal ya
-tiene permiso —por eso `./correr.sh` funciona a mano— pero el proceso de cron es
-otro y no lo tiene: el job muere con `Operation not permitted` y el log queda con
-un traceback en vez de la corrida.
-
-El arreglo pide tu contraseña, así que hazlo tú:
-
-> Ajustes del Sistema → Privacidad y seguridad → **Acceso total al disco** → el
-> botón `+` → `Mayús-Cmd-G` → escribe `/usr/sbin/cron` → Abrir → deja el
-> interruptor encendido.
-
-`programar.sh` detecta el caso y te lo recuerda solo. Para saber en qué carpeta
-estás:
+### Paso 0 — ¿te afecta?
 
 ```bash
 pwd
 ```
+
+Si la ruta empieza por `~/Documents`, `~/Desktop` o `~/Downloads`, **sí te
+afecta** y la demo va a fallar sin arreglarlo. Si está en cualquier otro sitio
+(`~/dev`, `~/repos`, `~/code`…), no tienes que hacer nada. `programar.sh` también
+te lo dice solo.
+
+### Por qué
+
+Esas tres carpetas están protegidas por TCC, el sistema de permisos de macOS. Tu
+terminal ya tiene permiso sobre ellas —por eso `./correr.sh` funciona cuando lo
+lanzas a mano— pero **el proceso de cron es otro proceso distinto** y no lo tiene.
+
+Lo que se ve cuando falla es lo peor de todo: **nada**. No se crea ningún log,
+porque el redirect `>>"$LOG"` vive *dentro* de `correr.sh` y el script no llega
+ni a ejecutarse. El error se va al correo local del usuario, que nadie mira. Este
+es el correo real de un intento fallido:
+
+```
+Date: Mon, 31 Aug 2026 11:17:00 -0500
+Subject: Cron <usuario@Mac> /Users/…/2-cron/correr.sh
+
+bash: /Users/…/2-cron/correr.sh: Operation not permitted
+```
+
+Cron disparó puntual. Simplemente no pudo abrir el archivo.
+
+### Opción A — mover el repositorio (la más simple)
+
+No necesita contraseña, ni permisos, ni reiniciar nada. Sacas el repo de la
+carpeta protegida y el problema desaparece:
+
+```bash
+mv ~/Documents/MLOps-Course ~/dev/MLOps-Course
+```
+
+Es la opción recomendada si vas a dictar en una máquina prestada o si no quieres
+tocar los permisos del sistema. Ojo: si ya tienes el crontab instalado, bórralo
+**antes** de mover (`./programar.sh --quitar`) y vuelve a instalarlo después, o
+apuntará a una ruta que ya no existe.
+
+### Opción B — dar el permiso a cron
+
+Pide tu contraseña, así que hazlo tú. En macOS Ventura o posterior:
+
+1. Abre **Ajustes del Sistema** (el menú  → Ajustes del Sistema).
+2. Barra lateral → **Privacidad y seguridad**.
+3. Baja hasta **Acceso total al disco** y entra.
+4. Pulsa el botón **`+`** de abajo. Puede pedirte contraseña o Touch ID.
+5. Se abre un selector de archivos. **Aquí está el truco**: `/usr/sbin` es una
+   carpeta oculta del sistema y no aparece en la lista. Pulsa **`Mayús-Cmd-G`**,
+   escribe la ruta exacta y dale Intro:
+
+   ```
+   /usr/sbin/cron
+   ```
+
+6. Pulsa **Abrir**. Aparece `cron` en la lista con su interruptor **encendido**.
+   Si aparece apagado, enciéndelo.
+
+En macOS Monterey o anterior la ruta del menú es **Preferencias del Sistema →
+Seguridad y privacidad → pestaña Privacidad → Acceso total al disco**, y hay que
+pulsar el candado de abajo para desbloquear antes del `+`. El resto es igual.
+
+### Paso final — reiniciar cron
+
+**Sin esto el permiso no se aplica.** Un proceso que ya estaba corriendo conserva
+los permisos que tenía al arrancar, así que hay que forzar que vuelva a nacer:
+
+```bash
+sudo pkill -x cron
+```
+
+Pide tu contraseña. No hay que arrancarlo de nuevo a mano: launchd lo relanza
+solo en cuanto hay un crontab.
+
+### Comprobarlo, que es lo único que vale
+
+El permiso no se puede verificar mirando: hay que disparar el job. Programa uno a
+dos minutos y pregunta después:
+
+```bash
+./programar.sh 2 --instalar
+# esperas dos minutos
+./programar.sh --ver
+```
+
+- Si `--ver` muestra el bloque con `estado: OK`, quedó bien.
+- Si muestra el aviso de correo de cron con `Operation not permitted`, el permiso
+  no quedó puesto o no reiniciaste cron.
+
+Y al terminar la comprobación, `./programar.sh --quitar`.
+
+### En Linux y en Windows
 
 En Linux no hace falta nada de esto. En Windows no hay `cron`: el equivalente es
 el Programador de tareas, y la parte conceptual de este peldaño aplica igual.

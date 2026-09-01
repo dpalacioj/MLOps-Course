@@ -78,10 +78,13 @@ bloque aparece solo en el `tail -f`, sin que nadie toque el teclado.
 Al terminar, `./programar.sh --quitar`. Un crontab no tiene disparo único y esa
 línea volvería a disparar mañana a la misma hora.
 
-**Si estás en macOS y el repo está en `~/Documents`, hay un permiso que hay que dar
-una vez antes de clase** o el job falla con `Operation not permitted`. Está
-explicado en [`2-cron/README.md`](2-cron/README.md), y `programar.sh` te lo
-recuerda solo.
+**Si estás en macOS y el repo está en `~/Documents`, `~/Desktop` o `~/Downloads`,
+esto falla** con `Operation not permitted`, y falla en silencio: no se crea
+ningún log, porque el redirect vive dentro de `correr.sh` y el script no llega a
+ejecutarse. Se arregla de dos formas —mover el repo fuera de esas carpetas, o
+darle Acceso total al disco a `/usr/sbin/cron` y reiniciarlo—, y ambas están
+paso a paso en [`2-cron/README.md`](2-cron/README.md). `programar.sh` detecta el
+caso y `./programar.sh --ver` te dice si quedó bien.
 
 ### Peldaño 3 — el orquestador
 

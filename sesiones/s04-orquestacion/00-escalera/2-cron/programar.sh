@@ -74,18 +74,36 @@ preflight() {
 
   Documents, Desktop y Downloads estan bajo TCC. Tu terminal ya tiene permiso
   (por eso ./correr.sh funciona a mano), pero el proceso de cron es otro y no lo
-  tiene: el job va a fallar con "Operation not permitted" y el log va a quedar
-  con un traceback en vez de la corrida.
+  tiene: el job falla con "Operation not permitted" y NO se crea ningun log,
+  porque el redirect vive dentro de correr.sh y el script no llega a ejecutarse.
+  El error se va al correo local, que es donde nadie mira. Desde tu silla el
+  sintoma es que no pasa nada.
 
-  El arreglo, UNA sola vez y antes de clase. Necesita tu contrasena, asi que
-  hazlo tu:
+  Dos arreglos. UNA sola vez, y antes de clase:
 
-    Ajustes del Sistema -> Privacidad y seguridad -> Acceso total al disco
-    -> el boton "+" -> Mayus-Cmd-G -> escribe  /usr/sbin/cron  -> Abrir
-    -> deja el interruptor encendido
+  A) Mover el repositorio fuera de esas tres carpetas. No pide contrasena ni
+     toca permisos del sistema:
 
-  Comprobacion: instala la demo, espera a que dispare, y si el log dice
-  "Operation not permitted", el permiso no quedo puesto.
+       mv "$RAIZ_REPO" ~/dev/$(basename "$RAIZ_REPO")
+
+  B) Dar Acceso total al disco a cron. Necesita tu contrasena, asi que hazlo tu:
+
+       Ajustes del Sistema -> Privacidad y seguridad -> Acceso total al disco
+       -> el boton "+" -> Mayus-Cmd-G -> escribe  /usr/sbin/cron  -> Abrir
+       -> deja el interruptor encendido
+
+     Y despues reinicia cron, o el permiso no se aplica al proceso que ya
+     estaba corriendo:
+
+       sudo pkill -x cron
+
+  Comprobacion (es la unica que vale, el permiso no se ve): programa uno a dos
+  minutos, espera a que dispare, y pregunta con:
+
+       $0 --ver
+
+  Los pasos completos, con las teclas exactas, estan en el README de esta
+  carpeta.
 
 AVISO
       ;;
@@ -134,6 +152,11 @@ RESUMEN
 
     tail -f "$LOG"
 
+  Si a esa hora NO aparece nada en el log, no significa que cron no disparara:
+  significa que el comando murio antes de llegar al log. Preguntale a:
+
+    $0 --ver
+
   Y cuando termine la demo, BORRALA. La entrada dispara todos los dias a la
   misma hora hasta que la quites:
 
@@ -147,7 +170,37 @@ INSTALADO
     if leer_crontab | grep "$MARCA"; then :; else echo "    (ninguna)"; fi
     echo
     echo "  Ultimas lineas de $LOG:"
-    if [[ -f "$LOG" ]]; then tail -20 "$LOG" | sed 's/^/    /'; else echo "    (el log no existe todavia)"; fi
+    if [[ -f "$LOG" ]]; then
+      tail -20 "$LOG" | sed 's/^/    /'
+    else
+      echo "    (el log no existe)"
+    fi
+
+    # Si el job murio ANTES de entrar a correr.sh, el redirect a $LOG nunca llego
+    # a aplicarse y el error se fue al correo local, que es donde nadie mira.
+    # Es el caso tipico de "Operation not permitted" en macOS: cron disparo, pero
+    # no pudo ni ejecutar el script. Sin esto, el sintoma es "no paso nada".
+    BUZON="/var/mail/$USER"
+    if [[ -r "$BUZON" ]] && grep -q "$MARCA" "$BUZON" 2>/dev/null; then
+      echo
+      echo "  AVISO: hay correo de cron sobre esta demo en $BUZON."
+      echo "  Cron disparo pero el comando fallo antes de escribir el log:"
+      echo
+      # El cuerpo del correo va DESPUES de las cabeceras, no pegado al Subject:
+      # se filtran las cabeceras y las lineas vacias, y queda el error de verdad.
+      # El `|| true` es necesario porque con `set -e` un grep sin coincidencias
+      # mataria el script justo cuando mas hace falta que hable.
+      grep -vE '^(From|Return-Path|X-|Delivered-To|Received|To:|Subject:|Message-Id|Date:|[[:space:]])' \
+        "$BUZON" 2>/dev/null | grep -v '^$' | tail -3 | sed 's/^/    /' || true
+      echo
+      if [[ "$(uname -s)" == "Darwin" ]] && grep -q "Operation not permitted" "$BUZON" 2>/dev/null; then
+        echo "  \"Operation not permitted\" = falta el Acceso total al disco para"
+        echo "  /usr/sbin/cron. Es el aviso del preflight de este script. El permiso"
+        echo "  hay que darlo ANTES de que dispare: cron no reintenta."
+        echo
+      fi
+      echo "  Para vaciar el buzon cuando lo hayas leido:  : > \"$BUZON\""
+    fi
     ;;
 
   quitar)

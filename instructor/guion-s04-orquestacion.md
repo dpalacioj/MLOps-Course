@@ -131,10 +131,9 @@ ESCALERA_FALLAR_EN=3 uv run python sesiones/s04-orquestacion/00-escalera/1-scrip
 uv run python sesiones/s04-orquestacion/00-escalera/1-script.py
 ```
 
-El primero muere en el paso 3; el segundo repite los pasos 1 y 2 enteros.
-
-Falla siempre, en el mismo paso, sin red y en tres segundos y medio. Los pasos 1
-y 2 habían terminado bien y se repiten enteros al relanzar.
+El primero muere en el paso 3; el segundo repite los pasos 1 y 2 enteros, aunque
+habían terminado bien. Falla siempre, en el mismo paso, sin red, en tres segundos
+y medio.
 
 **Qué preguntar:** "¿Cuánto de lo que acabábamos de hacer se conservó? Nada.
 ¿Cuánto de eso hacía falta repetir? Nada."
@@ -213,13 +212,15 @@ No es opcional y conviene decirlo en voz alta: un crontab no tiene disparo únic
 así que esa línea volvería a disparar mañana a la misma hora. Es el hábito que se
 está enseñando.
 
-> **Antes de clase, si tu repo está en `~/Documents` (macOS).** Hay que darle
-> **Acceso total al disco** a `/usr/sbin/cron`, o el job falla con
-> `Operation not permitted` y la coreografía se cae en el minuto 4. Está en el
-> [checklist del Anexo B](#anexo-b--checklist-antes-de-clase) y `programar.sh` lo
-> detecta y lo avisa, pero el permiso pide contraseña y hay que darlo a mano.
+> **Antes de clase, si tu repo está en `~/Documents` (macOS).** O mueves el repo
+> fuera de esa carpeta, o le das **Acceso total al disco** a `/usr/sbin/cron` y
+> reinicias cron. Si no, la coreografía se cae en el minuto 4 **sin decir nada**:
+> el job falla con `Operation not permitted`, no se crea ningún log y el error se
+> va al correo local. Los pasos están en
+> [`2-cron/README.md`](../sesiones/s04-orquestacion/00-escalera/2-cron/README.md)
+> y en el [checklist del Anexo B](#anexo-b--checklist-antes-de-clase).
 > **Ensáyalo una vez**: es el único paso de la sesión que depende de un permiso
-> del sistema operativo.
+> del sistema operativo, y el único cuyo fallo no se ve.
 
 ### Cierre del bloque (3 min, o 5 con el peldaño 3)
 
@@ -893,9 +894,11 @@ SSO, RBAC y audit logs son de pago. Todo lo de esta clase es open source.
       `sesiones/s04-orquestacion/00-escalera/2-cron/programar.sh` avisa si hace falta (funciona desde cualquier directorio). Si el repo está en `~/Documents`, `~/Desktop` o `~/Downloads` en
       macOS, hay que darle **Acceso total al disco** a `/usr/sbin/cron` (Ajustes
       del Sistema → Privacidad y seguridad → Acceso total al disco → `+` →
-      `Mayús-Cmd-G` → `/usr/sbin/cron`). Sin eso el job falla con
-      `Operation not permitted`. Ensáyalo con `--instalar`, espera el disparo,
-      comprueba el log, y `--quitar`.
+      `Mayús-Cmd-G` → `/usr/sbin/cron`), y después `sudo pkill -x cron` para que
+      el permiso se aplique. Alternativa sin contraseña: mover el repo fuera de
+      esa carpeta. Ensáyalo con `./programar.sh 2 --instalar`, espera el disparo
+      y **pregunta con `./programar.sh --ver`** — no mires solo el log, porque si
+      falla el log no existe y la pista está en el correo local. Luego `--quitar`.
 - [ ] `crontab -l` sin entradas de ensayos anteriores (`./programar.sh --quitar`).
 - [ ] `uv run prefect version` responde 3.8.x.
 - [ ] `uv run prefect config set PREFECT_API_URL=http://127.0.0.1:4200/api` hecho.
