@@ -473,7 +473,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     cargador = obtener_cargador()
     cargador.cargar()  # el primer request no paga la descarga del artefacto
     ...
-    yield              # aquí el servidor atiende requests
+    yield  # aquí el servidor atiende requests
     logger.info("Apagando API")
 ```
 
