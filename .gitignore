@@ -164,3 +164,10 @@ desktop.ini
 # --- Transferencia de ramas (temporales) ---
 *.bundle
 limpiar-y-finalizar.sh
+
+# --- Soluciones de ejercicios y talleres (solo en local) ---
+# Se mantienen en el disco del instructor pero fuera del control de versiones:
+# el repositorio lo clonan los estudiantes, y un enunciado con su solucion al
+# lado deja de ser un enunciado. Si hace falta compartirlas, se entregan por
+# otro canal despues de la entrega del taller.
+sesiones/*/_soluciones/
