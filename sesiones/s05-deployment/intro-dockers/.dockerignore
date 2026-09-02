@@ -1,0 +1,38 @@
+# =============================================================================
+# .dockerignore del ejemplo — que NO entra al build context
+# =============================================================================
+# Todo lo que entra al contexto lo empaqueta y transfiere el demonio de Docker en
+# cada build, y puede acabar dentro de una capa de la imagen. Una capa no se
+# "borra" con un `RUN rm` posterior: la capa anterior sigue ahi y es publica si la
+# imagen se publica.
+#
+# En este ejemplo el contexto es diminuto, asi que el archivo esta aqui por el
+# habito, no por el ahorro. El del repositorio (`../../../.dockerignore`) es el
+# caso real: sin el, `data/` y `mlruns/` mandan cientos de MB al demonio en cada
+# build e invalidan el cache aunque el codigo no haya cambiado.
+#
+# Este archivo NO reemplaza al `.gitignore`: son dos listas con dos propositos
+# (que no se versiona / que no se construye) y hay que mantener las dos.
+# =============================================================================
+
+# Entornos virtuales: traen binarios compilados para otro SO y otra arquitectura.
+.venv/
+venv/
+
+# Secretos. Ninguno vive aqui, y por eso mismo conviene que la regla exista antes
+# de que alguien cree el primero.
+.env
+.env.*
+*.pem
+*.key
+
+# Caches de Python
+__pycache__/
+*.py[cod]
+
+# El propio Dockerfile y este archivo: la imagen no los necesita.
+Dockerfile
+.dockerignore
+
+# Documentacion del ejercicio
+README.md

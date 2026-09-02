@@ -1,0 +1,18 @@
+flowchart LR
+    B["Bug<br/>introducido"] --> H["HOOK<br/>en tu maquina"]
+    H --> CI["CI<br/>en GitHub"]
+    CI --> RV["Code review<br/>otra persona"]
+    RV --> PR["PRODUCCION<br/>un usuario"]
+
+    H -.-> T1["2 segundos<br/>el commit no existe"]
+    CI -.-> T2["4 minutos<br/>ya esta en el historial"]
+    RV -.-> T3["horas o dias<br/>ida y vuelta"]
+    PR -.-> T4["un incidente<br/>y el dano ya ocurrio"]
+
+    classDef barato fill:#d5f5e3,stroke:#1e8449,color:#145a32
+    classDef medio fill:#fdebd0,stroke:#b9770e,color:#7e5109
+    classDef caro fill:#fadbd8,stroke:#a93226,color:#78281f
+    class T1 barato
+    class T2 medio
+    class T3 medio
+    class T4 caro

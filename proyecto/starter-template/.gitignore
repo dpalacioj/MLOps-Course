@@ -1,0 +1,97 @@
+# =============================================================================
+# .gitignore
+# =============================================================================
+# Regla de oro: se ignoran ARTEFACTOS (lo que se puede regenerar), nunca
+# CONFIGURACION (lo que define como se regenera).
+#
+# El anti-patron que este archivo evita: reglas globales por extension
+# (`*.json`, `*.yaml`, `*.txt`). Se ven prolijas y excluyen en silencio cosas que
+# SI son configuracion: el metadata.json con la procedencia de tus datos, el
+# dashboard de Grafana, los workflows del CI. El sintoma es brutal porque no hay
+# sintoma: `git add` no da error, `git status` sale limpio, todo funciona en tu
+# maquina y el repositorio queda sin la pieza. Quien te haga peer review clona y
+# no puede correr nada.
+#
+# Si necesitas ignorar algo, hazlo con la ruta MAS ESPECIFICA posible.
+# =============================================================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# --- Entornos virtuales ---
+.venv/
+venv/
+ENV/
+env/
+
+# --- Testing y cobertura ---
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- Secretos (NUNCA commitear) ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials
+.aws/
+
+# --- Datos (se descargan con `make data` y se verifican por hash) ---
+data/raw/
+data/processed/
+data/interim/
+# ...pero el metadata SI va al repo: es la procedencia de tus datos y la
+# evidencia de con que version entrenaste. Sin esta excepcion la regla de arriba
+# lo excluye y pierdes el linaje.
+!data/raw/metadata.json
+# Los fixtures de test SI van al repo: son pequenos, deterministas y documentan
+# como se ve el dato (incluido el que esta roto a proposito).
+!tests/fixtures/**
+
+# --- Modelos y artefactos (se obtienen del registry: models:/<nombre>@champion)
+# OJO: esta regla, sin la negacion de abajo, excluye tambien
+# src/<paquete>/models/, que es un PAQUETE DE CODIGO. Es el bug silencioso mas
+# caro de este archivo: tu modulo de entrenamiento desaparece del repositorio y
+# nadie se entera hasta que otra persona clona.
+models/
+!src/*/models/
+artifacts/
+*.pkl
+*.joblib
+*.ubj
+mlruns/
+mlartifacts/
+mlflow.db
+outputs/
+reports/*.html
+!reports/.gitkeep
+
+# --- Prefect ---
+.prefect/
+prefect.db
+
+# --- Evidently ---
+evidently_workspace/
+
+# --- IDE / OS ---
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

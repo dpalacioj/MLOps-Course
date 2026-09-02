@@ -1,0 +1,440 @@
+name: CD
+
+# =============================================================================
+# Continuous Delivery — sesion 6
+# =============================================================================
+# El CI (ci.yml) responde "el codigo esta bien?". El CD responde una pregunta
+# distinta y mas cara de equivocar: "esto debe atender trafico?".
+#
+# Cuatro decisiones de diseno, con su motivo:
+#
+# 1. La imagen se referencia por DIGEST (sha256:...), no por `latest`.
+#    `latest` es un puntero mutable: la imagen que se probo en staging y la que
+#    arranca en produccion pueden ser bytes distintos, y el diagnostico del
+#    incidente resultante es horrible porque los logs dicen el mismo tag. El
+#    digest es el contenido. Es la misma idea que los aliases del model registry
+#    (referencia mutable) sobre versiones inmutables, aplicada a la imagen.
+#
+# 2. El gate de promocion del modelo corre ANTES del deploy y su exit code manda.
+#    Un candidato rechazado hace fallar el job, y el pipeline no continua. Sin
+#    esto el CD despliega cualquier cosa que compile.
+#
+# 3. Produccion exige aprobacion humana via GitHub Environments. No porque el
+#    humano vaya a revisar el diff, sino porque introduce un punto donde alguien
+#    asume la decision. El "required reviewer" se configura en Settings >
+#    Environments > production; sin eso, este workflow despliega sin frenos.
+#
+# 4. El comentario de metricas en el PR se hace con actions/github-script.
+#    NO se usa CML (iterative/setup-cml): su ultima release es de octubre de
+#    2024 y el proyecto no muestra mantenimiento activo. Una accion sin mantener
+#    en el camino critico del despliegue es deuda con fecha de vencimiento, y
+#    aqui se reemplaza por ~20 lineas de la API de GitHub.
+# =============================================================================
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "sesiones/**"
+      - "docs/**"
+      - "**/*.md"
+  pull_request:
+    paths-ignore:
+      - "sesiones/**"
+      - "**/*.md"
+  workflow_dispatch:
+    inputs:
+      candidato_version:
+        description: "Version del modelo a evaluar (vacio = la ultima registrada)"
+        required: false
+        type: string
+
+concurrency:
+  # Los despliegues NO se cancelan a medio camino: cancel-in-progress dejaria
+  # un rollout parcial. Se encolan.
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGEN: ${{ github.repository }}/api
+  PYTHONUNBUFFERED: "1"
+
+permissions:
+  contents: read
+
+jobs:
+  # ===========================================================================
+  # 1. Build y push por digest
+  # ===========================================================================
+  imagen:
+    name: Build y push a GHCR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+      referencia: ${{ steps.ref.outputs.referencia }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login en GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Metadatos de la imagen
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGEN }}
+          # Tags legibles para humanos, PERO el deploy no los usa: usa el digest.
+          # `latest` no aparece a proposito.
+          tags: |
+            type=sha,format=long
+            type=ref,event=pr
+            type=ref,event=branch
+
+      - name: Build y push
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          # En un PR se construye pero no se publica: un fork no debe poder
+          # empujar imagenes al registry de la organizacion.
+          push: ${{ github.event_name != 'pull_request' }}
+          load: ${{ github.event_name == 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # provenance y sbom SOLO al publicar. Las attestations obligan a buildx
+          # a producir una lista de manifiestos (un index), y el exporter `docker`
+          # que activa `load: true` no sabe cargarla:
+          #
+          #   ERROR: failed to build: docker exporter does not currently support
+          #          exporting manifest lists
+          #
+          # En un PR la imagen se construye para verificarla y se descarta, asi que
+          # las attestations no aportan nada. En la imagen publicada si: son lo que
+          # permite auditar de donde salio.
+          provenance: ${{ github.event_name != 'pull_request' }}
+          sbom: ${{ github.event_name != 'pull_request' }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Referencia inmutable de la imagen
+        id: ref
+        run: |
+          set -euo pipefail
+          digest="${{ steps.build.outputs.digest }}"
+          if [ -z "$digest" ]; then
+            echo "::warning::sin digest (build de PR sin push); se usa el tag del sha"
+            referencia="${{ env.REGISTRY }}/${{ env.IMAGEN }}:sha-${{ github.sha }}"
+          else
+            referencia="${{ env.REGISTRY }}/${{ env.IMAGEN }}@${digest}"
+          fi
+          echo "referencia=${referencia}" >> "$GITHUB_OUTPUT"
+          echo "Imagen: ${referencia}"
+          {
+            echo "### Imagen construida"
+            echo ""
+            echo '```'
+            echo "${referencia}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ===========================================================================
+  # 2. Gate de promocion del modelo
+  # ===========================================================================
+  gate:
+    name: Gate de promocion del modelo
+    runs-on: ubuntu-latest
+    needs: [imagen]
+    permissions:
+      contents: read
+    outputs:
+      promovido: ${{ steps.gate.outputs.promovido }}
+      resumen: ${{ steps.gate.outputs.resumen }}
+    # El gate solo puede decidir si hay un tracking server con un @champion
+    # contra el que comparar. Sin el secreto configurado, el job se salta en vez
+    # de fallar: un gate que "falla" por falta de infraestructura no distingue
+    # "el modelo es peor" de "no pude medir", y esa confusion es exactamente lo
+    # que la sesion 6 ensena a evitar. Configura MLFLOW_TRACKING_URI en
+    # Settings > Secrets and variables > Actions para activarlo.
+    if: ${{ needs.imagen.result == 'success' && vars.GATE_ACTIVO == 'true' }}
+    env:
+      MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Instalar dependencias
+        run: uv sync --locked
+
+      - name: Restaurar cache de particiones
+        # El holdout es una particion FIJA, asi que su cache es valido entre
+        # corridas. Es lo que permite que el gate no descargue 300 MB de la TLC
+        # en cada ejecucion del CD.
+        uses: actions/cache@v4
+        with:
+          path: |
+            data/raw
+            data/processed
+          key: particiones-fijas-v1
+
+      - name: Preparar el holdout
+        run: uv run taxi data
+
+      - name: Ejecutar el gate
+        id: gate
+        # En un PR el gate es informativo (--dry-run): evalua, comenta el
+        # resultado y NO mueve el alias. Mover @champion desde un PR sin
+        # aprobacion es exactamente el fallo que este workflow evita.
+        # Igual que en el job del comentario: los valores del contexto entran por
+        # `env` y no interpolados en el cuerpo del script. `candidato_version` es
+        # un input de workflow_dispatch, es decir texto que escribe una persona;
+        # interpolarlo directo en la linea de comandos permitiria inyectar shell.
+        env:
+          EVENTO: ${{ github.event_name }}
+          CANDIDATO_VERSION: ${{ inputs.candidato_version }}
+        run: |
+          argumentos=()
+          if [ "$EVENTO" = "pull_request" ]; then
+            argumentos+=(--dry-run)
+          fi
+          if [ -n "$CANDIDATO_VERSION" ]; then
+            argumentos+=(--candidato-version "$CANDIDATO_VERSION")
+          fi
+
+          set +e
+          uv run taxi promote "${argumentos[@]}" 2>&1 | tee gate.log
+          codigo=${PIPESTATUS[0]}
+          set -e
+
+          case "$codigo" in
+            0) echo "promovido=true"  >> "$GITHUB_OUTPUT" ;;
+            1) echo "promovido=false" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::el gate no pudo medir (exit $codigo): revisa la conexion con MLflow"
+               echo "promovido=error" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+          # El log se pasa al job del comentario por un archivo, no por una
+          # salida: las salidas de job tienen limite de tamano.
+          {
+            echo "### Gate de promocion"
+            echo ""
+            echo '```'
+            sed -e 's/\x1b\[[0-9;]*m//g' gate.log | tail -n 60
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # exit 2 (no pudo medir) tambien detiene el pipeline: no se despliega
+          # un modelo cuyo gate no corrio.
+          exit "$codigo"
+
+      - name: Guardar el log del gate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-log
+          path: gate.log
+          retention-days: 14
+
+  # ===========================================================================
+  # 3. Comentario de metricas en el PR
+  # ===========================================================================
+  comentario:
+    name: Comentar metricas en el PR
+    runs-on: ubuntu-latest
+    needs: [imagen, gate]
+    # Solo comenta si el gate corrio de verdad. Con el gate desactivado
+    # (GATE_ACTIVO sin poner), el comentario decia "no pudo medir" en cada
+    # push: ruido que parece error y no informa nada.
+    if: always() && github.event_name == 'pull_request' && needs.gate.result != 'skipped'
+    permissions:
+      pull-requests: write
+    steps:
+      # continue-on-error porque este job corre con `if: always()`: si `imagen`
+      # o `gate` fallan, el artifact no existe y download-artifact aborta el job.
+      # Eso convertia un fallo en dos, y el segundo no aportaba informacion: el
+      # script de abajo ya maneja la ausencia de gate.log con un try/catch.
+      # Un job de reporte no debe poder tumbar el pipeline por no tener nada que
+      # reportar.
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: gate-log
+          path: .
+
+      - name: Publicar o actualizar el comentario
+        uses: actions/github-script@v7
+        # Los valores entran por `env`, NO interpolados con ${{ }} dentro del
+        # script. Interpolar en el cuerpo de un script es la via clasica de
+        # script injection en Actions: basta que un valor contenga una comilla o
+        # un backtick para romper el JS, y si el valor viene del titulo de un PR
+        # (que cualquiera puede escribir) para ejecutar codigo con el token del
+        # workflow. Con `env` el dato es dato y nunca se parsea como codigo.
+        env:
+          GATE_PROMOVIDO: ${{ needs.gate.outputs.promovido }}
+          GATE_RESULTADO: ${{ needs.gate.result }}
+          IMAGEN_REF: ${{ needs.imagen.outputs.referencia }}
+          MODELO: ${{ vars.MODELO_REGISTRADO || 'nyc-taxi-duration' }}
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Sin colores ANSI: en el markdown del comentario son basura.
+            let log = '(el gate no dejo log)';
+            try {
+              log = fs.readFileSync('gate.log', 'utf8').replace(/\x1b\[[0-9;]*m/g, '');
+            } catch (e) {
+              core.warning(`no se pudo leer gate.log: ${e.message}`);
+            }
+            if (log.length > 55000) {
+              log = '...(truncado)...\n' + log.slice(-55000);
+            }
+
+            const titulo = {
+              'true':  'El candidato SUPERA el gate',
+              'false': 'El candidato NO supera el gate',
+            }[process.env.GATE_PROMOVIDO] || 'El gate no pudo medir';
+
+            // Marcador HTML para encontrar el comentario anterior y ACTUALIZARLO.
+            // Sin esto, un PR con quince pushes acumula quince comentarios y
+            // nadie sabe cual es el vigente.
+            const marcador = '<!-- gate-de-promocion -->';
+            const cuerpo = [
+              marcador,
+              `## ${titulo}`,
+              '',
+              `- Modelo: \`${process.env.MODELO}\``,
+              `- Imagen: \`${process.env.IMAGEN_REF || 'no publicada (build de PR)'}\``,
+              `- Job del gate: \`${process.env.GATE_RESULTADO}\``,
+              '',
+              'Evaluado sobre el **holdout fijo**, que no se usa para seleccionar',
+              'hiperparametros. En un PR el gate corre en `--dry-run`: informa,',
+              'pero no mueve el alias `@champion`.',
+              '',
+              '<details><summary>Salida completa del gate</summary>',
+              '',
+              '```text',
+              log.trim(),
+              '```',
+              '',
+              '</details>',
+            ].join('\n');
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comentarios = await github.paginate(
+              github.rest.issues.listComments, { owner, repo, issue_number }
+            );
+            const previo = comentarios.find(c => c.body && c.body.includes(marcador));
+
+            if (previo) {
+              await github.rest.issues.updateComment({
+                owner, repo, comment_id: previo.id, body: cuerpo,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number, body: cuerpo,
+              });
+            }
+
+  # ===========================================================================
+  # 4. Deploy a staging (automatico)
+  # ===========================================================================
+  deploy-staging:
+    name: Deploy a staging
+    runs-on: ubuntu-latest
+    needs: [imagen, gate]
+    if: github.event_name != 'pull_request' && needs.gate.outputs.promovido == 'true'
+    environment:
+      name: staging
+      url: https://staging.example.invalid
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Desplegar la imagen por digest
+        env:
+          IMAGEN_REF: ${{ needs.imagen.outputs.referencia }}
+        run: |
+          set -euo pipefail
+          echo "Desplegando ${IMAGEN_REF} en staging"
+          # Aqui va el comando real del entorno: `kubectl set image`,
+          # `aws ecs update-service`, `docker compose up -d`, etc. Siempre con
+          # la referencia por digest, nunca con un tag movil.
+          echo "IMAGEN_REF debe llegar al manifiesto sin modificar"
+
+      - name: Smoke test contra staging
+        run: |
+          set -euo pipefail
+          # Un deploy sin verificacion posterior no es un deploy, es un deseo.
+          # Este paso debe consultar /health y hacer una prediccion real: la
+          # falla mas comun aqui es que la imagen arranca pero no encuentra el
+          # modelo en el registry.
+          echo "curl -fsS https://staging.example.invalid/health"
+          echo "curl -fsS -X POST https://staging.example.invalid/predict -d @tests/fixtures/peticion.json"
+
+  # ===========================================================================
+  # 5. Deploy a produccion (aprobacion manual)
+  # ===========================================================================
+  deploy-produccion:
+    name: Deploy a produccion
+    runs-on: ubuntu-latest
+    needs: [imagen, gate, deploy-staging]
+    if: github.ref == 'refs/heads/main' && needs.gate.outputs.promovido == 'true'
+    # La proteccion vive en el Environment, no en el YAML: Settings >
+    # Environments > production > Required reviewers. Es importante entender por
+    # que: un `if:` en el workflow lo puede cambiar cualquiera con permiso de
+    # push, mientras que la configuracion del environment la controla quien
+    # administra el repositorio. La barrera no debe estar en el archivo que la
+    # barrera protege.
+    environment:
+      name: production
+      url: https://api.example.invalid
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Desplegar la imagen por digest
+        env:
+          IMAGEN_REF: ${{ needs.imagen.outputs.referencia }}
+        run: |
+          set -euo pipefail
+          echo "Desplegando ${IMAGEN_REF} en produccion"
+          echo "El digest desplegado es el MISMO que se verifico en staging."
+
+      - name: Verificacion post-deploy
+        run: |
+          set -euo pipefail
+          echo "curl -fsS https://api.example.invalid/health"
+
+      - name: Registrar el despliegue
+        env:
+          IMAGEN_REF: ${{ needs.imagen.outputs.referencia }}
+        run: |
+          {
+            echo "### Desplegado en produccion"
+            echo ""
+            echo "| campo | valor |"
+            echo "|---|---|"
+            echo "| imagen | \`${IMAGEN_REF}\` |"
+            echo "| commit | \`${{ github.sha }}\` |"
+            echo "| aprobado por | environment \`production\` |"
+            echo ""
+            echo "Rollback del modelo: mover el alias \`@champion\` a la version"
+            echo "anterior (una escritura de metadatos, sin redeploy)."
+            echo "Rollback de la imagen: volver a desplegar el digest previo."
+          } >> "$GITHUB_STEP_SUMMARY"

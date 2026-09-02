@@ -1,0 +1,109 @@
+# =============================================================================
+# .dockerignore — que NO entra al build context
+# =============================================================================
+# Tres razones, en orden de importancia:
+#
+# 1. SEGURIDAD. Todo lo que entra al contexto puede acabar en una capa de la
+#    imagen, y las capas son publicas si la imagen se publica. Un `.env` o un
+#    `~/.aws/credentials` copiado por un `COPY . .` descuidado no se borra
+#    agregando un `RUN rm`: la capa anterior sigue ahi.
+# 2. CORRECTITUD. Copiar el `.venv` del host mete binarios compilados para otro
+#    sistema operativo y otra arquitectura dentro de la imagen. Si ademas se
+#    monta sobre el venv del contenedor, el resultado son ImportError
+#    incomprensibles.
+# 3. VELOCIDAD Y CACHE. El demonio de Docker tiene que empaquetar y transferir el
+#    contexto completo en cada build. `data/` y `mlruns/` son cientos de MB que
+#    se envian para nada, y cualquier cambio en ellos invalida el cache de
+#    capas aunque el codigo no haya cambiado.
+#
+# Nota: este archivo NO reemplaza a `.gitignore`. Son dos listas con dos
+# propositos (que no se versiona / que no se construye) y hay que mantener las
+# dos.
+# =============================================================================
+
+# --- Entornos virtuales (razon 2) ---
+.venv/
+venv/
+ENV/
+env/
+
+# --- Secretos (razon 1) ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials
+.aws/
+.secrets/
+
+# --- Datos y artefactos: se descargan o se resuelven del registry (razon 3) ---
+data/
+mlruns/
+mlartifacts/
+mlflow.db
+models/
+artifacts/
+outputs/
+reports/
+*.parquet
+*.csv
+*.pkl
+*.joblib
+*.ubj
+
+# --- Historia de git: la imagen no la necesita (razones 1 y 3) ---
+# Ojo: si algun dia se quiere embutir el SHA del commit en la imagen, la forma
+# correcta es un --build-arg, no copiar .git entera.
+.git/
+.gitignore
+.gitattributes
+.githooks/
+.github/
+
+# --- Notebooks y material didactico ---
+# La imagen sirve un modelo; no necesita las sesiones del curso ni los notebooks,
+# que son la mayor parte del peso del repositorio.
+sesiones/
+instructor/
+proyecto/
+referencia/
+docs/
+**/*.ipynb
+.ipynb_checkpoints/
+
+# --- Tests y herramientas de calidad ---
+# Corren en el CI antes del build, no dentro de la imagen.
+tests/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+.pre-commit-config.yaml
+
+# --- Caches de Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# --- Infraestructura y observabilidad ---
+# Se montan como volumenes desde docker-compose; copiarlas a la imagen obligaria
+# a reconstruir para cambiar un dashboard.
+docker-compose.yml
+Dockerfile
+.dockerignore
+observabilidad/
+Makefile
+
+# --- IDE y sistema operativo ---
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+.claude/

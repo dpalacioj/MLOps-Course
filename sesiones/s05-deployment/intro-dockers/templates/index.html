@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gatitos App — entorno: {{ entorno }}</title>
+  <style>
+    /* Un solo template para los dos entornos. El color lo decide la clase del
+       body, no un segundo archivo HTML copiado y editado a mano. */
+    :root { --acento: #5a4fcf; }
+    body.docker { --acento: #1976d2; }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--acento);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .tarjeta {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, .28);
+      padding: 32px;
+      max-width: 560px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 { color: var(--acento); font-size: 2em; margin-bottom: 8px; }
+
+    .insignia {
+      display: inline-block;
+      background: var(--acento);
+      color: #fff;
+      border-radius: 999px;
+      padding: 4px 14px;
+      font-size: .85em;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    img { width: 100%; border-radius: 12px; display: block; margin-bottom: 20px; }
+
+    a.boton {
+      display: inline-block;
+      background: var(--acento);
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+
+    .datos {
+      margin-top: 24px;
+      text-align: left;
+      font-size: .9em;
+      border-left: 4px solid var(--acento);
+      background: #f5f6fa;
+      padding: 14px 16px;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .datos dt { font-weight: 600; }
+    .datos dd { margin: 0 0 8px; }
+
+    code {
+      font-family: ui-monospace, monospace;
+      background: #e9ebf3;
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="{{ 'docker' if es_docker else 'local' }}">
+  <main class="tarjeta">
+    <h1>Gatitos App</h1>
+    <span class="insignia">entorno: {{ entorno }}</span>
+
+    <img src="{{ gatito_url }}" alt="Un gato aleatorio servido por cataas.com">
+
+    <a class="boton" href="/">Otro gatito</a>
+
+    <dl class="datos">
+      <dt>hostname del proceso</dt>
+      <dd><code>{{ hostname }}</code></dd>
+
+      <dt>Qué mirar</dt>
+      <dd>
+        El <em>mismo</em> archivo <code>app.py</code> produjo esta página en los dos
+        entornos. Lo único que cambió es la variable de entorno <code>ENTORNO</code>,
+        que fija el <code>Dockerfile</code>. Compara el <code>hostname</code> entre
+        local y contenedor: ahí se ve el aislamiento.
+      </dd>
+
+      <dt>Liveness</dt>
+      <dd><a href="/health"><code>/health</code></a> — es lo que consulta el
+        <code>HEALTHCHECK</code> de la imagen.</dd>
+    </dl>
+  </main>
+</body>
+</html>

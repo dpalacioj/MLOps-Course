@@ -1,0 +1,155 @@
+# =============================================================================
+# CI del proyecto — lint -> tipos -> tests -> build
+# =============================================================================
+# Regla que no se negocia: NINGUN paso termina en `|| true` ni en
+# `|| echo "no tests yet"`. Un pipeline que no puede fallar es peor que no tener
+# pipeline: produce confianza injustificada y el dia que algo se rompe de verdad,
+# el badge sigue verde.
+#
+# El CI corre los MISMOS targets del Makefile que corres en local. Si divergen,
+# el CI deja de ser una red de seguridad y pasa a ser un obstaculo que la gente
+# aprende a esquivar con --no-verify.
+#
+# TODO(estudiante) 22: agrega el job del gate de promocion cuando llegues al
+# hito 3 (necesita acceso al registry; usa un servicio de MLflow en el job o
+# secretos del repositorio, nunca credenciales en el codigo).
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  calidad:
+    name: Lint, formato y tipos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      # --locked falla si uv.lock no esta sincronizado con pyproject.toml, en
+      # lugar de re-resolver en silencio. Es lo que hace el build reproducible.
+      - name: Instalar dependencias
+        run: uv sync --group dev --locked
+
+      - name: Lint (ruff)
+        run: uv run ruff check --output-format=github .
+
+      - name: Formato (ruff format)
+        run: uv run ruff format --check --diff .
+
+      - name: Tipos (mypy)
+        run: uv run mypy
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Instalar dependencias
+        run: uv sync --group dev --locked
+
+      # Se excluyen los marcados como slow/integration: los tests que necesitan
+      # red o servicios no pueden correr en cada PR, y un test que no corre en
+      # cada PR no protege nada.
+      - name: Tests unitarios, de datos y de API
+        run: uv run pytest -m "not slow and not integration" --cov=src --cov-report=term-missing
+
+  smoke:
+    name: Smoke test del entorno
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Instalar dependencias
+        run: uv sync --group dev --locked
+
+      - name: Smoke test
+        run: uv run python scripts/smoke_test.py --rapido
+
+  secretos:
+    name: Escaneo de secretos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  imagen:
+    name: Build y verificacion de la imagen
+    runs-on: ubuntu-latest
+    needs: [calidad]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build (sin push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: miproyecto/api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: La imagen NO debe correr como root
+        run: |
+          uid=$(docker run --rm --entrypoint sh miproyecto/api:ci -c 'id -u')
+          echo "UID dentro del contenedor: $uid"
+          if [ "$uid" = "0" ]; then
+            echo "::error::la imagen corre como root"
+            exit 1
+          fi
+
+      - name: La imagen debe responder /health
+        run: |
+          docker run -d --name api -p 8000:8000 \
+            -e MIPROYECTO_MODELO_URI=ninguno miproyecto/api:ci
+          for i in $(seq 1 40); do
+            if curl -sf http://127.0.0.1:8000/health > /dev/null; then
+              echo "healthy en ${i}s"
+              curl -s http://127.0.0.1:8000/health
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::/health no respondio en 40s"
+          docker logs api
+          exit 1

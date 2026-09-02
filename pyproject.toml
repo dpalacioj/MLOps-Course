@@ -1,39 +1,152 @@
 [project]
-name = "mlops-udm"
-version = "0.1.0"
-description = "Add your description here"
+name = "mlops-curso"
+version = "1.0.0"
+description = "Curso de MLOps — 8 sesiones. Caso guia: NYC Green Taxi con particiones mensuales fijas."
 readme = "README.md"
 requires-python = ">=3.11"
+license = { text = "MIT" }
+
 dependencies = [
-    "click>=8.1.0",
-    "fastapi>=0.135.3",
-    "gunicorn>=23.0.0",
-    "ipykernel>=6.30.1",
-    "jinja2>=3.1.6",
-    "matplotlib>=3.10.5",
-    "mlflow>=3.2.0",
-    "numpy>=2.3.2",
-    "openai>=2.30.0",
-    "optuna>=4.4.0",
+    # --- Datos y ML ---
     "pandas>=2.3.1",
-    "prefect>=3.4.12",
+    "numpy>=2.3.2",
     "pyarrow>=21.0.0",
-    "scikit-learn==1.6.1",
-    "seaborn>=0.13.2",
-    "uvicorn[standard]>=0.42.0",
+    "scikit-learn>=1.6.1",
     "xgboost>=3.0.4",
+    "scipy>=1.14.0",
+    # --- Contratos de datos (S02) ---
+    "pandera>=0.22.1",
+    # --- Tracking y HPO (S03) ---
+    "mlflow>=3.2.0",
+    "optuna>=4.4.0",
+    # --- Orquestacion (S04) ---
+    "prefect>=3.4.12",
+    # --- Serving (S05) ---
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.42.0",
+    "pydantic>=2.9.0",
+    "gunicorn>=23.0.0",
+    "jinja2>=3.1.6",
+    "httpx>=0.27.0",
+    # --- Monitoreo (S07) ---
+    "evidently>=0.7.0",
+    "prometheus-client>=0.21.0",
+    # --- Visualizacion y CLI ---
+    "matplotlib>=3.10.5",
+    "seaborn>=0.13.2",
+    "plotly>=5.24.0",
+    "click>=8.1.0",
+    "rich>=13.9.0",
+    "python-dotenv>=1.0.1",
+    "requests>=2.32.0",
+    # --- Notebooks ---
+    "ipykernel>=6.30.1",
+    "nbformat>=5.10.0",
 ]
+
+[project.optional-dependencies]
+# Sesion 8 — LLMOps. Aparte porque no todo el curso lo necesita.
+llmops = [
+    "openai>=1.50.0",
+    "litellm>=1.50.0",
+    "tiktoken>=0.8.0",
+]
+
+[project.scripts]
+taxi = "taxi.cli:cli"
 
 [dependency-groups]
 dev = [
     "ruff>=0.8.0",
+    "mypy>=1.13.0",
     "pytest>=8.0.0",
+    "pytest-cov>=6.0.0",
     "pre-commit>=4.0.0",
+    "nbstripout>=0.8.1",
+    "types-requests>=2.32.0",
 ]
 
-[tool.uv.workspace]
-members = [
-    "04-Deployment/deploy/web-service",
-    "04-Deployment/deploy/batch-deploy",
-    "04-Deployment/deploy/web-service-aws",
+# =============================================================================
+# Empaquetado
+# =============================================================================
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/taxi"]
+
+# =============================================================================
+# Ruff — lint + format (reemplaza flake8, isort y black)
+# NO mezclar con Black: la doc de Ruff advierte explicitamente contra alternar
+# los dos formatters en el mismo repositorio.
+# =============================================================================
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [
+    "sesiones/*/notebooks",
+    "sesiones/*/scenarios",
+    "sesiones/*/exercises",
+    "sesiones/*/referencia",
+    "sesiones/s06-cloud-cicd/_contraejemplo-insegure-aws",
+    "proyecto/starter-template/notebooks",
 ]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # bugbear
+    "SIM",  # simplify
+    "C4",   # comprehensions
+    "RUF",  # reglas propias de ruff
+]
+ignore = [
+    "E501",   # el formatter ya controla el largo de linea
+    "B008",   # Depends() de FastAPI en defaults es idiomatico
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["B011"]
+"sesiones/**" = ["E402"]  # material didactico: imports despues de prosa
+
+[tool.ruff.format]
+docstring-code-format = true
+
+# =============================================================================
+# mypy
+# =============================================================================
+[tool.mypy]
+python_version = "3.11"
+files = ["src/taxi", "scripts"]
+ignore_missing_imports = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*", "sesiones.*"]
+disallow_untyped_defs = false
+
+# =============================================================================
+# pytest
+# =============================================================================
+[tool.pytest.ini_options]
+# La sesion 8 (LLMOps) tiene su paquete en sesiones/s08-llmops/src y su propio
+# conftest.py que lo agrega al sys.path. Se incluye aqui para que `make test` y el
+# CI la cubran; sus tests corren sin red y sin API key, asi que no agregan
+# requisitos al entorno.
+testpaths = ["tests", "sesiones/s08-llmops/tests"]
+pythonpath = ["src"]
+addopts = "-q --strict-markers"
+markers = [
+    "slow: requiere descargar datos o levantar servicios",
+    "integration: requiere MLflow o Prefect corriendo",
+]
+
+[tool.coverage.run]
+source = ["src/taxi"]
+omit = ["*/cli.py"]

@@ -1,0 +1,475 @@
+<title>Pizarra de orquestación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #EDEFEC;
+    --surface: #FBFCFA;
+    --ink: #191C1A;
+    --muted: #5D6560;
+    --line: #D2D7D2;
+    --line-soft: #E2E6E1;
+    --accent: #256B58;
+    --accent-bg: #DCEBE5;
+    --warn: #A9481C;
+    --warn-bg: #F3E1D7;
+    --display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+    --body: "Literata", Georgia, serif;
+    --mono: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #141816;
+      --surface: #1C211E;
+      --ink: #E7EAE7;
+      --muted: #99A29C;
+      --line: #333C37;
+      --line-soft: #262E2A;
+      --accent: #63BFA1;
+      --accent-bg: #1E3A32;
+      --warn: #E09364;
+      --warn-bg: #38241A;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #141816;
+    --surface: #1C211E;
+    --ink: #E7EAE7;
+    --muted: #99A29C;
+    --line: #333C37;
+    --line-soft: #262E2A;
+    --accent: #63BFA1;
+    --accent-bg: #1E3A32;
+    --warn: #E09364;
+    --warn-bg: #38241A;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.65;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 28px 96px; }
+
+  header.top { padding: 72px 0 40px; border-bottom: 2px solid var(--ink); margin-bottom: 8px; }
+  .kicker {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 18px;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 700; font-size: clamp(38px, 6vw, 60px);
+    line-height: 1.02; letter-spacing: -0.02em; margin: 0 0 20px; text-wrap: balance;
+  }
+  .standfirst { font-size: 19px; color: var(--muted); max-width: 60ch; margin: 0; }
+
+  section.block { padding: 56px 0; border-bottom: 1px solid var(--line-soft); }
+  .num {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em;
+    color: var(--muted); margin: 0 0 10px; text-transform: uppercase;
+  }
+  h2 {
+    font-family: var(--display); font-weight: 700; font-size: clamp(25px, 3.4vw, 34px);
+    line-height: 1.15; letter-spacing: -0.015em; margin: 0 0 16px; text-wrap: balance;
+  }
+  section.block > p { max-width: 66ch; margin: 0 0 18px; }
+  code, .mono { font-family: var(--mono); font-size: 0.88em; }
+  code { background: var(--accent-bg); padding: 0.1em 0.35em; border-radius: 3px; }
+
+  figure {
+    margin: 30px 0 22px; padding: 26px 24px 20px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    overflow-x: auto;
+  }
+  figure svg { display: block; width: 100%; max-width: 100%; height: auto; min-width: 620px; }
+  figcaption {
+    font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--muted);
+    margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line-soft);
+  }
+
+  svg text { font-family: var(--mono); font-size: 12px; fill: var(--ink); }
+  svg .ss { font-size: 11px; fill: var(--muted); }
+  svg .sh { font-size: 13px; font-weight: 500; }
+  svg .sk { font-size: 11px; fill: var(--accent); letter-spacing: 0.08em; }
+  svg .box { fill: var(--surface); stroke: var(--line); stroke-width: 1.2; }
+  svg .box-a { fill: var(--accent-bg); stroke: var(--accent); stroke-width: 1.2; }
+  svg .box-w { fill: var(--warn-bg); stroke: var(--warn); stroke-width: 1.2; }
+  svg .edge { stroke: var(--muted); stroke-width: 1.4; fill: none; }
+  svg .edge-a { stroke: var(--accent); stroke-width: 1.4; fill: none; }
+  svg .head { fill: var(--muted); stroke: none; }
+  svg .head-a { fill: var(--accent); stroke: none; }
+  svg .dash { stroke: var(--muted); stroke-width: 1; fill: none; stroke-dasharray: 4 4; opacity: 0.7; }
+  svg .rule { stroke: var(--line); stroke-width: 1; }
+  svg .plus { fill: var(--accent); font-size: 11px; }
+  svg .minus { fill: var(--warn); font-size: 11px; }
+
+  .say {
+    border-left: 3px solid var(--accent); border-radius: 0;
+    padding: 4px 0 4px 20px; margin: 24px 0 0; max-width: 60ch;
+  }
+  .say .lbl {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 6px;
+  }
+  .say p { margin: 0; font-size: 19px; font-style: italic; }
+
+  table { border-collapse: collapse; width: 100%; margin: 26px 0 10px; font-size: 15px; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  thead th {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); border-bottom: 1px solid var(--line); font-weight: 400;
+  }
+  tbody td:first-child { font-family: var(--display); font-weight: 500; white-space: nowrap; }
+  tbody td:last-child { font-family: var(--mono); font-size: 13px; color: var(--accent); white-space: nowrap; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 28px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+  .card h3 {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 10px; font-weight: 400;
+  }
+  .card p { margin: 0; font-size: 17px; font-style: italic; }
+
+  footer.end { padding: 44px 0 0; color: var(--muted); font-size: 15px; max-width: 62ch; }
+  @media (max-width: 640px) {
+    .wrap { padding: 0 18px 64px; }
+    header.top { padding: 48px 0 30px; }
+  }
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <p class="kicker">Sesión 4 · guion de tablero</p>
+  <h1>Pizarra de orquestación</h1>
+  <p class="standfirst">Siete dibujos que se hacen a mano en menos de un minuto cada uno, con la frase que va encima. Para la parte teórica, antes de abrir la terminal.</p>
+</header>
+
+<section class="block">
+  <p class="num">01 · la columna vertebral</p>
+  <h2>La escalera: nadie sube por gusto</h2>
+  <p>Es el dibujo con el que abre la sesión y al que vuelves cada vez que alguien pregunta «¿y esto no se hacía con un cron?». Lo importante no es que el tercer peldaño gane: es que cada peldaño <em>cuesta algo</em> y resuelve algo distinto.</p>
+
+  <figure>
+    <svg viewBox="0 0 720 312" role="img" aria-label="Tres peldaños ascendentes: script, cron y orquestador, cada uno con lo que aporta y lo que le sigue faltando.">
+      <rect class="box" x="20" y="190" width="210" height="64" rx="5"/>
+      <text class="sh" x="36" y="217">1 · script</text>
+      <text class="ss" x="36" y="236">python 1-script.py</text>
+      <text class="plus" x="20" y="276">+ suficiente para mucho</text>
+      <text class="minus" x="20" y="293">− alguien lo lanza</text>
+
+      <path class="edge" d="M230 222 H242 V166 H249"/>
+      <polygon class="head" points="249,162 257,166 249,170"/>
+
+      <rect class="box" x="255" y="130" width="210" height="64" rx="5"/>
+      <text class="sh" x="271" y="157">2 · cron</text>
+      <text class="ss" x="271" y="176">una línea de crontab</text>
+      <text class="plus" x="255" y="216">+ corre sin nadie delante</text>
+      <text class="minus" x="255" y="233">− solo ve la hora y un número</text>
+
+      <path class="edge-a" d="M465 162 H477 V106 H484"/>
+      <polygon class="head-a" points="484,102 492,106 484,110"/>
+
+      <rect class="box-a" x="490" y="70" width="210" height="64" rx="5"/>
+      <text class="sh" x="506" y="97">3 · orquestador</text>
+      <text class="ss" x="506" y="116">@flow y @task</text>
+      <text class="plus" x="490" y="156">+ estado, reintentos, historia</text>
+      <text class="minus" x="490" y="173">− servidor y worker que mantener</text>
+    </svg>
+    <figcaption>El mismo pipeline de tres pasos en los tres peldaños. Lo que cambia no es el código: es quién lo ejecuta y qué queda registrado al terminar.</figcaption>
+  </figure>
+
+  <div class="say">
+    <span class="lbl">La frase</span>
+    <p>«Ejecuta código. Ejecuta código a cierta hora. Y además se acuerda de lo que pasó.»</p>
+  </div>
+</section>
+
+<section class="block">
+  <p class="num">02 · el mapa conceptual</p>
+  <h2>Cinco piezas, y ninguna es de Prefect</h2>
+  <p>Esto va al tablero como lista, no como dibujo. El valor está en la primera columna: son las piezas de <em>cualquier</em> orquestador. La tercera columna es solo el dialecto que usará el curso, y conviene decirlo así para que nadie salga creyendo que aprendió una herramienta en vez de un concepto.</p>
+
+  <table>
+    <thead>
+      <tr><th>Pieza</th><th>Qué resuelve</th><th>En Prefect</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Pasos</td><td>saber <em>cuál</em> paso falló, no solo que falló</td><td>@task</td></tr>
+      <tr><td>Grafo</td><td>el orden y el paralelismo, sin escribirlos</td><td>pasar resultados</td></tr>
+      <tr><td>Programación</td><td>que corra sin nadie delante</td><td>schedules</td></tr>
+      <tr><td>Observabilidad</td><td>reconstruir qué pasó y cuándo</td><td>logs y UI</td></tr>
+      <tr><td>Fallos</td><td>que un fallo de dos segundos no cueste la corrida</td><td>retries</td></tr>
+    </tbody>
+  </table>
+
+  <div class="say">
+    <span class="lbl">La mnemotecnia</span>
+    <p>Pasos, Grafo, Programación, Observabilidad, Fallos. «Prefect Guarda Para Observar Fallos.»</p>
+  </div>
+</section>
+
+<section class="block">
+  <p class="num">03 · el mecanismo</p>
+  <h2>Un decorador es una fábrica, no una etiqueta</h2>
+  <p>El malentendido que hay que desactivar antes de mostrar código: <code>@task</code> no marca la función, la <em>reemplaza</em>. Dibuja las tres cajas de arriba, y solo si preguntan, el zoom de abajo.</p>
+
+  <figure>
+    <svg viewBox="0 0 720 316" role="img" aria-label="Una función entra al decorador y sale otra función distinta; el zoom muestra la original intacta dentro del envoltorio.">
+      <rect class="box" x="30" y="40" width="190" height="62" rx="5"/>
+      <text class="sh" x="125" y="67" text-anchor="middle">resumir</text>
+      <text class="ss" x="125" y="86" text-anchor="middle">lo que escribiste</text>
+
+      <path class="edge" d="M220 71 H255"/>
+      <polygon class="head" points="255,67 263,71 255,75"/>
+
+      <rect class="box-a" x="265" y="40" width="190" height="62" rx="5"/>
+      <text class="sh" x="360" y="67" text-anchor="middle">task(...)</text>
+      <text class="ss" x="360" y="86" text-anchor="middle">recibe la función</text>
+
+      <path class="edge" d="M455 71 H490"/>
+      <polygon class="head" points="490,67 498,71 490,75"/>
+
+      <rect class="box" x="500" y="40" width="190" height="62" rx="5"/>
+      <text class="sh" x="595" y="67" text-anchor="middle">resumir</text>
+      <text class="ss" x="595" y="86" text-anchor="middle">otra, ya envuelta</text>
+
+      <path class="dash" d="M500 102 L180 152"/>
+      <path class="dash" d="M690 102 L540 152"/>
+
+      <rect class="box-a" x="180" y="152" width="360" height="142" rx="7"/>
+      <text class="sh" x="200" y="178">resumir · la nueva</text>
+
+      <rect class="box" x="208" y="192" width="304" height="54" rx="5"/>
+      <text class="sh" x="360" y="216" text-anchor="middle">paso_3_resumir()</text>
+      <text class="ss" x="360" y="235" text-anchor="middle">sin una línea de cambio</text>
+
+      <rect class="box" x="208" y="256" width="144" height="26" rx="4"/>
+      <text class="ss" x="280" y="273" text-anchor="middle">reintenta</text>
+      <rect class="box" x="368" y="256" width="144" height="26" rx="4"/>
+      <text class="ss" x="440" y="273" text-anchor="middle">guarda estado</text>
+    </svg>
+    <figcaption>El nombre <span class="mono">resumir</span> termina apuntando a la caja de la derecha. La función original sigue existiendo, pero ya solo se la llama desde dentro del envoltorio.</figcaption>
+  </figure>
+
+  <div class="say">
+    <span class="lbl">La analogía</span>
+    <p>«Tu función es la carta. El decorador es la oficina de correos: le pone sobre, guía y seguro de reenvío. La carta no cambió.»</p>
+  </div>
+</section>
+
+<section class="block">
+  <p class="num">04 · lo que sorprende</p>
+  <h2>Nadie declara el orden</h2>
+  <p>Aquí es donde Prefect se separa de Airflow en el modelo mental, y donde conviene detenerse: el grafo no se escribe, se <em>deriva</em>. Si el paso 2 recibe lo que devolvió el paso 1, el orden ya quedó dicho.</p>
+
+  <figure>
+    <svg viewBox="0 0 720 248" role="img" aria-label="Tres líneas de código lineal a la izquierda producen, a la derecha, un grafo de tres nodos encadenados por los datos que se pasan.">
+      <rect class="box" x="20" y="40" width="300" height="184" rx="5"/>
+      <text x="40" y="80">crudo = descargar()</text>
+      <text x="40" y="116">limpio = preparar(crudo)</text>
+      <text x="40" y="152">resumen = resumir(limpio)</text>
+      <text class="ss" x="40" y="196">tres llamadas, sin grafo</text>
+
+      <text class="sk" x="365" y="124" text-anchor="middle">DERIVA</text>
+      <path class="edge-a" d="M330 132 H392"/>
+      <polygon class="head-a" points="392,128 400,132 392,136"/>
+
+      <rect class="box-a" x="420" y="40" width="200" height="44" rx="5"/>
+      <text x="520" y="68" text-anchor="middle">descargar</text>
+      <path class="edge" d="M520 84 V102"/>
+      <polygon class="head" points="516,102 524,102 520,110"/>
+      <text class="ss" x="534" y="100">crudo</text>
+
+      <rect class="box-a" x="420" y="110" width="200" height="44" rx="5"/>
+      <text x="520" y="138" text-anchor="middle">preparar</text>
+      <path class="edge" d="M520 154 V172"/>
+      <polygon class="head" points="516,172 524,172 520,180"/>
+      <text class="ss" x="534" y="170">limpio</text>
+
+      <rect class="box-a" x="420" y="180" width="200" height="44" rx="5"/>
+      <text x="520" y="208" text-anchor="middle">resumir</text>
+    </svg>
+    <figcaption>La dependencia es el dato que viaja entre pasos. Dos tasks que no se pasan nada son independientes, y Prefect puede correrlas a la vez sin que nadie se lo pida.</figcaption>
+  </figure>
+
+  <div class="say">
+    <span class="lbl">La pregunta al aula</span>
+    <p>«Si el paso 2 no usara lo que devuelve el paso 1, ¿en qué orden correrían?»</p>
+  </div>
+</section>
+
+<section class="block">
+  <p class="num">05 · el argumento decisivo</p>
+  <h2>Qué se vuelve a ejecutar cuando algo falla</h2>
+  <p>Este es el dibujo que gana la discusión, y el único que conviene dejar en el tablero toda la sesión. El acto 1 del dolor es exactamente esto: ocho minutos perdidos por un fallo de dos segundos.</p>
+
+  <figure>
+    <svg viewBox="0 0 720 196" role="img" aria-label="Matriz que compara qué pasos vuelve a ejecutar cron frente a un orquestador cuando falla el tercer paso.">
+      <text class="ss" x="217" y="30" text-anchor="middle">1 · descargar</text>
+      <text class="ss" x="352" y="30" text-anchor="middle">2 · preparar</text>
+      <text class="ss" x="487" y="30" text-anchor="middle">3 · resumir · falla</text>
+      <text class="ss" x="632" y="30" text-anchor="middle">costo</text>
+      <line class="rule" x1="20" y1="40" x2="700" y2="40"/>
+
+      <rect class="box" x="20" y="52" width="120" height="44" rx="5"/>
+      <text class="sh" x="80" y="80" text-anchor="middle">cron</text>
+      <rect class="box-w" x="155" y="52" width="125" height="44" rx="5"/>
+      <text class="ss" x="217" y="80" text-anchor="middle">repite entero</text>
+      <rect class="box-w" x="290" y="52" width="125" height="44" rx="5"/>
+      <text class="ss" x="352" y="80" text-anchor="middle">repite entero</text>
+      <rect class="box-w" x="425" y="52" width="125" height="44" rx="5"/>
+      <text class="ss" x="487" y="80" text-anchor="middle">repite entero</text>
+      <rect class="box-w" x="565" y="52" width="135" height="44" rx="5"/>
+      <text class="sh" x="632" y="80" text-anchor="middle">3 de 3</text>
+
+      <rect class="box" x="20" y="112" width="120" height="44" rx="5"/>
+      <text class="sh" x="80" y="140" text-anchor="middle">orquestador</text>
+      <rect class="box" x="155" y="112" width="125" height="44" rx="5"/>
+      <text class="ss" x="217" y="140" text-anchor="middle">Completed</text>
+      <rect class="box" x="290" y="112" width="125" height="44" rx="5"/>
+      <text class="ss" x="352" y="140" text-anchor="middle">Completed</text>
+      <rect class="box-a" x="425" y="112" width="125" height="44" rx="5"/>
+      <text class="ss" x="487" y="140" text-anchor="middle">reintenta</text>
+      <rect class="box-a" x="565" y="112" width="135" height="44" rx="5"/>
+      <text class="sh" x="632" y="140" text-anchor="middle">1 de 3</text>
+
+      <text class="ss" x="20" y="182">el estado por paso es lo que permite no repetir lo que ya terminó bien</text>
+    </svg>
+    <figcaption>Cron ejecuta <em>un comando</em>: no conoce los pasos de adentro, así que solo puede repetirlo entero. El orquestador guarda el estado de cada paso y se salta los que ya están en <span class="mono">Completed</span>.</figcaption>
+  </figure>
+
+  <div class="say">
+    <span class="lbl">La frase</span>
+    <p>«Ocho minutos perdidos por un fallo de dos segundos. Esa es toda la sesión.»</p>
+  </div>
+</section>
+
+<section class="block">
+  <p class="num">06 · la confusión más común</p>
+  <h2>Prefect y MLflow no compiten</h2>
+  <p>Sale todos los años, y se desactiva con dos columnas. Prefect responde por la <em>ejecución</em>; MLflow por el <em>contenido</em>. La flecha del medio es lo que hace posible el linaje.</p>
+
+  <figure>
+    <svg viewBox="0 0 720 268" role="img" aria-label="Dos paneles: Prefect responde preguntas sobre la ejecución y MLflow sobre el contenido; el run_id los conecta y produce el linaje.">
+      <rect class="box-a" x="20" y="40" width="300" height="150" rx="7"/>
+      <text class="sh" x="42" y="70">Prefect · la ejecución</text>
+      <text class="ss" x="42" y="103">cuándo corrió</text>
+      <text class="ss" x="42" y="128">en qué orden corrió</text>
+      <text class="ss" x="42" y="153">en qué estado terminó</text>
+
+      <text class="sk" x="360" y="106" text-anchor="middle">run_id</text>
+      <path class="edge-a" d="M320 115 H392"/>
+      <polygon class="head-a" points="392,111 400,115 392,119"/>
+
+      <rect class="box" x="400" y="40" width="300" height="150" rx="7"/>
+      <text class="sh" x="422" y="70">MLflow · el contenido</text>
+      <text class="ss" x="422" y="103">con qué parámetros</text>
+      <text class="ss" x="422" y="128">qué métricas dio</text>
+      <text class="ss" x="422" y="153">qué versión sirve hoy</text>
+
+      <rect class="box" x="20" y="212" width="680" height="38" rx="5"/>
+      <text class="ss" x="360" y="236" text-anchor="middle">el linaje que se reconstruye:  corrida  →  modelo  →  predicción</text>
+    </svg>
+    <figcaption>Cada corrida de Prefect produce un run de MLflow, y el <span class="mono">run_id</span> queda como tag de la versión registrada. Sin esa flecha hay dos historias paralelas que nadie puede cruzar.</figcaption>
+  </figure>
+
+  <div class="say">
+    <span class="lbl">La analogía</span>
+    <p>«Prefect es la bitácora del viaje. MLflow es el inventario de la carga.»</p>
+  </div>
+</section>
+
+<section class="block">
+  <p class="num">07 · la decisión de diseño</p>
+  <h2>Registrar no es promover</h2>
+  <p>El pipeline entrena y registra un <em>candidato</em>. No lo pone en producción. Que un modelo llegue a producción por el solo hecho de que el entrenamiento no lanzó excepciones es el error que esta sesión corrige.</p>
+
+  <figure>
+    <svg viewBox="0 0 720 224" role="img" aria-label="El flow registra un candidato en el registry; un gate en CI decide si se promueve a champion o si no se promueve.">
+      <rect class="box" x="20" y="40" width="160" height="52" rx="5"/>
+      <text class="sh" x="100" y="66" text-anchor="middle">flow · S04</text>
+      <text class="ss" x="100" y="84" text-anchor="middle">entrena y registra</text>
+
+      <text class="sk" x="210" y="56" text-anchor="middle">candidate</text>
+      <path class="edge" d="M180 70 H232"/>
+      <polygon class="head" points="232,66 240,70 232,74"/>
+
+      <rect class="box" x="240" y="40" width="150" height="52" rx="5"/>
+      <text class="sh" x="315" y="66" text-anchor="middle">registry</text>
+      <text class="ss" x="315" y="84" text-anchor="middle">status: pending</text>
+
+      <path class="edge" d="M390 70 H442"/>
+      <polygon class="head" points="442,66 450,70 442,74"/>
+
+      <rect class="box-a" x="450" y="40" width="180" height="52" rx="5"/>
+      <text class="sh" x="540" y="66" text-anchor="middle">gate en CI · S06</text>
+      <text class="ss" x="540" y="84" text-anchor="middle">candidato vs champion</text>
+
+      <path class="edge-a" d="M540 92 V116 H435 V136"/>
+      <polygon class="head-a" points="431,136 439,136 435,144"/>
+      <text class="ss" x="480" y="111" text-anchor="middle">mejora</text>
+
+      <path class="edge" d="M540 92 V116 H627 V136"/>
+      <polygon class="head" points="623,136 631,136 627,144"/>
+      <text class="ss" x="592" y="111" text-anchor="end">no mejora</text>
+
+      <rect class="box-a" x="350" y="146" width="170" height="52" rx="5"/>
+      <text class="sh" x="435" y="172" text-anchor="middle">champion</text>
+      <text class="ss" x="435" y="190" text-anchor="middle">sirve en producción</text>
+
+      <rect class="box" x="545" y="146" width="155" height="52" rx="5"/>
+      <text class="sh" x="622" y="172" text-anchor="middle">se queda</text>
+      <text class="ss" x="622" y="190" text-anchor="middle">comentario en el PR</text>
+    </svg>
+    <figcaption>Separarlo tiene tres consecuencias: el reentrenamiento puede ser automático sin que el despliegue lo sea, el criterio de promoción queda versionado en un solo lugar, y el rollback es mover un alias.</figcaption>
+  </figure>
+
+  <div class="say">
+    <span class="lbl">La frase</span>
+    <p>«Entrenar propone. CI dispone.»</p>
+  </div>
+</section>
+
+<section class="block">
+  <p class="num">08 · el cierre</p>
+  <h2>Frases sueltas, por si hacen falta</h2>
+  <p>Las que sirven cuando alguien pregunta algo a destiempo y no quieres perder el hilo del tablero.</p>
+
+  <div class="cards">
+    <div class="card">
+      <h3>Qué es cron</h3>
+      <p>«El despertador. No sabe cocinar; solo sonar puntual.»</p>
+    </div>
+    <div class="card">
+      <h3>Por qué el envoltorio en bash</h3>
+      <p>«El problema no está dentro del programa: está antes de que arranque.»</p>
+    </div>
+    <div class="card">
+      <h3>Continuous Training</h3>
+      <p>«No es reentrenar seguido. Es reentrenar cuando hay una razón.»</p>
+    </div>
+    <div class="card">
+      <h3>Contra el cron de dos minutos</h3>
+      <p>«Una frecuencia no es una razón.»</p>
+    </div>
+    <div class="card">
+      <h3>Lo que la orquestación no hace</h3>
+      <p>«Entrenar sobre datos malos, pero con más puntualidad.»</p>
+    </div>
+    <div class="card">
+      <h3>Por qué Prefect aquí</h3>
+      <p>«No porque sea el mejor: porque deja las cuatro horas para los conceptos.»</p>
+    </div>
+  </div>
+</section>
+
+<footer class="end">
+  <p>Los doce diagramas de <span class="mono">diagrams/</span> son para proyectar. Estos siete son para dibujar a mano mientras hablas, que es cuando el aula sigue el trazo en vez de leer la pantalla.</p>
+</footer>
+
+</div>

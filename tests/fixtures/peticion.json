@@ -1,0 +1,15 @@
+{
+  "_comentario": [
+    "Peticion de ejemplo para la API de inferencia y para el smoke test del CD.",
+    "Solo lleva las columnas CRUDAS del contrato: PU_DO, hora_pickup y",
+    "dia_semana_pickup las deriva el pipeline dentro del artefacto. Si el cliente",
+    "tuviera que enviarlas, cada consumidor reimplementaria la derivacion y",
+    "acabarian divergiendo.",
+    "trip_distance esta en MILLAS, no en kilometros."
+  ],
+  "lpep_pickup_datetime": "2023-05-15T08:30:00",
+  "lpep_dropoff_datetime": "2023-05-15T08:47:00",
+  "PULocationID": 74,
+  "DOLocationID": 42,
+  "trip_distance": 3.4
+}

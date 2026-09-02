@@ -1,0 +1,17 @@
+# CONTRAEJEMPLO — NO COPIAR
+#
+# Este archivo se conserva a proposito como material didactico de la sesion 6.
+# Ver `README.md` de esta carpeta: declara flask y un servicio que se despliega
+# con `app.run(debug=True)` en una guia de EC2.
+#
+[project]
+name = "web-service-docker-aws"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "flask>=3.1.1",
+    "gunicorn>=23.0.0",
+    "scikit-learn==1.6.1",
+]

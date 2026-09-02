@@ -1,0 +1,57 @@
+# =============================================================================
+# prefect.yaml — deployments declarativos
+# =============================================================================
+# Se despliega ejecutando `prefect deploy --all` DESDE ESTE DIRECTORIO.
+#
+# Dos detalles que hacen que este archivo funcione en cualquier maquina:
+#
+# 1. Ninguna ruta absoluta. El `entrypoint` se resuelve relativo al directorio
+#    donde vive este archivo, asi que para desplegar en local no hace falta
+#    ningun paso `pull`. Un `set_working_directory: /Users/<usuario>/...` seria
+#    la ruta del disco de quien lo escribio y fallaria en cualquier otro.
+#
+# 2. La clave es `schedules:` (plural, una lista). El `schedule:` singular con
+#    un mapa cron/timezone es la forma heredada de Prefect 2: esta deprecada, y
+#    si aparecen las dos claves en el mismo deployment, `prefect deploy` falla.
+# =============================================================================
+name: intro-prefect
+prefect-version: 3.8.3
+
+deployments:
+  # Un mismo flow puede tener varios deployments: distinto schedule, distintos
+  # parametros. El codigo del flow no cambia.
+  - name: clima-medellin
+    entrypoint: pasos/01b-flow-entrypoint.py:fetch_weather
+    description: Consulta el pronostico de Medellin cada 10 minutos.
+    tags: [s04, demo]
+    # `prefect deploy` necesita un work pool: quien ejecuta es un worker, no
+    # este proceso. Crear el pool y arrancar el worker:
+    #   prefect work-pool create curso-mlops --type process
+    #   prefect worker start --pool curso-mlops
+    work_pool:
+      name: curso-mlops
+    schedules:
+      - cron: "*/10 * * * *"
+        timezone: America/Bogota
+    parameters:
+      lat: 6.2476
+      lon: -75.5658
+
+  - name: clima-bogota
+    entrypoint: pasos/01b-flow-entrypoint.py:fetch_weather
+    description: Consulta el pronostico de Bogota cada 2 horas.
+    tags: [s04, demo]
+    work_pool:
+      name: curso-mlops
+    schedules:
+      - cron: "0 */2 * * *"
+        timezone: America/Bogota
+    parameters:
+      lat: 4.7110
+      lon: -74.0721
+
+# Comandos utiles:
+#   prefect deploy --all
+#   prefect deployment ls
+#   prefect deployment run 'fetch-weather/clima-medellin'
+#   prefect deployment delete 'fetch-weather/clima-bogota'

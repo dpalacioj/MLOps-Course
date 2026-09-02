@@ -1,0 +1,65 @@
+# Precios por millon de tokens, en USD.
+#
+# ESTE ARCHIVO SE DESACTUALIZA. Es configuracion, no codigo, precisamente por eso:
+# los precios de los modelos cambian cada pocas semanas, los proveedores agregan
+# tiers y descuentos por cache, y un precio hardcodeado en un .py produce
+# estimaciones de costo silenciosamente equivocadas durante meses.
+#
+# Los valores de abajo son PLACEHOLDERS PLAUSIBLES con fines didacticos, no una
+# lista de precios vigente. Antes de usar la calculadora para decidir algo:
+#
+#   1. Abre la pagina de precios del proveedor.
+#   2. Actualiza este archivo.
+#   3. Anota la fecha en 'actualizado'.
+#
+# El campo 'actualizado' existe para que la calculadora pueda advertir cuando los
+# precios llevan demasiado tiempo sin revisarse. Un numero de costo sin fecha de
+# precios no es una estimacion: es una cifra.
+
+actualizado: "2026-08-19"
+moneda: USD
+unidad: por_millon_de_tokens
+
+# Dias tras los cuales la calculadora advierte que los precios estan viejos.
+# 60 dias es una heuristica: en este mercado, dos meses basta para que un precio
+# cambie o para que el modelo que se estaba usando quede obsoleto.
+vigencia_dias: 60
+
+modelos:
+  gpt-4o-mini:
+    entrada: 0.15
+    salida: 0.60
+    notas: "Modelo pequeno. Suficiente para clasificacion con salida estructurada."
+
+  gpt-4o:
+    entrada: 2.50
+    salida: 10.00
+    notas: "Modelo grande. Para esta tarea es sobredimensionado; util como juez."
+
+  claude-haiku:
+    entrada: 0.80
+    salida: 4.00
+    notas: "Alternativa de otro proveedor. Comparar es el punto del gateway."
+
+  claude-sonnet:
+    entrada: 3.00
+    salida: 15.00
+    notas: "Candidato a juez: conviene que el juez NO sea el mismo modelo evaluado."
+
+  # El fake no cuesta nada, y aparece aqui a proposito: hace explicito que un
+  # eval corrido contra el fake tiene costo cero, que es la senal mas clara de
+  # que no se midio el sistema real.
+  fake-reglas-v1:
+    entrada: 0.0
+    salida: 0.0
+    notas: "Proveedor determinista local. Costo cero porque no llama a ningun modelo."
+
+  eco:
+    entrada: 0.0
+    salida: 0.0
+    notas: "Proveedor de depuracion. No llama a ningun modelo."
+
+# Modelo que se asume cuando el nombre reportado no esta en la tabla. Se usa el
+# mas caro a proposito: una estimacion de costos debe equivocarse hacia arriba.
+# Subestimar el costo es como se llega a una factura sorpresa.
+modelo_por_defecto_si_desconocido: gpt-4o

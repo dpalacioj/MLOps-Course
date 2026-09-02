@@ -1,0 +1,11 @@
+flowchart TB
+    G["git quiere ejecutar<br/>un hook"] --> Q{"core.hooksPath<br/>esta definido?"}
+    Q -->|"si, apunta a .githooks/"| A[".githooks/<br/>commit-msg + pre-push"]
+    Q -->|"no"| B[".git/hooks/<br/>los de pre-commit"]
+    A --> R1["pre-commit se NIEGA a instalarse<br/>Cowardly refusing...<br/>Sin ruff, sin gitleaks, sin nbstripout"]
+    B --> R2["pre-commit instala los tres:<br/>pre-commit, commit-msg, pre-push"]
+
+    classDef mal fill:#fadbd8,stroke:#a93226,color:#78281f
+    classDef bien fill:#d5f5e3,stroke:#1e8449,color:#145a32
+    class R1 mal
+    class R2 bien

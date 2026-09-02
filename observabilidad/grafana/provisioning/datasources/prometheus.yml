@@ -1,0 +1,41 @@
+# =============================================================================
+# Datasource de Grafana — provisionado, no configurado a mano
+# =============================================================================
+# Un datasource creado desde la UI vive solo en la base de datos interna de
+# Grafana (el volumen `grafana-data`). Consecuencias: no se revisa en un PR, no
+# se reproduce en la maquina de otra persona y desaparece con
+# `docker compose down -v`. Provisionarlo desde un archivo lo convierte en codigo
+# versionado, que es el mismo principio que aplica a los dashboards.
+#
+# `apiVersion: 1` es el esquema del provisioning de Grafana; no es la version de
+# Grafana ni tiene relacion con la clave `version` que Compose ya no usa.
+# =============================================================================
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    # El uid es FIJO y explicito a proposito. Los dashboards versionados lo
+    # referencian; si Grafana lo generara al azar en cada arranque, cada panel
+    # apuntaria a un datasource inexistente y el dashboard mostraria "Datasource
+    # not found". Es el fallo mas comun al versionar dashboards.
+    uid: prometheus
+    type: prometheus
+    # `proxy`: el navegador pide los datos a Grafana y Grafana consulta a
+    # Prometheus por la red interna. Con `direct` el navegador tendria que
+    # alcanzar `http://prometheus:9090`, un nombre que solo existe dentro de la
+    # red de Docker.
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    # No editable desde la UI: si alguien lo cambia a mano, el cambio se pierde
+    # en el siguiente arranque y genera confusion. Que sea inmutable hace obvio
+    # que la fuente de verdad es este archivo.
+    editable: false
+    jsonData:
+      # Debe coincidir con el `scrape_interval` de prometheus.yml. Grafana lo usa
+      # para calcular el `$__rate_interval` de las consultas; si miente, los
+      # `rate()` salen con huecos o suavizados de mas.
+      timeInterval: 15s
+      # POST permite consultas largas que no caben en una URL de GET.
+      httpMethod: POST

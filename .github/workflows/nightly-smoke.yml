@@ -1,0 +1,123 @@
+name: Nightly — caso guia end-to-end
+
+# Por que existe este workflow.
+#
+# El diagnostico del repositorio encontro un patron: el material se escribio,
+# funciono una vez en la maquina de quien lo escribio, y se degrado en silencio.
+# Sintomas: rutas absolutas commiteadas (/Users/mdurango/...), artefactos de una
+# corrida unica versionados, un run_id hardcodeado, 875 lineas de guia para un
+# pipeline sin DAG. Nada de eso lo detecta un CI de lint y tests unitarios,
+# porque el fallo esta en la integracion con datos y servicios reales.
+#
+# Este job corre el caso guia completo —descarga datos de la TLC, entrena,
+# registra, evalua el gate y genera el reporte de drift— todas las noches en un
+# runner limpio. Si algo se rompe, se sabe en 24 horas en lugar de en clase.
+
+on:
+  schedule:
+    - cron: "0 7 * * *" # 02:00 America/Bogota
+  workflow_dispatch:
+
+jobs:
+  end-to-end:
+    name: Pipeline completo con datos reales
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - run: uv sync --group dev --locked
+
+      - name: Cache de datos crudos
+        uses: actions/cache@v4
+        with:
+          path: data/raw
+          key: tlc-raw-${{ hashFiles('src/taxi/config.py') }}
+
+      - name: Descargar y preparar datos
+        run: uv run taxi data
+
+      - name: Verificar procedencia (metadata.json con hashes)
+        run: |
+          test -f data/raw/metadata.json || { echo "::error::falta metadata.json"; exit 1; }
+          uv run python -c "
+          import json, pathlib, sys
+          meta = json.loads(pathlib.Path('data/raw/metadata.json').read_text())
+          faltan = [k for k, v in meta.items() if not v.get('sha256')]
+          if faltan:
+              sys.exit(f'sin hash: {faltan}')
+          print(f'{len(meta)} particiones con SHA-256 registrado')
+          "
+
+      - name: MLflow local (SQLite + artifacts en disco)
+        run: |
+          uv run mlflow server \
+            --backend-store-uri sqlite:///mlflow.db \
+            --default-artifact-root ./mlartifacts \
+            --host 127.0.0.1 --port 5001 &
+          for i in $(seq 1 60); do
+            curl -sf http://127.0.0.1:5001/health && break
+            sleep 2
+          done
+
+      - name: Entrenar y registrar
+        run: uv run taxi train
+
+      - name: Gate de promocion
+        run: uv run taxi promote
+
+      - name: Reporte de drift (enero vs julio, drift real)
+        run: uv run taxi drift
+
+      - name: Model card
+        run: uv run taxi model-card
+
+      - name: Subir artefactos de la corrida
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-${{ github.run_number }}
+          path: |
+            reports/
+            docs/model-card.md
+            data/raw/metadata.json
+          retention-days: 14
+
+      - name: Abrir issue si el nightly falla
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const titulo = `Nightly roto — ${new Date().toISOString().slice(0, 10)}`;
+            const existentes = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'nightly',
+              state: 'open',
+            });
+            if (existentes.data.length > 0) {
+              core.info('Ya hay un issue abierto de nightly; no se duplica.');
+              return;
+            }
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: titulo,
+              labels: ['nightly', 'bug'],
+              body: [
+                'El pipeline end-to-end del caso guia fallo.',
+                '',
+                `Corrida: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                '',
+                'Causas frecuentes:',
+                '- la NYC TLC republico o movio un parquet (revisar hashes en metadata.json)',
+                '- cambio de API en mlflow / prefect / evidently',
+                '- el gate de promocion rechaza por una regresion real de metrica',
+              ].join('\n'),
+            });

@@ -1,0 +1,437 @@
+{
+  "info": {
+    "name": "NYC Taxi Duration API (S05)",
+    "description": "Coleccion de la API de inferencia del curso de MLOps.\n\nContrato: sesiones/s05-deployment/api-contract.md\nCodigo: src/taxi/api/\n\nLevantar el servicio antes de correr la coleccion:\n    make serve\n\nCada request lleva tests de Postman, asi que 'Run collection' es una verificacion del contrato completo y no un click por endpoint.\n\nActualizada respecto a la version anterior: la clave del lote es 'viajes' (no 'trips'), los requests incluyen pickup_datetime y las respuestas verifican model_version.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "model_version",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Health (liveness)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "health"
+          ]
+        },
+        "description": "Responde 200 mientras el proceso este vivo, incluso sin modelo cargado. El campo model_loaded es el que debe consultar un readiness check."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test('reporta model_loaded', () => pm.expect(b).to.have.property('model_loaded'));",
+              "pm.test('reporta la version del modelo', () => pm.expect(b).to.have.property('model_version'));",
+              "if (b.model_loaded) { pm.collectionVariables.set('model_version', b.model_version); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Modelo (metadatos y features)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/modelo",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "modelo"
+          ]
+        },
+        "description": "Metadatos para una persona: nombre, version, URI y la lista de features que consume el modelo. Devuelve 503 si no hay modelo cargado."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 o 503', () => pm.expect([200, 503]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Predict (viaje corto)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        },
+        "description": "Prediccion individual. pickup_datetime va SIN zona horaria y en hora local de Nueva York, igual que los datos de la NYC TLC.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"PULocationID\": 43,\n  \"DOLocationID\": 238,\n  \"trip_distance\": 2.4,\n  \"pickup_datetime\": \"2023-05-15T08:30:00\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test('trae duration_min', () => pm.expect(b.duration_min).to.be.a('number'));",
+              "pm.test('trae model_version (trazabilidad)', () => pm.expect(b.model_version).to.be.a('string'));",
+              "pm.test('trae viaje_largo', () => pm.expect(b.viaje_largo).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Predict (viaje largo)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        },
+        "description": "Distancia grande en hora pico: se espera una duracion mayor.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"PULocationID\": 132,\n  \"DOLocationID\": 61,\n  \"trip_distance\": 18.5,\n  \"pickup_datetime\": \"2023-05-15T18:00:00\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "05 - Predict sin pickup_datetime (no reproducible)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        },
+        "description": "Valido, pero la API usara la hora ACTUAL en Nueva York. Como la hora es una feature del modelo, el mismo request devuelve duraciones distintas segun cuando se envie. En produccion, manda siempre pickup_datetime explicito.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"PULocationID\": 43,\n  \"DOLocationID\": 238,\n  \"trip_distance\": 2.4\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "06 - Predict batch (2 viajes)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/predict/batch",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict",
+            "batch"
+          ]
+        },
+        "description": "La clave es 'viajes', NO 'trips': el schema la valida y cualquier otro nombre devuelve 422. Entre 1 y 500 viajes.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"viajes\": [\n    {\n      \"PULocationID\": 43,\n      \"DOLocationID\": 238,\n      \"trip_distance\": 2.4,\n      \"pickup_datetime\": \"2023-05-15T08:30:00\"\n    },\n    {\n      \"PULocationID\": 161,\n      \"DOLocationID\": 236,\n      \"trip_distance\": 5.2,\n      \"pickup_datetime\": \"2023-05-15T09:00:00\"\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test('una prediccion por viaje', () => pm.expect(b.total).to.eql(b.predicciones.length));",
+              "pm.test('la latencia es la del lote completo', () =>",
+              "  pm.expect(b.predicciones.every(p => p.latencia_ms === b.latencia_ms)).to.be.true);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - 422: zona fuera de rango",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        },
+        "description": "Las taxi zones de la NYC TLC van de 1 a 265. 9999 no existe.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"PULocationID\": 9999,\n  \"DOLocationID\": 238,\n  \"trip_distance\": 2.4\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('422', () => pm.response.to.have.status(422));",
+              "const b = pm.response.json();",
+              "pm.test('explica el error del cliente', () => pm.expect(b.detalle_validacion).to.be.an('array'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - 422: campo desconocido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        },
+        "description": "PULocationId con 'i' minuscula. Con extra='forbid' el contrato responde 422 en lugar de predecir con un default silencioso.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"PULocationId\": 43,\n  \"DOLocationID\": 238,\n  \"trip_distance\": 2.4\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 - 422: pickup con zona horaria",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        },
+        "description": "Se rechaza el offset en lugar de convertirlo: quien manda '08:30Z' cree hablar de las 08:30 y el modelo entenderia 04:30.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"PULocationID\": 43,\n  \"DOLocationID\": 238,\n  \"trip_distance\": 2.4,\n  \"pickup_datetime\": \"2023-05-15T08:30:00Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - 422: lote vacio",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/predict/batch",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict",
+            "batch"
+          ]
+        },
+        "description": "El lote declara min_length=1 en el contrato.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"viajes\": []\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 - Metrics (Prometheus)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/metrics",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "metrics"
+          ]
+        },
+        "description": "Formato de exposicion de Prometheus. Es una sub-app ASGI montada, por eso no aparece en el esquema OpenAPI."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "pm.test('expone las metricas del servicio', () =>",
+              "  pm.expect(pm.response.text()).to.include('taxi_predicciones_total'));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
