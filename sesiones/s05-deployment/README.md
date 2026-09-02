@@ -188,9 +188,9 @@ Cuatro decisiones que conviene mirar en el archivo:
 2. **Rangos que coinciden con el contrato de datos de S02** (zonas 1-265,
    distancia 0-100 millas). Si el modelo nunca vio un valor, la API tampoco debe
    aceptarlo.
-3. **Request y response separados.** El repo anterior devolvía los datos de
-   entrada más la predicción. La respuesta de aquí lleva `model_name` y
-   `model_version`: es lo que hace **auditable** una predicción tres semanas
+3. **Request y response separados.** Lo fácil es devolver los datos de entrada
+   más la predicción; la respuesta de aquí lleva además `model_name` y
+   `model_version`, que es lo que hace **auditable** una predicción tres semanas
    después.
 4. **`@field_validator` (Pydantic v2), no `@validator` (v1).** El validador de
    `pickup_datetime` rechaza los timestamps con zona horaria en lugar de
@@ -227,12 +227,11 @@ Dos decisiones deliberadas del arranque:
 
 ### 3.3 La decisión central: cargar del registry, no de un archivo
 
-El repo anterior obtenía el modelo con un script `copy_model.py` que hacía
-`shutil.copytree` del directorio de un run hacia `deploy/web-service/model/`, y el
-`Dockerfile` hacía `COPY model/`. Había **dos** de esos scripts, encadenados entre
-módulos, y uno apuntaba a un directorio que ya no existe.
+El camino intuitivo es un script `copy_model.py` que haga `shutil.copytree` del
+directorio de un run hacia `deploy/web-service/model/`, y un `Dockerfile` con
+`COPY model/`. Es fácil de escribir y funciona el primer día.
 
-Las consecuencias no eran teóricas:
+Las consecuencias aparecen después:
 
 - el artefacto quedaba versionado por el sistema de archivos, no por el registry:
   nadie podía decir qué versión servía un contenedor;
@@ -294,9 +293,9 @@ Contrato completo, con códigos de respuesta y ejemplos:
 
 ### 3.5 Errores que no filtran el interior del servicio
 
-Tres endpoints del repo anterior devolvían al cliente `detail=f"Error: {str(e)}"`.
-Eso filtra rutas del filesystem, cadenas de conexión, nombres de columnas y trazas
-del ORM a cualquiera que sepa mandar un request malformado.
+El handler que se escribe sin pensar es `detail=f"Error: {str(e)}"`. Eso filtra
+rutas del filesystem, cadenas de conexión, nombres de columnas y trazas del ORM a
+cualquiera que sepa mandar un request malformado.
 
 La regla, implementada en [`main.py`](../../src/taxi/api/main.py):
 
