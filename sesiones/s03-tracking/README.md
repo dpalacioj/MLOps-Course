@@ -39,18 +39,50 @@ El entrenamiento **no vive aquí**: vive en
 notebooks exploran y narran; la lógica está en el paquete, que es lo que corre en
 CI y lo que S04 orquesta.
 
-| Notebook | Tramo | Qué se hace |
-|---|---|---|
-| [`01-sin-tracking.ipynb`](notebooks/01-sin-tracking.ipynb) | el dolor | tres entrenamientos, tres `print`, cinco preguntas sin respuesta |
-| [`02-tracking-con-mlflow.ipynb`](notebooks/02-tracking-con-mlflow.ipynb) | bloque A | params, métricas, tags, artifacts, autolog, `signature` y su enforcement |
-| [`03-hpo-y-registry.ipynb`](notebooks/03-hpo-y-registry.ipynb) | bloque B | Optuna con runs anidados, aliases, carga por alias, model card |
+## El recorrido
 
-### Antes de clase
+Las tres carpetas no son tres versiones de lo mismo. El script se corre en la
+terminal, el notebook explica lo que el script acaba de hacer, y los escenarios
+cambian dónde queda guardado. En clase se intercalan en este orden:
+
+| # | Se abre | Para qué |
+|---|---|---|
+| 1 | [`scripts/train-sin-mlflow.py`](scripts/train-sin-mlflow.py), y después [`notebooks/01`](notebooks/01-sin-tracking.ipynb) | cinco corridas, cinco `print` y las cinco preguntas que quedan sin responder |
+| 2 | la sección 2 de este README, `make mlflow`, y después [`scenarios/`](scenarios/) 1 y 2 | las cuatro piezas de MLflow, la UI abierta y vacía en el navegador, y dónde vive cada pieza; el escenario 3 se lee, no se ejecuta |
+| 3 | [`scripts/train-mlflow-basico.py`](scripts/train-mlflow-basico.py), y después [`notebooks/02`](notebooks/02-tracking-con-mlflow.ipynb) hasta la sección 3 | params, métricas, tags y artifacts, y comparar con `search_runs` en vez de a ojo |
+| 4 | [`notebooks/02`](notebooks/02-tracking-con-mlflow.ipynb), secciones 4, 5 y 7 | autolog y sus límites, `signature` y el fallo de enforcement en vivo, y el default `skops` |
+| 5 | [`notebooks/03`](notebooks/03-hpo-y-registry.ipynb), secciones 1 y 2 | Optuna con runs anidados. [`scripts/train-mlflow-completo.py`](scripts/train-mlflow-completo.py) es lo mismo en 60 líneas, para quien prefiera leer |
+| 6 | [`notebooks/03`](notebooks/03-hpo-y-registry.ipynb), secciones 3 a 6 | registrar, promover con tag y alias, cargar por alias y reproducir la métrica, y el contraejemplo de los stages |
+| 7 | [`notebooks/02`](notebooks/02-tracking-con-mlflow.ipynb) sección 6, [`notebooks/03`](notebooks/03-hpo-y-registry.ipynb) sección 7 y [`../../scripts/model_card.py`](../../scripts/model_card.py) | `mlflow.models.evaluate` y la model card generada desde el registry, no escrita a mano |
+| 8 | [`taller.md`](taller.md) | el entregable, sobre el proyecto propio |
+
+Los [`exercises/`](exercises/) no tienen un hueco fijo: son refuerzo para quien
+termine el taller antes, o para volver a ellos antes de avanzar el proyecto.
+
+**El script va primero porque hace visible el delta.** Entre `train-sin-mlflow.py` y
+`train-mlflow-basico.py` cambian tres líneas, y con esas tres líneas tres de las
+cinco preguntas ya tienen respuesta. Eso se ve en una terminal y se pierde en un
+notebook de veinte celdas. El notebook viene después, a explicar por qué esas tres
+líneas y no otras.
+
+Los escenarios son el otro eje, y por eso no encajan en la progresión: los notebooks
+enseñan **qué** se registra, los escenarios **dónde** queda registrado. Ahí la
+conversación es de infraestructura, así que usan Iris y no el caso guía.
+
+## Antes de clase
 
 ```bash
 make data      # materializa las particiones del caso guia
 make mlflow    # tracking server en http://127.0.0.1:5001
 ```
+
+`make mlflow` ocupa la terminal y no la suelta: deja el servidor corriendo en primer
+plano. Abre otra para trabajar, y **abre <http://127.0.0.1:5001> en el navegador**.
+Eso es la UI de MLflow, y de aquí en adelante queda abierta en una pestaña toda la
+sesión. Al principio está vacía, y tiene que estarlo: todavía no hay ningún run.
+
+Si ya habías corrido experimentos de prueba, bórralos antes de empezar. Una UI con
+300 runs viejos hace ilegible el paso 3 del recorrido.
 
 > **Puerto 5001 en todo el curso, y esta es la única vez que se explica:** en macOS,
 > AirPlay Receiver ocupa el puerto por defecto de `mlflow server` y responde un

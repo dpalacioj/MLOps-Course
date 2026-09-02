@@ -37,6 +37,53 @@ entregable. El taller los evalúa uno por uno.
 
 ---
 
+## El recorrido
+
+Los dos notebooks no se leen de corrido. El
+[notebook 01](notebooks/01-drift-real.ipynb) se abre **cuatro veces**, intercalado con
+las secciones de este README, porque cada tramo necesita el concepto antes del código.
+Este es el orden:
+
+| # | Se abre | Para qué |
+|---|---|---|
+| 1 | secciones 1 y 2 de este README | el modelo de enero sirviendo julio, y la taxonomía: cuatro fenómenos distintos, no uno |
+| 2 | [`notebooks/01`](notebooks/01-drift-real.ipynb), pasos 1 a 3 | mirar las distribuciones antes de medirlas, y medir a mano con scipy: KS, chi cuadrado, PSI y Jensen-Shannon |
+| 3 | [`notebooks/01`](notebooks/01-drift-real.ipynb) paso 4, con el [ADR 003](../../docs/adr/003-umbrales-de-drift.md) | por qué `p < 0.05` falla cuando cambia la n, y cómo se calibra el umbral que sí sirve |
+| 4 | [`notebooks/01`](notebooks/01-drift-real.ipynb) paso 5, y `src/taxi/monitoring/check_drift.py` | Evidently 0.7 y el check que falla de verdad, con sus tres exit codes |
+| 5 | [`notebooks/02`](notebooks/02-observabilidad-del-servicio.ipynb) | Prometheus: `Counter`, `Histogram`, `Gauge`, y de dónde sale el p95 |
+| 6 | [`src/taxi/api/metricas.py`](../../src/taxi/api/metricas.py) y [`observabilidad/`](../../observabilidad/) | la instrumentación que ya corre en la API, y el dashboard provisionado |
+| 7 | sección 7 de este README, [`gobernanza.md`](gobernanza.md) y [`notebooks/01`](notebooks/01-drift-real.ipynb) pasos 6 y 7 | cuándo reentrenar, y la clasificación bajo el AI Act |
+| 8 | [`taller.md`](taller.md), con las dos [`plantillas/`](plantillas/) | el entregable: la política de reentrenamiento y el registro de riesgos |
+
+**El notebook 01 va después de la teoría, no antes.** Medir drift es fácil; decidir si
+el número que salió significa algo es el trabajo real, y para eso hace falta primero la
+taxonomía y luego la calibración. Un notebook que arranca con `ks_2samp` produce un
+p-valor que nadie sabe interpretar.
+
+## Antes de clase
+
+```bash
+uv run taxi data   # las 7 particiones, para no depender de la red del aula
+make up            # el stack completo, e imprime las direcciones al terminar
+```
+
+`make up` levanta más cosas de las que usa esta sesión y te imprime todas las
+direcciones. Las tres que hacen falta aquí, en el navegador:
+
+| Dirección | Qué es | Se usa en |
+|---|---|---|
+| <http://127.0.0.1:8000/metrics> | las métricas crudas que expone la API | paso 5 |
+| <http://127.0.0.1:9090> | Prometheus: donde se consultan con PromQL | paso 5 |
+| <http://127.0.0.1:3000> | Grafana (`admin` / `admin`), con el dashboard *API de inferencia* ya provisionado | paso 6 |
+
+Al cerrar, `make down`.
+
+El dashboard de Grafana **no se construye a mano**: viene de
+[`observabilidad/grafana/`](../../observabilidad/) y aparece solo. Si está vacío, es
+que nadie ha llamado a la API todavía — no que la instrumentación esté rota.
+
+---
+
 ## 1. El problema: un modelo entrenado en enero sirviendo julio
 
 El caso guía del curso entrena con **2023-01, 2023-02 y 2023-03**. Las particiones

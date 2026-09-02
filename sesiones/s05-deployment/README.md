@@ -31,7 +31,7 @@ Al terminar la sesión, cada estudiante puede:
 
 | Ruta | Qué hay |
 |---|---|
-| [`intro-dockers/`](intro-dockers/) | Primer contacto con contenedores: la misma app en local y en Docker. 15 min |
+| [`intro-dockers/`](intro-dockers/) | Primer contacto con contenedores: la misma app en local y en Docker |
 | [`api-contract.md`](api-contract.md) | El contrato de la API: endpoints, códigos, errores y ejemplos |
 | [`postman/`](postman/) | Colección y entorno de Postman para el taller |
 | [`taller.md`](taller.md) | Enunciado del taller, con criterios de aceptación medibles |
@@ -49,6 +49,41 @@ carpeta lo ejecuta, lo prueba y lo empaqueta.
 | [`src/taxi/flows/batch.py`](../../src/taxi/flows/batch.py) | La misma inferencia, en modo batch, con trazabilidad por fila |
 | [`Dockerfile`](../../Dockerfile) · [`.dockerignore`](../../.dockerignore) · [`docker-compose.yml`](../../docker-compose.yml) | El empaquetado y el stack local |
 | [`tests/api/`](../../tests/api/) | 4 archivos de tests que corren sin MLflow y sin red |
+
+---
+
+## El recorrido
+
+**Las secciones de este README no van en el orden en que se dictan**, y conviene
+saberlo antes de leer. El contenedor va antes que la API: empaquetar algo que ya
+funciona (la sección 4) enseña más que empaquetar algo que todavía no existe. Este es
+el orden de la clase:
+
+| # | Se abre | Para qué |
+|---|---|---|
+| 1 | sección 1 de este README | las dos formas de romper un despliegue sin que nada avise |
+| 2 | [`intro-dockers/`](intro-dockers/) | la misma app en local y en un contenedor, para ver qué cambia y qué no |
+| 3 | sección 4 de este README, con el [`Dockerfile`](../../Dockerfile) de la raíz al lado del de `intro-dockers` | el Dockerfile real, el tag mutable contra el digest inmutable, y el stack de Compose |
+| 4 | [`api-contract.md`](api-contract.md) y la sección 3 de este README | el contrato, `src/taxi/api/`, la carga por alias, los endpoints operativos y la traducción de errores |
+| 5 | sección 5 de este README | la misma inferencia en batch, con trazabilidad por fila |
+| 6 | secciones 2 y 6 de este README | recién ahora la decisión batch / online / streaming, y qué alternativas había |
+| 7 | [`taller.md`](taller.md), con la colección de [`postman/`](postman/) | el entregable |
+
+**La decisión va al final, en el paso 6, y es deliberado.** Elegir entre batch, online
+y streaming antes de haber desplegado las dos primeras es elegir con una tabla en vez
+de con experiencia.
+
+## Antes de clase
+
+```bash
+make data      # las particiones del caso guia
+make mlflow    # el registry de S03: la API carga el modelo por alias
+```
+
+Docker Desktop tiene que estar corriendo antes del paso 2, y hace falta un modelo con
+alias `champion` en el registry — si no, la API arranca pero no sirve. Con el stack de
+Compose (`make up`), la API queda en <http://127.0.0.1:8000/docs>, que es la UI de
+FastAPI y es donde se prueban los endpoints sin escribir `curl`.
 
 ---
 

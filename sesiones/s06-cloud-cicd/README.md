@@ -67,6 +67,32 @@ corre.
 
 ---
 
+## El recorrido
+
+El grueso de esta sesión no está en este README: está en
+[`cicd.md`](cicd.md), que es donde viven los tres workflows y el gate. Este archivo
+da el porqué y el contexto de la nube. El orden:
+
+| # | Se abre | Para qué |
+|---|---|---|
+| 1 | sección 1 de este README | desplegar a mano, y lo que pasa al automatizar el despliegue de algo peor |
+| 2 | [`cicd.md`](cicd.md), la parte del gate, con [`scripts/promote.py`](../../scripts/promote.py) | las tres preguntas del gate y por qué la política se escribe como función pura |
+| 3 | [`scripts/promote.py`](../../scripts/promote.py) en vivo, y la sección 6 de este README | el gate rechazando y aceptando de verdad, con sus exit codes, el tag antes del alias, y el rollback en una imagen |
+| 4 | [`cicd.md`](cicd.md), los tres workflows, con [`.github/workflows/`](../../.github/workflows/) | qué corre en cada uno, y por qué no son uno solo |
+| 5 | [`cicd.md`](cicd.md), la parte de ambientes | `dev` / `staging` / `prod`, la aprobación manual y el comentario automático en el PR |
+| 6 | secciones 2 y 3 de este README, y [`guia-aws.md`](guia-aws.md) | la traducción local → nube, IAM con privilegio mínimo, y la demo del instructor |
+| 7 | secciones 4 y 5 de este README, con [`scripts/teardown.sh`](scripts/teardown.sh) | leer el costo en la consola, y destruir todo lo creado |
+| 8 | [`taller.md`](taller.md) | el entregable, que se aprueba **sin tocar la nube** |
+
+**El gate va antes de los workflows.** Un workflow es la mecánica; el gate es la
+decisión. Enseñar primero el YAML produce estudiantes que saben automatizar una
+promoción que no deberían estar haciendo.
+
+**El paso 7 no es opcional.** En la nube la última operación del día es la que decide
+la factura del mes, y `teardown.sh` es parte del ejercicio, no limpieza.
+
+---
+
 ## 1. El dolor: desplegar a mano, y automatizar el despliegue de algo peor
 
 No se abre la consola de AWS hasta el final de este bloque.
