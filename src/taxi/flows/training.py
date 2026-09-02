@@ -397,10 +397,9 @@ def entrenar(
     """Entrena el estimador y lo loguea en MLflow con signature e input_example.
 
     Recibe tambien `df_valid` porque el early stopping necesita un `eval_set`:
-    declarar `early_stopping_rounds` sin pasar datos de validacion es lo que
-    hacia el pipeline anterior, donde ademas
-    `early_stopping_rounds=50 > num_boost_round=30` volvia el mecanismo
-    inoperante. El conjunto de validacion se usa para **parar**, no para medir el
+    declarar `early_stopping_rounds` sin pasar datos de validacion deja el
+    mecanismo inoperante, igual que declarar una paciencia mayor que el numero de
+    rondas. El conjunto de validacion se usa para **parar**, no para medir el
     resultado final: eso es `evaluar`.
 
     La signature es lo que permite detectar train/serve skew antes de produccion:

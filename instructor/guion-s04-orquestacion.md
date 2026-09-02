@@ -680,8 +680,8 @@ Mostrar la consulta 4 (trazabilidad de una predicción concreta) y la 6
 
 **Qué explicar:** "Cada fila guarda la versión del modelo que la produjo. Sin eso
 no se puede responder qué predicciones hay que revisar tras un rollback. Y noten
-qué **no** guardamos: un `stage: 'Production'` literal, que era lo que hacía el
-batch anterior en cada fila. Un literal que miente en cuanto el modelo cambia."
+qué **no** guardamos: un `stage: 'Production'` literal, que es lo más fácil de
+escribir y miente en cuanto el modelo cambia."
 
 ---
 

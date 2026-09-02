@@ -80,7 +80,7 @@ logger = logging.getLogger(__name__)
 RONDAS_BOOST: Final[int] = 500
 #: Rondas consecutivas sin mejora en validacion antes de detener.
 #: INVARIANTE: debe ser bastante menor que RONDAS_BOOST. Si no lo es, el early
-#: stopping es decorativo (era el bug del pipeline anterior: 50 sobre 30).
+#: stopping es decorativo: con 50 sobre 30 rondas no puede dispararse nunca.
 RONDAS_EARLY_STOPPING: Final[int] = 50
 
 PARAMS_XGBOOST: Final[dict[str, Any]] = {
@@ -273,8 +273,7 @@ def ajustar(
     if df_valid is None:
         raise ValueError(
             "El modelo tiene early_stopping_rounds pero no se paso df_valid. "
-            "Sin eval_set el early stopping no se dispara nunca (era el bug del "
-            "pipeline anterior)."
+            "Sin eval_set el early stopping no se dispara nunca."
         )
 
     a_dicts = pipeline.named_steps["diccionarios"]

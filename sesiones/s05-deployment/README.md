@@ -268,7 +268,7 @@ directorio de un run hacia `deploy/web-service/model/`, y un `Dockerfile` con
 
 Las consecuencias aparecen después:
 
-- el artefacto quedaba versionado por el sistema de archivos, no por el registry:
+- el artefacto queda versionado por el sistema de archivos, no por el registry:
   nadie podía decir qué versión servía un contenedor;
 - cambiar de modelo exigía **reconstruir la imagen**;
 - el `run_id` de origen acabó *hardcodeado*, así que el paso solo funcionaba en la
@@ -461,9 +461,9 @@ cliente en una fecha dada. La trazabilidad datos → modelo → predicción es l
 hace auditable el sistema; sin ella hay un modelo, no un sistema.
 
 Nótese qué se persiste: **el alias consultado y la versión que ese alias resolvía
-en el momento de la corrida**. El batch anterior escribía `'stage': 'Production'`,
-un literal que miente en cuanto el modelo cambia de estado y que además viene del
-vocabulario de stages, deprecado en MLflow (ver
+en el momento de la corrida**. Lo que NO se persiste es un `'stage': 'Production'`
+literal: miente en cuanto el modelo cambia de estado y además viene del vocabulario
+de stages, deprecado en MLflow (ver
 [ADR 002](../../docs/adr/002-aliases-en-vez-de-stages.md)).
 
 Consultas listas para usar:

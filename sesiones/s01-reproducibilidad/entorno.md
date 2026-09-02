@@ -6,10 +6,9 @@
 > salida transcrita, es la salida real.
 > Referencia oficial: [docs.astral.sh/uv](https://docs.astral.sh/uv/).
 
-Este documento reemplaza a `02-python-envs.md`, `02.1-uv-conda-venv.md`,
-`03-dependency-management.md`, `Resumen.md` y `referencia-uv/README.md` del
-material anterior. Los cinco explicaban `uv`; ninguno explicaba **qué garantiza**
-cada archivo, que es lo único que hay que entender de verdad.
+Este es el único documento de entornos y dependencias de la sesión. La pregunta
+que organiza todo lo que sigue no es "qué comandos tiene `uv`", sino **qué
+garantiza cada archivo**, que es lo único que hay que entender de verdad.
 
 ---
 
@@ -163,12 +162,12 @@ sorprende la primera vez.
 | `uv lock --upgrade-package <pkg>` | no | sí (sube solo ese) | — | actualizar una dependencia de forma controlada |
 | `uv run <cmd>` | no | no | — | ejecutar cualquier cosa en el entorno del proyecto |
 
-> **`uv update` no existe.** El material anterior del curso lo documentaba dos
-> veces, incluida su tabla resumen. Compruébalo: `uv update pandas` responde
+> **`uv update` no existe**, aunque es lo primero que uno escribe por analogía
+> con otros gestores. Compruébalo: `uv update pandas` responde
 > `error: unrecognized subcommand 'update'`. Lo correcto es
-> `uv lock --upgrade-package pandas && uv sync`. Es un buen ejemplo de por qué este
-> material declara fecha y versión: un comando inventado en un documento sin fecha
-> es indistinguible de uno que existía y se quitó.
+> `uv lock --upgrade-package pandas && uv sync`. Y es un buen ejemplo de por qué
+> este material declara fecha y versión: en un documento sin fecha, un comando
+> inventado es indistinguible de uno que existía y se quitó.
 
 ---
 
@@ -266,7 +265,7 @@ uv python pin 3.11         # escribe .python-version en el proyecto
 Este repositorio ya trae `.python-version` con `3.11`, así que `uv` usa esa versión
 sin que hagas nada.
 
-**Por qué `uv python install` y no `pyenv`, como decía el material anterior.**
+**Por qué `uv python install` y no `pyenv`.**
 `pyenv` y `pyenv-win` funcionan y son buenas herramientas; el problema es el costo
 de instalación en un aula. La ruta de `pyenv-win` era: descargar un `.ps1` crudo de
 GitHub con `Invoke-WebRequest`, ejecutarlo contra una `ExecutionPolicy` que por
@@ -289,9 +288,8 @@ lo que se evalúa en el ADR del taller.
 
 ### Poetry — **no es legado**
 
-Conviene decirlo claro porque el material anterior lo trataba como "la alternativa
-que también incluimos" y hoy circula la idea contraria, de que está abandonado. No
-lo está: la línea 2.x está activa (2.4.1, 9 de mayo de 2026). Poetry 2.0 adoptó
+Conviene decirlo claro porque circula la idea de que está abandonado. No lo está:
+la línea 2.x está activa (2.4.1, 9 de mayo de 2026). Poetry 2.0 adoptó
 `[project]` de PEP 621, así que la diferencia sintáctica con `uv` se redujo mucho.
 
 - **Elige Poetry** si ya lo tienes en producción, si publicas paquetes a PyPI

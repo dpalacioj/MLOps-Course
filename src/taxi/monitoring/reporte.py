@@ -9,9 +9,9 @@ Tres cosas que no deben vivir dentro de la logica de deteccion:
    en ``report.as_dict()["metrics"][0]["result"]["drift_by_columns"]``; en 0.7 el
    metodo se llama ``dict()`` y devuelve
    ``{"metrics": [...], "tests": [...]}`` con la columna dentro de
-   ``config["column"]``. El material anterior parseaba la forma vieja **en el
-   snippet que el estudiante copiaba**, asi que la actualizacion de la libreria
-   rompio el material en dos lugares a la vez.
+   ``config["column"]``. Parsear esa estructura en cada sitio donde se necesita
+   —incluido el snippet que el estudiante copia— significa que la siguiente
+   version de la libreria rompe varios lugares a la vez.
 
    Aqui la traduccion ocurre en una sola funcion (``desde_evidently``). Si sale
    Evidently 0.8 y vuelve a mover el dict, se cambia **un archivo** y ni el check

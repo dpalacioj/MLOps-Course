@@ -216,7 +216,7 @@ comparar entre features y entre periodos, la distancia de Jensen-Shannon, acotad
 
 ### 3.2 La trampa: `p < 0.05` es un criterio malo con n grande
 
-Esto es lo que hacía el material anterior de esta sesión, y es incorrecto:
+Es el criterio que aparece en casi cualquier tutorial de drift, y es incorrecto:
 
 ```python
 # ANTI-PATTERN. No usar.
@@ -421,10 +421,9 @@ flowchart LR
 
 Esa es la lección de diseño de la sesión, y no es sobre monitoreo: **depende de la
 interfaz que controlas, no de la que controla tu proveedor**. Si sale Evidently 0.8 y
-vuelve a mover el formato, se cambia un archivo. El material anterior tenía el
-parsing del dict copiado en el snippet que el estudiante pegaba en su notebook, así
-que la actualización de la librería rompió el material y todos los proyectos a la
-vez.
+vuelve a mover el formato, se cambia un archivo. Con el parsing del dict copiado
+en cada snippet que el estudiante pega en su notebook, la siguiente versión de la
+librería rompe el material y todos los proyectos a la vez.
 
 ---
 
@@ -568,9 +567,9 @@ Artefactos en `reports/`:
 - `drift_<referencia>__vs__<actual>.html` — el reporte de Evidently;
 - `drift_<referencia>__vs__<actual>.json` — el resultado que consume el CI.
 
-El nombre lleva las particiones comparadas a propósito. El material anterior escribía
-`drift_report.html` y lo sobreescribía en cada corrida: no se podía saber qué
-comparaba ni contrastarlo con la corrida anterior.
+El nombre lleva las particiones comparadas a propósito. Un `drift_report.html`
+fijo se sobreescribe en cada corrida: deja de poder saberse qué comparaba, y no
+hay con qué contrastar la corrida anterior.
 
 **Exit codes:** `0` sin alerta · `1` se superó el umbral · `2` no se pudo evaluar. El
 `2` existe porque "no pude medir" no es "todo bien", y un pipeline que los confunde

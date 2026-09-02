@@ -86,8 +86,8 @@ TIPOS_CONFIABLES = [
 #: cardinalidad, no de lo que diga este comentario.
 #:
 #: Si activas early stopping, la paciencia tiene que ser MUCHO menor que las
-#: rondas. El pipeline anterior del curso declaraba paciencia 50 y entrenaba 30
-#: rondas: el early stopping no podia dispararse nunca y nadie lo habia notado.
+#: rondas. Declarar paciencia 50 y entrenar 30 rondas deja el mecanismo inerte:
+#: no puede dispararse nunca, el codigo se ve correcto y nada avisa.
 RONDAS_EN_CLASE = 150
 
 

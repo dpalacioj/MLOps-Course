@@ -157,9 +157,8 @@ contrato de datos, y es la sesión 2.
 Tres razones para quitar los `outputs` antes de commitear, en orden de gravedad:
 
 1. **Filtran información del entorno de quien ejecutó.** Rutas absolutas, nombres de
-   usuario, ocasionalmente tokens impresos por accidente. En el material anterior de
-   este curso, los `outputs` de tres notebooks contenían la ruta del disco de la
-   autora original.
+   usuario, ocasionalmente tokens impresos por accidente. Basta un notebook
+   commiteado con sus salidas para publicar la ruta del disco de quien lo corrió.
 2. **Hacen el diff ilegible.** Un `output` es JSON con base64. Cambiar una celda de
    texto produce un diff de 400 líneas y el PR no se puede revisar.
 3. **Engordan el repositorio.** El notebook `01-panorama-mlops.ipynb` pesaba 175 KB
@@ -347,8 +346,8 @@ Tres reglas para los dos casos:
 1. **`--locked`** (o `poetry install` con `poetry.lock` commiteado). Si el CI puede
    resolver dependencias por su cuenta, no está probando tu entorno.
 2. **Sin `continue-on-error` y sin `|| echo`.** Si un paso no puede fallar, bórralo.
-   Las plantillas del material anterior traían `continue-on-error: true` en el `step`
-   de lint, que es exactamente el mismo error.
+   El caso típico es un `continue-on-error: true` en el `step` de lint: el CI sale
+   verde y el lint no significa nada.
 3. **Rápido.** Por debajo de cinco minutos, o nadie lo espera y todo el mundo
    mergea sin mirar. El `cache` de `setup-uv` es lo que lo consigue.
 

@@ -62,12 +62,12 @@ def test_la_division_es_temporal_y_hacia_adelante() -> None:
 # Hiperparametros
 # =============================================================================
 def test_early_stopping_tiene_margen_para_dispararse() -> None:
-    """EL BUG DEL PIPELINE ANTERIOR.
+    """El early stopping tiene que poder dispararse.
 
-    Tenia `early_stopping_rounds=50` con `num_boost_round=30`: el entrenamiento
-    terminaba antes de poder acumular 50 rondas sin mejora, asi que el early
-    stopping no se activaba nunca. El codigo se veia correcto y la constante
-    estaba ahi para tranquilizar a quien lo leyera.
+    Con `early_stopping_rounds=50` y `num_boost_round=30` el entrenamiento termina
+    antes de acumular 50 rondas sin mejora, asi que el mecanismo no se activa
+    nunca. El codigo se ve correcto y la constante tranquiliza a quien lo lee: es
+    un fallo silencioso, y por eso tiene test.
     """
     assert train.RONDAS_EARLY_STOPPING < train.RONDAS_BOOST / 2
     assert train.PARAMS_XGBOOST["n_estimators"] == train.RONDAS_BOOST

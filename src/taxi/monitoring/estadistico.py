@@ -4,7 +4,8 @@ Problema que resuelve
 ---------------------
 Dos problemas, uno tecnico y uno pedagogico.
 
-**El tecnico.** El material anterior resolvia el drift con una sola linea:
+**El tecnico.** La forma corta de "resolver" el drift, y la que aparece en casi
+cualquier tutorial, es una linea:
 
     drift = "DRIFT DETECTADO" if p_value < 0.05 else "Sin drift"
 
