@@ -1,0 +1,891 @@
+<title>Cabina S03</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<style>
+  /* ---------- tokens: light es la definicion completa ---------- */
+  :root {
+    --ground:      #EDEEEA;
+    --card:        #FBFBF9;
+    --card-2:      #F2F3EF;
+    --line:        #D3D6CF;
+    --line-soft:   #E2E4DE;
+    --ink:         #15202B;
+    --ink-2:       #495A66;
+    --ink-3:       #7C8B93;
+    --amber:       #A65E10;
+    --amber-soft:  #F2E3CE;
+    --teal:        #1F6B5E;
+    --teal-soft:   #D6E7E1;
+    --red:         #A33622;
+    --red-soft:    #F3DCD6;
+    --lamp-off:    #C6CAC3;
+    --shadow:      0 1px 2px rgba(21,32,43,.06), 0 8px 24px -12px rgba(21,32,43,.18);
+    --focus:       #A65E10;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:     #101720;
+      --card:       #18212C;
+      --card-2:     #1E2833;
+      --line:       #2C3946;
+      --line-soft:  #232E3A;
+      --ink:        #E6EAED;
+      --ink-2:      #9DAEB9;
+      --ink-3:      #6E7F8B;
+      --amber:      #E9A445;
+      --amber-soft: #33291A;
+      --teal:       #62C3AE;
+      --teal-soft:  #17302C;
+      --red:        #E2765C;
+      --red-soft:   #331F1A;
+      --lamp-off:   #33414E;
+      --shadow:     0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+      --focus:      #E9A445;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:     #101720;
+    --card:       #18212C;
+    --card-2:     #1E2833;
+    --line:       #2C3946;
+    --line-soft:  #232E3A;
+    --ink:        #E6EAED;
+    --ink-2:      #9DAEB9;
+    --ink-3:      #6E7F8B;
+    --amber:      #E9A445;
+    --amber-soft: #33291A;
+    --teal:       #62C3AE;
+    --teal-soft:  #17302C;
+    --red:        #E2765C;
+    --red-soft:   #331F1A;
+    --lamp-off:   #33414E;
+    --shadow:     0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+    --focus:      #E9A445;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .lbl {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  /* ---------- barra superior: estado siempre visible ---------- */
+  .bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+    box-shadow: var(--shadow);
+  }
+  .bar-in {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    margin-right: auto;
+  }
+  .brand b {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+  }
+
+  .lamps { display: flex; gap: 7px; flex-wrap: wrap; }
+  .lamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 11px 5px 9px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--card-2);
+    color: var(--ink-2);
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .02em;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .lamp .bulb {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--lamp-off);
+    flex: none;
+  }
+  .lamp[data-on="1"] { border-color: var(--teal); color: var(--teal); background: var(--teal-soft); }
+  .lamp[data-on="1"] .bulb { background: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 22%, transparent); }
+  .lamp[data-on="0"][data-warn="1"] { border-color: var(--amber); color: var(--amber); background: var(--amber-soft); }
+  .lamp:focus-visible, .btn:focus-visible, .cmd:focus-visible, .step:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  /* ---------- riel de bloques ---------- */
+  .rail {
+    background: var(--card-2);
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+  }
+  .rail-in {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 8px 20px;
+    display: flex;
+    gap: 4px;
+    min-width: max-content;
+  }
+  .tab {
+    border: 1px solid transparent;
+    background: none;
+    color: var(--ink-3);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .04em;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .tab:hover { color: var(--ink); background: var(--card); }
+  .tab[aria-current="true"] {
+    background: var(--ink);
+    color: var(--ground);
+    border-color: var(--ink);
+  }
+  .tab.pause { color: var(--amber); }
+  .tab.pause[aria-current="true"] { background: var(--amber); color: var(--card); border-color: var(--amber); }
+
+  /* ---------- cuerpo ---------- */
+  main {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 26px 20px 120px;
+  }
+
+  .head { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 4px; }
+  .head .n {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--line);
+    font-variant-numeric: tabular-nums;
+    padding-top: 4px;
+  }
+  h1 {
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -.022em;
+    line-height: 1.1;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .head .meta { display: flex; gap: 14px; align-items: center; margin-top: 7px; flex-wrap: wrap; }
+  .chip {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: .06em;
+    padding: 3px 8px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    color: var(--ink-2);
+    text-transform: uppercase;
+  }
+  .chip.screen { border-color: var(--amber); color: var(--amber); background: var(--amber-soft); }
+
+  /* ---------- estado de entrada y salida ---------- */
+  .gates { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin: 22px 0 24px; }
+  @media (max-width: 760px) { .gates { grid-template-columns: 1fr; } }
+  .gate {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--ink-3);
+    border-radius: 3px;
+    background: var(--card);
+    padding: 12px 14px;
+  }
+  .gate.out { border-left-color: var(--amber); }
+  .gate ul { margin: 8px 0 0; padding-left: 17px; }
+  .gate li { font-size: 14px; color: var(--ink-2); margin-bottom: 3px; }
+  .gate li b { color: var(--ink); font-weight: 600; }
+  .gate code { font-family: "JetBrains Mono", monospace; font-size: 12.5px; color: var(--ink); }
+
+  /* ---------- pasos ---------- */
+  .steps { display: flex; flex-direction: column; gap: 2px; }
+  .step {
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+    padding: 13px 14px;
+    background: var(--card);
+    border: 1px solid var(--line-soft);
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .step:hover { border-color: var(--line); }
+  .step[data-done="1"] { opacity: .42; }
+  .step[data-done="1"] .box { background: var(--teal); border-color: var(--teal); }
+  .step[data-done="1"] .box::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--card);
+    clip-path: polygon(20% 52%, 42% 72%, 80% 26%, 88% 36%, 44% 86%, 12% 60%);
+  }
+  @media (max-width: 860px) {
+    .step { grid-template-columns: 26px 1fr; }
+    .step > .col { grid-column: 2; }
+  }
+  .box {
+    position: relative;
+    width: 17px; height: 17px;
+    border: 1.5px solid var(--line);
+    border-radius: 2px;
+    margin-top: 2px;
+    flex: none;
+  }
+  .col { min-width: 0; }
+  .col .lbl { display: block; margin-bottom: 5px; }
+
+  .cmd {
+    display: block;
+    width: 100%;
+    text-align: left;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink);
+    background: var(--card-2);
+    border: 1px solid var(--line-soft);
+    border-radius: 3px;
+    padding: 7px 9px;
+    cursor: copy;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .cmd:hover { border-color: var(--amber); }
+  .cmd.copied { border-color: var(--teal); background: var(--teal-soft); }
+  .cmd + .cmd { margin-top: 4px; }
+  .term {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    padding: 2px 5px;
+    border-radius: 2px;
+    margin-left: 6px;
+    vertical-align: 2px;
+  }
+  .t1 { background: var(--red-soft); color: var(--red); }
+  .t2 { background: var(--teal-soft); color: var(--teal); }
+  .t3 { background: var(--amber-soft); color: var(--amber); }
+
+  .expect, .ask, .say { font-size: 14px; color: var(--ink-2); }
+  .where {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--ink-3);
+    margin-top: 5px;
+    word-break: break-word;
+  }
+  .where code { font-size: 11px; color: var(--ink-2); }
+  .expect code {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12.5px;
+    color: var(--ink);
+    background: var(--card-2);
+    padding: 1px 4px;
+    border-radius: 2px;
+  }
+  .ask { color: var(--ink); font-weight: 500; }
+  .note {
+    grid-column: 2 / -1;
+    font-size: 13px;
+    color: var(--ink-3);
+    border-left: 2px solid var(--line);
+    padding-left: 10px;
+    margin-top: 4px;
+  }
+  @media (max-width: 860px) { .note { grid-column: 2; } }
+  .note b { color: var(--amber); font-weight: 600; }
+
+  /* ---------- pie de navegacion ---------- */
+  .foot {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 20;
+    background: var(--card);
+    border-top: 1px solid var(--line);
+  }
+  .foot-in {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .btn {
+    font-family: "Archivo", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--card-2);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 13px;
+    cursor: pointer;
+  }
+  .btn:hover { border-color: var(--ink-3); }
+  .btn.primary { background: var(--ink); color: var(--ground); border-color: var(--ink); }
+  .next { margin-left: auto; text-align: right; min-width: 0; }
+  .next .lbl { display: block; }
+  .next b { font-size: 13.5px; font-weight: 600; }
+  .keys {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: .02em;
+  }
+  .keys kbd {
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    padding: 1px 4px;
+    background: var(--card-2);
+  }
+
+  /* ---------- panel de errores ---------- */
+  .scrim {
+    position: fixed; inset: 0; z-index: 30;
+    background: rgba(8,12,17,.5);
+    display: none;
+  }
+  .scrim[data-open="1"] { display: block; }
+  .panel {
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: min(620px, 100%);
+    background: var(--card);
+    border-left: 1px solid var(--line);
+    overflow-y: auto;
+    padding: 22px 24px 40px;
+  }
+  .panel h2 { font-size: 19px; font-weight: 700; margin: 0 0 4px; letter-spacing: -.015em; }
+  .panel p { font-size: 14px; color: var(--ink-2); margin: 0 0 18px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  th { font-size: 10.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  td { font-size: 13.5px; color: var(--ink-2); }
+  td:first-child { color: var(--ink); }
+  td code, th code { font-family: "JetBrains Mono", monospace; font-size: 12px; }
+  .close {
+    position: absolute; top: 16px; right: 20px;
+    background: none; border: 0; cursor: pointer;
+    font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink-3);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .step, .cmd, .lamp, .tab, .btn { transition: border-color .12s, background .12s, opacity .12s, color .12s; }
+  }
+</style>
+
+<div class="bar">
+  <div class="bar-in">
+    <div class="brand">
+      <b>Cabina S03</b>
+      <span class="lbl">tracking y registry</span>
+    </div>
+    <div class="lamps" id="lamps"></div>
+  </div>
+</div>
+
+<div class="rail"><div class="rail-in" id="rail"></div></div>
+
+<main id="main"></main>
+
+<div class="foot">
+  <div class="foot-in">
+    <button class="btn" id="prev">← anterior</button>
+    <button class="btn primary" id="next">siguiente →</button>
+    <span class="keys"><kbd>←</kbd> <kbd>→</kbd> bloque · <kbd>E</kbd> errores · <kbd>R</kbd> reiniciar marcas</span>
+    <div class="next">
+      <span class="lbl">luego</span>
+      <b id="nextname">—</b>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim" data-open="0">
+  <div class="panel" role="dialog" aria-label="Errores frecuentes">
+    <button class="close" id="closepanel">cerrar ✕</button>
+    <h2>Cuando algo se rompe</h2>
+    <p>El síntoma que te dicen en voz alta, y la causa que lo explica el 90 % de las veces.</p>
+    <table>
+      <thead><tr><th>Síntoma</th><th>Causa</th></tr></thead>
+      <tbody id="errs"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const LAMPS = [
+  { id: "srv",  txt: "servidor :5001", warn: true },
+  { id: "db",   txt: "mlflow.db limpio", warn: true },
+  { id: "auto", txt: "autolog apagado", warn: true },
+  { id: "hpo",  txt: "hpo lanzado", warn: false },
+  { id: "champ",txt: "@champion existe", warn: false }
+];
+
+const ERRS = [
+  ["<code>HTTP 403</code> al conectar", "apuntan al puerto por defecto de MLflow, que AirPlay ocupa en macOS"],
+  ["<code>RestException</code> al registrar", "el servidor no tiene backend de base de datos: sin eso no hay registry"],
+  ["“no veo mi run”", "<code>set_experiment</code> con otro nombre, o el cliente en otro puerto"],
+  ["“registré 2 artefactos y aparecen 0”", "<code>log_artifact</code> llamado <b>fuera</b> del <code>with</code>"],
+  ["<code>references untrusted types</code>", "default <code>skops</code> con una clase propia sin declarar"],
+  ["<code>Can not safely convert int64 to int32</code>", "<code>input_example</code> con tipos demasiado estrechos"],
+  ["la métrica no se reproduce", "otra partición, otro subconjunto, u otra definición de la métrica"],
+  ["<code>database is locked</code>", "dos procesos escribiendo en el mismo SQLite"],
+  ["run en verde pero sin modelo", "<code>log_model</code> envuelto en <code>try/except</code>"]
+];
+
+const NB2 = "sesiones/s03-tracking/notebooks/02-tracking-con-mlflow.ipynb";
+const NB3 = "sesiones/s03-tracking/notebooks/03-hpo-y-registry.ipynb";
+const RD  = "sesiones/s03-tracking/README.md";
+
+const B = [
+  {
+    n: "00", name: "Antes de clase", tramo: "en frío", screen: "nada proyectado",
+    enter: ["Nadie en la sala. Esto es el ensayo <b>y</b> la puesta a cero."],
+    exit: ["Las cinco luces en verde.", "Dos ventanas de terminal <b>de aspecto distinto</b>: T1 servidor, T2 trabajo."],
+    steps: [
+      { cmds: [["make setup && make smoke", 2]], where: "raíz del repositorio", expect: "todo en verde" },
+      { cmds: [["make data", 2]], where: "raíz del repositorio", expect: "las 7 particiones en <code>data/processed/</code> con sus SHA-256",
+        note: "Sin esto el bloque <b>El dolor</b> depende de la red del aula." },
+      { cmds: [["make mlflow", 1]], where: "T1, y ahí se queda", expect: "el server escuchando, y <code>127.0.0.1:5001</code> carga",
+        note: "Esta terminal queda <b>secuestrada</b>. No la vuelves a tocar hasta la puesta a cero." },
+      { cmds: [["make hpo", 2]], where: "experimento <code>s03-hpo-xgboost</code>", expect: "los 20 trials completos, cronometrados",
+        note: "Anota el tiempo. Si tarda demasiado, decide <b>ahora</b> el <code>--trials</code> del día." },
+      { cmds: [["make promote", 2]], where: "modelo <code>nyc-taxi-duration</code>",
+        expect: "el gate promoviendo: <code>@champion</code> apuntando a la versión del HPO",
+        note: "<b>Este paso es obligatorio antes del siguiente.</b> <code>make hpo</code> deja la versión como <code>@candidate</code> con <code>validation_status=pending</code>; <code>make model-card</code> busca <code>@champion</code>. Sin promover, la card sale <b>degradada</b> y parece que algo falló." },
+      { cmds: [["make model-card", 2]], where: "genera <code>docs/model-card.md</code>", expect: "la card real, con versión y métricas",
+        note: "Pruébala también con el servidor apagado, para ver el modo degradado que vas a mostrar en clase. Ahí sí tiene que salir sin versión." },
+      { do: "Ensaya los bloques que te preocupen, con la UI delante.", where: "sobre todo los bloques 05 y 07",
+        expect: "que no te sorprenda nada en vivo",
+        note: "Son los dos que dependen del estado: el fallo de la firma y la reproducción de la métrica." },
+
+      { do: "<b>Ctrl-C</b> para el servidor.", where: "T1", expect: "el puerto 5001 libre",
+        note: "Aquí empieza la puesta a cero. El siguiente comando <b>se niega a correr</b> si el servidor sigue arriba: borrar la base con el proceso abierto la deja a medias." },
+      { cmds: [["make reset-clase", 2]], where: "raíz del repositorio", expect: "<code>Estado de MLflow en limpio. data/processed intacto.</code>",
+        note: "Borra <code>mlflow.db</code>, <code>mlruns/</code>, <code>mlartifacts/</code>, la model card y los reportes. <b>No toca <code>data/processed</code></b>, que es lo lento de regenerar." },
+      { cmds: [["make mlflow", 1]], where: "T1", expect: "la UI en <code>127.0.0.1:5001</code>, ahora <b>vacía de verdad</b>",
+        note: "Enciende las luces «servidor» y «base limpia» de arriba." },
+      { cmds: [["make train && make promote", 2]], where: "modelo <code>nyc-taxi-duration</code>",
+        expect: "<code>@champion</code> apuntando a una versión",
+        note: "Solo si vas a mostrar el rollback con dos versiones. <b>Después</b> de la puesta a cero, nunca antes: <code>make reset-clase</code> se lo habría llevado. Sin <code>@champion</code> previo, el gate lo trata como el primer modelo y lo promueve." },
+      { cmds: [["git status --short sesiones/s03-tracking/_soluciones", 2]], where: "raíz del repositorio",
+        expect: "que sigue sin publicar" },
+
+      { cmds: [
+          ["code " + NB2, 2],
+          ["code " + NB3, 2],
+          ["code sesiones/s03-tracking/scenarios/scenario-1-file-store.ipynb", 2],
+          ["code " + RD, 2]
+        ],
+        where: "deja las cuatro pestañas abiertas en VS Code",
+        expect: "todo lo que vas a proyectar, ya abierto",
+        note: "Abrirlas ahora es lo que evita buscar archivos delante de la clase. <b>Selecciona el kernel del <code>.venv</code></b> en los tres notebooks antes de empezar." }
+    ]
+  },
+  {
+    n: "01", name: "Arranque", tramo: "0-15", screen: "PIZARRA",
+    enter: ["Servidor arriba, pero <b>no lo muestres todavía</b>."],
+    exit: ["El HPO corriendo en T2.", "La pregunta del día enunciada en voz alta."],
+    steps: [
+      { cmds: [["make hpo", 2]], where: "T2 · déjalo corriendo y olvídate",
+        expect: "los trials arrancando; nadie mira la pantalla todavía",
+        note: "<b>Lo primero de la clase, antes de hablar.</b> Tarda más que la pausa entera, así que se lanza ahora y para el bloque 06 lleva rato listo. No cuesta minutos de clase: cuesta cero. Enciende la luz «hpo lanzado»." },
+      { do: "Recoge lo que quedó de la sesión 2, en una frase tuya.", where: "pizarra", ask: "¿Qué nos dejó la sesión pasada?",
+        note: "Contrato de datos, particiones fijas, tests que fallan en CI. Y dudas sueltas si las hay." },
+      { do: "Abre dos PR de estudiantes y mira el workflow.", where: "GitHub, pestaña Actions del PR", expect: "el CI de sus talleres",
+        note: "Rutina de todas las sesiones." },
+      { do: "Enuncia el encuadre del día.", where: "pizarra",
+        ask: "Ya sabemos que los datos son válidos. ¿Cómo sabemos qué modelo salió de ellos?",
+        note: "<b>Hoy no mejoramos ningún modelo.</b> Hoy hacemos que se pueda saber cuál es, con qué datos salió y cuál está sirviendo." }
+    ]
+  },
+  {
+    n: "02", name: "El dolor", tramo: "15-40", screen: "TERMINAL, luego PIZARRA",
+    enter: ["<b>MLflow no se abre en todo el bloque.</b> Ni la UI, ni mencionarlo."],
+    exit: ["Las cinco preguntas en la pizarra, cuatro sin responder."],
+    steps: [
+      { cmds: [
+          ["uv run python sesiones/s03-tracking/scripts/train-sin-mlflow.py --max-depth 5", 2],
+          ["uv run python sesiones/s03-tracking/scripts/train-sin-mlflow.py --max-depth 10", 2],
+          ["uv run python sesiones/s03-tracking/scripts/train-sin-mlflow.py --max-depth 20", 2],
+          ["uv run python sesiones/s03-tracking/scripts/train-sin-mlflow.py --max-depth 20 --n-estimators 300", 2],
+          ["uv run python sesiones/s03-tracking/scripts/train-sin-mlflow.py --max-depth 30", 2]
+        ],
+        where: "T2, las cinco seguidas",
+        expect: "una línea por corrida: <code>max_depth=… -> RMSE=…</code>",
+        note: "Cronometra la primera y la última. 25 árboles contra 300 es el argumento de que el cómputo es una decisión de ingeniería, no un detalle." },
+      { do: "Escribe las cinco preguntas en la pizarra y déjalas ahí.", where: "pizarra · están en " + RD + ", sección 1",
+        expect: "que se atasquen en la 2",
+        ask: "¿Cuál fue mejor? ¿Con qué datos? ¿Qué versión del código? ¿Dónde está el modelo? ¿Se puede repetir?",
+        note: "Deja que respondan la 1 leyendo hacia arriba. <b>La 4 es la que duele:</b> el modelo no existe, nunca se guardó." },
+      { do: "<b>Cierra la ventana de la terminal.</b> Literalmente.", where: "T2 — abre otra después",
+        expect: "silencio", ask: "¿Dónde está el resultado del experimento?" },
+      { do: "Proyecta la tabla de qué falta registrar para cada pregunta.", where: RD + " · sección 1",
+        expect: "la tabla de pregunta contra qué registrar",
+        note: "Y el aviso que evita el malentendido de la sesión: <b>el tracking no mejora su modelo.</b> Lo hace descartable con evidencia." }
+    ]
+  },
+  {
+    n: "03", name: "Anatomía y topologías", tramo: "40-55", screen: "UI + NOTEBOOK",
+    enter: ["Recién ahora se proyecta la UI, y está vacía."],
+    exit: ["Claro que el registry <b>necesita</b> base de datos."],
+    steps: [
+      { do: "Proyecta el diagrama de las cuatro piezas.", where: RD + " · sección 2",
+        expect: "tracking server, backend store, artifact store, registry",
+        note: "La frase que hay que dejar clavada: <b>con un file store el Model Registry no existe.</b>" },
+      { do: "Muestra la UI y explica el puerto.", where: "navegador · <code>127.0.0.1:5001</code>",
+        expect: "solo <code>s03-hpo-xgboost</code>, el que lanzaste al empezar. <code>s03-baseline</code> <b>no existe todavía</b>",
+        note: "Aquí, y <b>solo aquí</b>, se explica el 5001: AirPlay ocupa el de por defecto en macOS y devuelve un 403 que no dice nada.<br>Y señala lo que se ve: <b>«eso lo lancé al empezar la clase, llegaremos ahí en el bloque 06»</b>. Que exista un experimento y no el otro es la mejor demostración de que un experimento es un espacio de nombres." },
+      { do: "Corre el escenario 1 de arriba abajo, hasta la celda del <code>try/except</code>.", where: "sesiones/s03-tracking/scenarios/scenario-1-file-store.ipynb",
+        expect: "<code>Model Registry no disponible en este escenario (sin tracking server).</code>",
+        ask: "¿Esto es un error de configuración?", note: "<b>No: es la definición del escenario.</b>" },
+      { do: "Abre el escenario 2 y ponlo al lado del 1.", where: "sesiones/s03-tracking/scenarios/scenario-2-server-local.ipynb",
+        expect: "que el código de entrenamiento es idéntico",
+        note: "Lo único que cambia es <code>set_tracking_uri</code>. El escenario 3 se lee, no se ejecuta." }
+    ]
+  },
+  {
+    n: "04", name: "Tracking manual", tramo: "55-75", screen: "TERMINAL + UI",
+    enter: ["Notebook 02 abierto, kernel del <code>.venv</code> seleccionado."],
+    exit: ["Notebook 02 terminada la sección 3. <b>autolog sigue apagado.</b>"],
+    steps: [
+      { cmds: [
+          ["uv run python sesiones/s03-tracking/scripts/train-mlflow-basico.py --max-depth 5", 2],
+          ["uv run python sesiones/s03-tracking/scripts/train-mlflow-basico.py --max-depth 10", 2],
+          ["uv run python sesiones/s03-tracking/scripts/train-mlflow-basico.py --max-depth 20", 2]
+        ],
+        where: "T2 · aparecen en el experimento <code>s03-baseline</code>",
+        expect: "<code>RMSE=… | run_id=…</code> y la línea <code>Modelo logueado: NO</code>",
+        note: "El delta contra el bloque anterior son <b>tres líneas</b>: <code>set_tracking_uri</code>, <code>set_experiment</code>, <code>start_run</code>. Y con eso las preguntas 1, 2 y 3 ya se responden en la UI." },
+      { do: "Señala que este script <b>no loguea el modelo</b>, a propósito.", where: "sesiones/s03-tracking/scripts/train-mlflow-basico.py",
+        ask: "Si dentro de un mes alguien pide el modelo del mejor run, ¿qué le damos?",
+        note: "Es el estado real en el que estaba este módulo del curso: métricas sin trazabilidad de artefactos." },
+      { do: "Recorre los cuatro tipos de cosas que se registran.", where: NB2 + " · sección 2, «Las cuatro cosas que se registran»",
+        expect: "params, métricas, tags y artifacts",
+        ask: "¿Qué diferencia hay entre una métrica y un tag?",
+        note: "Métrica: <i>¿qué tan bueno?</i> Tag: <i>¿de qué corrida hablamos?</i> Confundirlos da 40 runs sin forma de agrupar." },
+      { cmds: [["mlflow.search_runs(experiment_names=[\"s03-baseline\"], order_by=[\"metrics.valid_rmse ASC\"])", 3]],
+        where: NB2 + " · sección 3, «Comparar por código, no por vista»",
+        expect: "un DataFrame ordenado por RMSE",
+        note: "«La UI sirve para mirar; <code>search_runs</code> sirve para decidir.» Aquí se dice el punto débil de MLflow frente a W&B, y por qué la respuesta del curso es programática." }
+    ]
+  },
+  {
+    n: "05", name: "El fallo en vivo", tramo: "75-95", screen: "NOTEBOOK",
+    enter: ["Notebook 02, al final de la sección 3."],
+    exit: ["<b>autolog APAGADO.</b> Si queda encendido, cada <code>fit</code> posterior crea un run y el bloque 06 se contamina."],
+    steps: [
+      { do: "Ejecuta las celdas de autolog.", where: NB2 + " · sección 4, «mlflow.autolog() y sus límites»",
+        expect: "~30 params y cinco métricas <code>training_*</code>, sin escribir un <code>log_param</code>",
+        ask: "¿Qué es lo que sigue faltando?",
+        note: "Todo lo que no está en la llamada a <code>fit</code>: qué datos, la métrica de negocio, los subgrupos." },
+      { do: "Abre <code>_ejemplo_de_entrada</code> y <b>lee su docstring en voz alta</b>.", where: "src/taxi/models/train.py, línea 402",
+        expect: "el mejor ejemplo de la sesión de un bug que solo aparece al servir",
+        note: "La regla: declara el tipo <b>más permisivo</b> que el modelo acepta, no el más compacto con el que se entrenó." },
+      { do: "Ejecuta la celda de las tres peticiones.", where: NB2 + " · sección 5, «signature e input_example»",
+        expect: "tres líneas: <code>1) tipos correctos -> [tres números]</code> · <code>2) float donde se espera entero -> MlflowException | Error: …</code> · <code>3) falta una feature -> MlflowException | Error: …</code>",
+        ask: "¿Cuál de los tres es el importante?",
+        note: "<b>El 3.</b> Sin firma no habría fallado: <code>DictVectorizer</code> ignora las claves que no conoce, y la petición habría dado una predicción silenciosamente peor. Un error visible cuesta un ticket; uno silencioso cuesta un trimestre de decisiones.<br><b>Los tres números de la línea 1 cambian en cada entrenamiento</b>, y el texto exacto del error lo pone MLflow: lo que tiene que salir son <b>los tres prefijos, con 1 en verde y 2 y 3 fallando</b>." },
+      { do: "Proyecta la tabla de skops contra cloudpickle.", where: NB2 + " · sección 7, «serialization_format»",
+        expect: "la tabla comparativa",
+        note: "Si sobra tiempo, quita <code>skops_trusted_types</code> y provoca el <code>references untrusted types</code>." },
+      { cmds: [["mlflow.sklearn.autolog(disable=True)", 3]], where: NB2 + " · una celda nueva al final",
+        expect: "autolog apagado antes de salir del bloque",
+        note: "Este paso existe porque olvidarlo es lo que rompe el bloque 06. Apaga la luz «autolog» de arriba solo cuando lo hayas corrido." }
+    ]
+  },
+  {
+    n: "—", name: "Pausa", tramo: "95-110", screen: "nada proyectado", pause: true,
+    enter: ["<b>Antes de salir de la sala</b>, mira T2 un segundo."],
+    exit: ["El HPO terminado, o corriendo con tiempo de sobra."],
+    steps: [
+      { do: "Comprueba que el HPO del bloque 01 sigue vivo o ya acabó.", where: "T2 · experimento <code>s03-hpo-xgboost</code>",
+        expect: "trials avanzando, o el parent run cerrado",
+        note: "Si se te olvidó lanzarlo en el bloque 01, lánzalo <b>ahora mismo</b> y cuenta con que el bloque 06 llegará justo." },
+      { cmds: [["make hpo", 2]], where: "T2 · <b>solo si te lo saltaste</b>",
+        expect: "los trials arrancando",
+        note: "<b>No bajes de 12 trials.</b> El <code>TPESampler</code> hace aleatorios los 10 primeros y solo modela desde el 11; el <code>MedianPruner</code> no poda hasta que 5 terminen. Con menos, el bloque 06 enseña lo contrario de lo que dice: todos los trials aleatorios y <code>trials_podados</code> en 0." }
+    ]
+  },
+  {
+    n: "06", name: "HPO con runs anidados", tramo: "110-130", screen: "UI + NOTEBOOK",
+    enter: ["El HPO del bloque 01 <b>terminado</b>. autolog apagado."],
+    exit: ["El parent run y sus child runs entendidos como estructura."],
+    steps: [
+      { do: "Explica TPE y el pruner, antes de abrir nada.", where: NB3 + " · sección 1",
+        ask: "¿Por qué 20 intentos informados le ganan a 200 al azar?",
+        note: "TPE modela la relación entre hiperparámetros y métrica; el pruner abandona lo que ya se ve peor que la mediana." },
+      { do: "Abre el parent run del study.", where: "UI · experimento <code>s03-hpo-xgboost</code>",
+        expect: "<code>trials</code>, <code>espacio</code> y <code>semilla</code> en sus params",
+        note: "Sin semilla el resultado <b>no es reproducible</b>. Mira esto primero." },
+      { do: "Mira <code>trials_podados</code> en el mismo parent.", where: "UI · parent run, pestaña Parameters",
+        expect: "un número mayor que 0",
+        ask: "¿Qué significa si sale 0 con muchos trials?", note: "Que el pruner no actúa. <b>Es un fallo silencioso</b>: la búsqueda corre completa y nadie se entera." },
+      { do: "Despliega el parent, abre un child y mira <code>mejor_iteracion</code>.", where: "UI · cualquier child run",
+        expect: "un valor por debajo de <code>n_estimators − 1</code>",
+        ask: "¿Y si es siempre n_estimators − 1?",
+        note: "El early stopping no actúa. Caso típico: declarar <code>EARLY_STOPPING_ROUNDS = 50</code> y entrenar <code>num_boost_round=30</code>; no puede dispararse nunca." },
+      { do: "Abre el script completo y muestra tres cosas.", where: "sesiones/s03-tracking/scripts/train-mlflow-completo.py",
+        expect: "60 líneas que sí loguean el modelo",
+        note: "1) <code>name=\"modelo\"</code>, no <code>artifact_path=</code>. 2) <code>skops_trusted_types</code> con tres tipos, y por qué tres. 3) <code>RONDAS_EN_CLASE</code> en la línea 91: acotar el presupuesto es legítimo, <b>esconderlo no</b>." }
+    ]
+  },
+  {
+    n: "07", name: "Registry", tramo: "130-150", screen: "NOTEBOOK + UI",
+    enter: ["Notebook 03, al principio de la sección 3."],
+    exit: ["Un alias movido en vivo, y cronometrado."],
+    steps: [
+      { cmds: [["print(registry.explicar_por_que_no_stages())", 3]],
+        where: NB3 + " · sección 3, «registrar no es promover»",
+        expect: "las cinco razones, impresas",
+        note: "Vive en <code>src/taxi/models/registry.py</code> línea 296, a propósito: el notebook y la model card imprimen <b>la misma</b> explicación. Cuando estaba duplicado, un módulo enseñaba aliases y otro usaba stages." },
+      { do: "Pregunta antes de explicar el orden de las dos operaciones.", where: NB3 + " · sección 4, «el tag primero, el alias después»",
+        ask: "¿Por qué el tag antes del alias?",
+        note: "Si el proceso muere entre las dos, «validada pero no promovida» es seguro; al revés queda un modelo sirviendo tráfico sin registro de haber sido validado." },
+      { do: "Ejecuta la celda de reproducción de la métrica.", where: NB3 + " · sección 5, «Cargar por alias y reproducir la métrica»",
+        expect: "los dos RMSE <b>idénticos</b> y <code>diferencia absoluta: 0.00e+00</code>",
+        note: "«No sale exacto por suerte»: el preprocesamiento va dentro del artefacto, la evaluación usa el mismo código, los datos son la misma partición. <b>A quien no le salga exacto, una de las tres no se cumple.</b> Es el criterio 1 del taller." },
+      { do: "Mueve <code>@champion</code> a la versión anterior, <b>cronometrándolo</b>.", where: "UI · modelo <code>nyc-taxi-duration</code>, o la celda de alias del notebook",
+        expect: "el rollback hecho, en lo que tarda una escritura de metadatos",
+        note: "Las versiones son inmutables, así que la anterior sigue ahí. No hay redeploy." },
+      { do: "Muestra la celda desactivada de la API de stages.", where: NB3 + " · sección 6, «Contraejemplo: la API de stages»",
+        expect: "la tabla de traducción término a término",
+        ask: "¿Por qué está desactivada?",
+        note: "Y por qué el <code>pre-commit</code> bloquea esas llamadas en el resto del repositorio: <b>no es purismo, es que el curso se contradecía a sí mismo.</b>" }
+    ]
+  },
+  {
+    n: "08", name: "evaluate y model card", tramo: "150-165", screen: "NOTEBOOK, luego TERMINAL",
+    enter: ["Un modelo en <code>@champion</code>. Servidor arriba."],
+    exit: ["<code>docs/model-card.md</code> generada, vista degradada, y <b>el servidor otra vez arriba</b>."],
+    steps: [
+      { do: "Recorre la sección de <code>evaluate</code>.", where: NB2 + " · sección 6, «mlflow.models.evaluate»",
+        expect: "<code>mlflow.models.evaluate</code> como nombre canónico",
+        note: "<code>mlflow.evaluate</code> es un alias histórico. Y <code>mlflow.genai.evaluate</code> es <b>otra API</b> (sesión 8): no son interoperables. Elegir mal da un error de tipos, no un resultado malo." },
+      { cmds: [["make model-card", 2]], where: "T2 · escribe <code>docs/model-card.md</code>",
+        expect: "<code>Generada docs/model-card.md para nyc-taxi-duration v… (@champion).</code>",
+        note: "El archivo empieza con el aviso <code>ARCHIVO GENERADO</code>. «Una card escrita a mano queda desactualizada en el primer reentrenamiento; una generada se puede <b>verificar</b>.»" },
+      { cmds: [["code docs/model-card.md", 2]], where: "busca la sección de métricas por subgrupo",
+        expect: "las métricas desagregadas",
+        note: "Es lo que el promedio esconde, y lo que la documentación técnica del AI Act pide. La sesión 7 lo retoma." },
+      { do: "<b>Ctrl-C</b> para el servidor.", where: "T1", expect: "el puerto libre",
+        note: "Solo para mostrar el modo degradado. Los dos pasos siguientes lo arreglan." },
+      { cmds: [["make model-card", 2]], where: "T2 · con el servidor caído",
+        expect: "la card <b>sin versión y sin métricas</b>, con un aviso en amarillo",
+        note: "El modo degradado es intencional, y esa card <b>no</b> sirve como evidencia." },
+      { cmds: [["make mlflow", 1]], where: "T1 · comprueba que la UI carga",
+        expect: "el servidor otra vez arriba",
+        note: "<b>Sin este paso el taller empieza roto.</b>" }
+    ]
+  },
+  {
+    n: "09", name: "Taller", tramo: "165-220", screen: "nada proyectado",
+    enter: ["Servidor arriba. <code>_soluciones/</code> sin publicar."],
+    exit: ["Entregado en clase."],
+    steps: [
+      { do: "Di los tres criterios que hay que recordar, en voz alta.", where: "sesiones/s03-tracking/taller.md",
+        expect: "que sepan cómo se mide cada uno",
+        note: "El 1 se <b>mide</b>: dos números y la diferencia, con la tolerancia declarada. El 4 es un conteo: <code>len(mlflow.search_runs(...)) >= 20</code>, anidados. El 3 es un comando: <code>make model-card</code> tiene que existir en <b>su</b> Makefile." },
+      { do: "Circula por la sala.", where: "trabajan en <b>su propio</b> repositorio, no en el del curso",
+        expect: "siete criterios de aceptación, en el enunciado",
+        note: "Quien acabe antes, los dos ejercicios de <code>sesiones/s03-tracking/exercises/</code>. Y ten a mano el panel de errores: tecla <b>E</b>." }
+    ]
+  },
+  {
+    n: "10", name: "Cierre", tramo: "220-240", screen: "nada proyectado",
+    enter: ["El taller entregado, o en camino.", "Servidor arriba: alguien va a seguir trabajando después."],
+    exit: ["El puente a la sesión 4 enunciado."],
+    steps: [
+      { do: "Proyecta la tabla de herramientas, <b>declarando los criterios antes</b>.", where: RD + " · sección 5",
+        expect: "licencia, registry, UX de comparación, encaje con el stack",
+        note: "MLflow gana en open source real, self-hosting y estándar de facto. <b>Pierde</b> en UX de comparación frente a W&B: dilo tal cual. DVC juega otro partido. Verifica el estado de la tabla antes de cada cohorte." },
+      { do: "Sortea las cinco preguntas de autoverificación.", where: RD + " · sección 6",
+        expect: "que las respondan sin volver al material",
+        note: "Si alguna no sale, ahí está el vacío." },
+      { do: "Lee la tabla de qué NO usar.", where: RD + " · sección 7",
+        expect: "los anti-patrones, con su sustituto",
+        note: "Y la advertencia práctica: <b>verifica el <code>serialization_format</code> por defecto</b> en la versión instalada. En mlflow 3 es <code>skops</code>, y puede romper código que funcionaba — con razón." },
+      { do: "Enuncia el puente a la sesión 4.", where: "pizarra", expect: "la tarea y qué de esto va al proyecto",
+        note: "«Ya saben entrenar, registrar y documentar. Todo eso lo han hecho <b>ustedes, a mano, delante del teclado</b>. La próxima: que ocurra sin ustedes, y que cuando falle se pueda saber qué pasó.»" }
+    ]
+  }
+];
+
+/* ---------- estado ---------- */
+let cur = 0;
+const lampState = {};
+const doneState = {};
+LAMPS.forEach(l => lampState[l.id] = 0);
+
+/* ---------- render ---------- */
+const $ = id => document.getElementById(id);
+
+function renderLamps() {
+  $("lamps").innerHTML = LAMPS.map(l =>
+    `<button class="lamp" data-lamp="${l.id}" data-on="${lampState[l.id]}" data-warn="${l.warn ? 1 : 0}" aria-pressed="${lampState[l.id] === 1}">
+       <span class="bulb"></span>${l.txt}
+     </button>`).join("");
+}
+
+function renderRail() {
+  $("rail").innerHTML = B.map((b, i) =>
+    `<button class="tab${b.pause ? " pause" : ""}" data-go="${i}" aria-current="${i === cur}">${b.n === "—" ? "PAUSA" : b.n} ${b.name}</button>`
+  ).join("");
+}
+
+function stepHTML(s, bi, si) {
+  const key = bi + ":" + si;
+  const cmds = (s.cmds || []).map(([c, t]) =>
+    `<button class="cmd" data-copy="${c.replace(/"/g, "&quot;")}">${c.replace(/</g, "&lt;")}<span class="term t${t}">${t === 3 ? "NB" : "T" + t}</span></button>`
+  ).join("");
+  const donde = s.where ? `<div class="where">${s.where}</div>` : "";
+  const first = cmds
+    ? `<span class="lbl">teclo</span>${cmds}${donde}`
+    : (s.do ? `<span class="lbl">hago</span><div class="say">${s.do}</div>${donde}` : "");
+  return `<div class="step" data-step="${key}" data-done="${doneState[key] ? 1 : 0}" tabindex="0" role="button" aria-pressed="${!!doneState[key]}">
+    <span class="box" aria-hidden="true"></span>
+    <div class="col">${first}</div>
+    <div class="col">${s.expect ? `<span class="lbl">debe salir</span><div class="expect">${s.expect}</div>` : ""}</div>
+    <div class="col">${s.ask ? `<span class="lbl">pregunto</span><div class="ask">${s.ask}</div>` : ""}</div>
+    ${s.note ? `<div class="note">${s.note}</div>` : ""}
+  </div>`;
+}
+
+function render() {
+  const b = B[cur];
+  $("main").innerHTML = `
+    <div class="head">
+      <span class="n">${b.n}</span>
+      <div>
+        <h1>${b.name}</h1>
+        <div class="meta">
+          <span class="chip screen">pantalla · ${b.screen}</span>
+          <span class="chip">${b.tramo}</span>
+        </div>
+      </div>
+    </div>
+    <div class="gates">
+      <div class="gate"><span class="lbl">entra con</span><ul>${b.enter.map(x => `<li>${x}</li>`).join("")}</ul></div>
+      <div class="gate out"><span class="lbl">sale con</span><ul>${b.exit.map(x => `<li>${x}</li>`).join("")}</ul></div>
+    </div>
+    <div class="steps">${b.steps.map((s, i) => stepHTML(s, cur, i)).join("")}</div>`;
+  renderRail();
+  const nx = B[cur + 1];
+  $("nextname").textContent = nx ? (nx.n === "—" ? "Pausa" : nx.n + " " + nx.name) : "fin de la sesión";
+  $("prev").disabled = cur === 0;
+  $("next").disabled = cur === B.length - 1;
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+$("errs").innerHTML = ERRS.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join("");
+
+/* ---------- interaccion ---------- */
+function go(i) { cur = Math.max(0, Math.min(B.length - 1, i)); render(); }
+
+document.addEventListener("click", e => {
+  const lamp = e.target.closest("[data-lamp]");
+  if (lamp) {
+    const id = lamp.dataset.lamp;
+    lampState[id] = lampState[id] ? 0 : 1;
+    renderLamps();
+    return;
+  }
+  const tab = e.target.closest("[data-go]");
+  if (tab) { go(+tab.dataset.go); return; }
+
+  const cmd = e.target.closest(".cmd");
+  if (cmd) {
+    e.stopPropagation();
+    const txt = cmd.dataset.copy;
+    const r = document.createRange();
+    r.selectNodeContents(cmd);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(r);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(txt).then(() => {
+        cmd.classList.add("copied");
+        setTimeout(() => cmd.classList.remove("copied"), 700);
+      }).catch(() => {});
+    }
+    return;
+  }
+  const step = e.target.closest("[data-step]");
+  if (step) {
+    const k = step.dataset.step;
+    doneState[k] = !doneState[k];
+    step.dataset.done = doneState[k] ? 1 : 0;
+    step.setAttribute("aria-pressed", !!doneState[k]);
+    return;
+  }
+  if (e.target.id === "prev") go(cur - 1);
+  if (e.target.id === "next") go(cur + 1);
+  if (e.target.id === "closepanel" || e.target.id === "scrim") $("scrim").dataset.open = "0";
+});
+
+document.addEventListener("keydown", e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const t = e.target;
+  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
+  if (e.key === "ArrowRight") { go(cur + 1); e.preventDefault(); }
+  else if (e.key === "ArrowLeft") { go(cur - 1); e.preventDefault(); }
+  else if (e.key === "e" || e.key === "E") {
+    const s = $("scrim");
+    s.dataset.open = s.dataset.open === "1" ? "0" : "1";
+  }
+  else if (e.key === "Escape") $("scrim").dataset.open = "0";
+  else if (e.key === "r" || e.key === "R") {
+    Object.keys(doneState).forEach(k => delete doneState[k]);
+    render();
+  }
+  else if (e.key === " " && t === document.body) { go(cur + 1); e.preventDefault(); }
+});
+
+renderLamps();
+render();
+</script>
