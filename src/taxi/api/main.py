@@ -11,8 +11,8 @@ errores. La logica vive en modulos separados y testeables por su cuenta
 instrumentacion). Un `main.py` que ademas carga modelos y construye features es
 el que nadie puede testear sin levantar el servidor completo.
 
-Cuatro anti-patrones que este modulo evita, y que son los mas comunes en una API
-de inferencia escrita a las prisas:
+Cinco atajos tentadores que este modulo evita. Todos son comunes en una API de
+inferencia escrita a las prisas, y todos fallan tarde:
 
 1. ``@app.on_event("startup")``, deprecado desde FastAPI 0.93. Aqui se usa
    ``lifespan``, que ademas permite liberar recursos al apagar y es lo unico que
@@ -25,12 +25,12 @@ de inferencia escrita a las prisas:
 3. ``HTTPException(detail=f"...{str(e)}")``, que filtra la excepcion interna al
    cliente. Aqui el detalle va al log con un id de correlacion y al cliente va
    un mensaje estable.
-4. Los endpoints de prediccion eran ``async def`` y dentro llamaban a
-   ``model.predict``, que es bloqueante: cada inferencia congelaba el event loop
-   y el servidor perdia toda su concurrencia. Se declaran ``def`` (sincronos) a
-   proposito, para que Starlette los ejecute en su threadpool.
-5. El modelo se copiaba con ``shutil.copytree`` a la imagen. Ahora se resuelve
-   del Model Registry por alias.
+4. Endpoints de prediccion declarados ``async def`` que dentro llaman a
+   ``model.predict``, que es bloqueante: cada inferencia congela el event loop
+   y el servidor pierde toda su concurrencia. Aqui se declaran ``def``
+   (sincronos) a proposito, para que Starlette los ejecute en su threadpool.
+5. Copiar el modelo a la imagen con ``shutil.copytree``. Aqui se resuelve del
+   Model Registry por alias; el porque esta en ``modelo.py``.
 """
 
 from __future__ import annotations
@@ -45,12 +45,12 @@ from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as version_paquete
 from typing import Final
 
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, Request, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
-from prometheus_client import make_asgi_app
+from prometheus_client import CONTENT_TYPE_LATEST, REGISTRY, generate_latest
 
 from taxi.api import metricas
 from taxi.api.modelo import (
@@ -221,18 +221,12 @@ app = FastAPI(
         "artefacto. Cada respuesta incluye `model_version` para que una "
         "prediccion sea atribuible a un artefacto concreto.\n\n"
         "Endpoints operativos: `/health` (liveness) y `/metrics` (exposicion "
-        "Prometheus; no aparece en este esquema porque es una sub-app ASGI "
-        "montada, no una ruta de FastAPI)."
+        "Prometheus). `/metrics` no aparece en este esquema a proposito: lo "
+        "consume Prometheus, no un cliente de la API."
     ),
     lifespan=lifespan,
 )
 _configurar_cors(app)
-
-# El exporter de Prometheus se monta como sub-aplicacion ASGI en lugar de
-# implementar el endpoint a mano. `make_asgi_app()` ya resuelve el content-type,
-# el formato de exposicion y la negociacion de compresion; reimplementarlo es
-# como reimplementar `json.dumps`.
-app.mount("/metrics", make_asgi_app())
 
 
 @app.exception_handler(RequestValidationError)
@@ -287,6 +281,20 @@ async def raiz() -> RedirectResponse:
     a `/docs` cuesta dos lineas y ahorra la pregunta "esta caido?" en cada demo.
     """
     return RedirectResponse(url="/docs")
+
+
+@app.get("/metrics", include_in_schema=False)
+def metricas_prometheus() -> Response:
+    """Exposicion de metricas en el formato de texto de Prometheus.
+
+    Se declara como ruta normal y no con ``app.mount("/metrics", make_asgi_app())``
+    por una razon concreta: una sub-aplicacion montada responde en ``/metrics/``
+    (con barra final) y redirige ``/metrics`` con un 307. Prometheus sigue la
+    redireccion, pero un ``curl -s /metrics | grep taxi_`` en clase devuelve un
+    cuerpo vacio y parece que "no hay metricas". ``generate_latest`` es la misma
+    funcion que usa el exporter por debajo; no se reimplementa nada.
+    """
+    return Response(content=generate_latest(REGISTRY), media_type=CONTENT_TYPE_LATEST)
 
 
 @app.get("/health", response_model=SaludResponse, tags=["operacion"])

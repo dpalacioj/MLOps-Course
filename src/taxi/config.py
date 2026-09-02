@@ -121,6 +121,18 @@ MLFLOW_TRACKING_URI: Final[str] = os.getenv(
     "MLFLOW_TRACKING_URI", f"http://127.0.0.1:{MLFLOW_PORT}"
 )
 
+# Los artefactos viajan SIEMPRE a traves del tracking server (artifact store
+# proxiado), nunca directo al object store. MLflow 3.x, cuando el servidor guarda
+# en S3/MinIO, le ofrece al cliente URLs prefirmadas para descargar los archivos
+# en paralelo saltandose el servidor. Con el stack de Compose esas URLs apuntan a
+# `http://minio:9000`, un nombre que solo existe dentro de la red de Docker: un
+# cliente en el host (`taxi promote`, `make serve`, `make batch`) se queda un
+# minuto por archivo esperando a ese host y despues cae al camino proxiado. Con
+# la variable en `false` va directo al camino proxiado: siete archivos en tres
+# segundos en vez de en siete minutos. `setdefault` respeta a quien la fije
+# explicitamente en su entorno.
+os.environ.setdefault("MLFLOW_ENABLE_PROXY_MULTIPART_DOWNLOAD", "false")
+
 #: Convencion de nombres de experimento: s0X-proposito.
 EXPERIMENTOS: Final[dict[str, str]] = {
     "baseline": "s03-baseline",
