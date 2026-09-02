@@ -94,11 +94,11 @@ docker logs --since 5m mi-gatitos
 
 **Salida esperada**:
 ```
-🐳 Iniciando Gatitos App en Docker...
-📍 La app estará disponible en el puerto mapeado
- * Serving Flask app 'app'
- * Running on http://0.0.0.0:5000
-192.168.65.1 - - [03/Nov/2025 23:43:46] "GET / HTTP/1.1" 200 -
+INFO:     Started server process [1]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:5000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:51230 - "GET /health HTTP/1.1" 200 OK
 ```
 
 ---
@@ -277,7 +277,7 @@ docker stats gatitos-1 gatitos-2 gatitos-3
 ### Ejercicio 3: Modificar y Reconstruir
 
 ```bash
-# 1. Modificar app_docker.py (agregar más URLs de gatitos)
+# 1. Modificar app.py (agregar más URLs a GATITOS)
 
 # 2. Detener y eliminar contenedor viejo
 docker stop mi-gatitos
@@ -297,7 +297,7 @@ docker logs mi-gatitos
 
 ```bash
 # Terminal 1: App local
-uv run python app.py
+uv run app.py
 # Abre: http://127.0.0.1:5000
 
 # Terminal 2: App Docker
@@ -305,8 +305,8 @@ docker run -d -p 8080:5000 --name mi-gatitos gatitos-app
 # Abre: http://localhost:8080
 
 # Compara:
-# - Badge: Verde (local) vs Azul (Docker)
-# - Fondo: Morado (local) vs Azul (Docker)
+# - Insignia y fondo: morado (local) vs azul (Docker); es la misma app, cambia ENTORNO
+# - hostname: tu equipo (local) vs el id del contenedor (Docker)
 # - Puerto: 5000 (local) vs 8080 (Docker)
 ```
 
@@ -466,11 +466,11 @@ docker rmi gatitos-app
 ```bash
 # -p 8080:5000
 #    ↑    ↑
-#    │    └─ Puerto DENTRO del contenedor (Flask)
+#    │    └─ Puerto DENTRO del contenedor (uvicorn)
 #    └─ Puerto en TU PC (navegador)
 
 # Accedes en: http://localhost:8080
-# Flask corre en: 5000 (dentro del contenedor)
+# uvicorn escucha en: 5000 (dentro del contenedor)
 ```
 
 ---
