@@ -14,10 +14,11 @@ SHELL := /bin/bash
 UV := uv
 PY := $(UV) run
 COMPOSE := docker compose
+MLFLOW_PORT := 5001
 
 .PHONY: help setup smoke data train hpo promote serve batch drift model-card \
         test test-fast test-llmops evals-llm comparar-prompts \
-        lint format typecheck check up down logs clean clean-all \
+        lint format typecheck check up down logs clean clean-all reset-clase \
         mlflow prefect notebooks
 
 # =============================================================================
@@ -132,7 +133,7 @@ check: lint typecheck test-fast ## Todo lo que el CI verifica, en local
 up: ## Levanta el stack completo (MLflow, MinIO, Postgres, API, Grafana)
 	$(COMPOSE) up -d
 	@echo ""
-	@echo "  MLflow      http://127.0.0.1:5001"
+	@echo "  MLflow      http://127.0.0.1:$(MLFLOW_PORT)"
 	@echo "  API         http://127.0.0.1:8000/docs"
 	@echo "  MinIO       http://127.0.0.1:9001  (minioadmin / minioadmin)"
 	@echo "  Prometheus  http://127.0.0.1:9090"
@@ -148,7 +149,7 @@ mlflow: ## MLflow server local sin Docker (SQLite + artifacts locales)
 	$(PY) mlflow server \
 	  --backend-store-uri sqlite:///mlflow.db \
 	  --default-artifact-root ./mlartifacts \
-	  --host 127.0.0.1 --port 5001
+	  --host 127.0.0.1 --port $(MLFLOW_PORT)
 
 prefect: ## Prefect server local sin Docker
 	$(PY) prefect server start
@@ -160,6 +161,23 @@ clean: ## Borra caches y artefactos temporales
 	find . -type d -name __pycache__ -prune -exec rm -rf {} + 2>/dev/null || true
 	rm -rf .pytest_cache .ruff_cache .mypy_cache htmlcov .coverage
 	rm -rf reports/*.html
+
+reset-clase: ## Borra el estado de MLflow para dictar en limpio (conserva data/)
+	@if command -v lsof >/dev/null 2>&1 && lsof -ti :$(MLFLOW_PORT) >/dev/null 2>&1; then \
+	  echo ""; \
+	  echo "  El servidor de MLflow sigue arriba en el puerto $(MLFLOW_PORT)."; \
+	  echo "  Paralo con Ctrl-C en su terminal y vuelve a correr esto."; \
+	  echo "  Borrar mlflow.db con el servidor abierto deja la base a medias."; \
+	  echo ""; \
+	  exit 1; \
+	fi
+	rm -rf mlruns mlartifacts mlflow.db
+	rm -f docs/model-card.md
+	rm -f reports/*.html reports/*.json
+	@echo ""
+	@echo "  Estado de MLflow en limpio. data/processed intacto."
+	@echo "  Levanta el servidor otra vez con: make mlflow"
+	@echo ""
 
 clean-all: clean ## Borra tambien datos, modelos y mlruns (destructivo)
 	rm -rf data/raw data/processed mlruns mlartifacts mlflow.db models
