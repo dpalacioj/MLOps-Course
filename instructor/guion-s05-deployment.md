@@ -8,6 +8,8 @@ qué archivo abrir, qué comando correr y qué salida esperar.
 **Directorio base:** la **raíz del repositorio**. Todos los comandos se corren desde ahí,
 salvo el bloque 3, que se corre dentro de `sesiones/s05-deployment/intro-dockers/`.
 **Material del estudiante:** [`sesiones/s05-deployment/`](../sesiones/s05-deployment/).
+**Pizarra:** [`pizarra-s05-deployment.html`](pizarra-s05-deployment.html), los dibujos que
+se hacen a mano en los bloques 2 a 11, con la frase que va encima de cada uno.
 
 | Tramo | Min | Bloques |
 |---|---|---|
@@ -24,28 +26,41 @@ salvo el bloque 3, que se corre dentro de `sesiones/s05-deployment/intro-dockers
 ## Antes de clase (checklist del instructor)
 
 ```bash
-# 1. Un @champion tiene que existir, o media sesión no se puede demostrar.
-uv run python -c "
-from taxi.models import registry
-mv = registry.version_por_alias('nyc-taxi-duration', 'champion')
-print('champion ->', mv.version if mv else 'NO HAY. Corre: taxi data && taxi train --hpo && taxi promote')
-"
-
-# 2. Las imágenes base descargadas, para que el build en vivo no espere la red.
+# 1. Las imágenes base descargadas, para que el build en vivo no espere la red.
 docker pull python:3.11-slim-bookworm
 docker pull ghcr.io/astral-sh/uv:0.8.17
 docker pull ghcr.io/mlflow/mlflow:v3.15.1
 
-# 3. El stack levanta y baja.
-make up && make down
+# 2. El stack levanta, y su registry tiene un @champion. Con `make mlflow` APAGADO:
+#    comparten el puerto 5001 y son dos registries distintos.
+make up
+uv run python -c "
+from taxi.models import registry
+mv = registry.version_por_alias('nyc-taxi-duration', 'champion')
+print('champion ->', mv.version if mv else 'NO HAY')
+"
+# Si dice NO HAY (la primera vez siempre): entrena y promueve CONTRA el stack.
+# --registrar registra el baseline (15 s); --hpo tarda minutos por trial y aquí no aporta.
+uv run taxi train --registrar && uv run taxi promote
+docker compose restart api && sleep 10 && curl -s http://127.0.0.1:8000/health | jq .model_version   # != null
+make down    # los volúmenes conservan el registry para la clase
 
-# 4. jq y sqlite3 instalados: se usan en vivo en los bloques 9 y 10.
+# 3. jq y sqlite3 instalados: se usan en vivo en los bloques 9 y 10.
 command -v jq sqlite3
 ```
 
+**Los dos registries.** El stack de Compose (`make up`) trae un MLflow con Postgres y
+MinIO; `make mlflow` levanta otro, con SQLite, en el **mismo puerto 5001**. No pueden
+correr a la vez, y un `@champion` en uno no existe en el otro. La clase se dicta sobre el
+stack de Compose (bloques 6 a 11); `make mlflow` + `make serve` es el plan B sin Docker,
+y entonces el `@champion` hay que crearlo contra ese registry.
+
 **Plan B si Docker falla en el equipo del instructor:** los bloques 7 a 11 funcionan con
-`make serve` (uvicorn en local, sin contenedor). Los bloques 3 a 6 son los que necesitan
-Docker; si no hay, se leen los archivos y se proyecta la salida de una corrida previa.
+`make mlflow` (terminal 1) + `make serve` (terminal 2), sin contenedor; el `@champion` se
+crea contra ese registry con `uv run taxi train --registrar && uv run taxi promote`,
+y la demo del bloque 8.2 reinicia con Ctrl+C y `make serve` en vez de `docker compose
+restart api`. Los bloques 3 a 6 son los que necesitan Docker; si no hay, se leen los
+archivos y se proyectan las salidas que trae el README de la sesión (secciones 2 y 3).
 Ten a mano una captura del `docker ps` con `(healthy)`.
 
 ---
@@ -122,8 +137,8 @@ COPY pyproject.toml .
 RUN pip install --no-cache-dir mlflow==2.17.2 xgboost==2.1.2 scikit-learn==1.5.2
 ```
 
-**Decir explícitamente que este error es de este curso**, no un ejemplo inventado. Es la
-frase que hace que la clase preste atención.
+**Presentarlo como el atajo que cualquiera escribiría**, no como un error ajeno: la clase
+presta atención cuando reconoce que lo habría hecho igual.
 
 Después, las versiones reales del entorno:
 
@@ -214,7 +229,9 @@ uv run app.py
 ```
 
 Abrir <http://127.0.0.1:5000>. **Anotar el `hostname` que muestra la página** en el
-tablero: se compara en un minuto.
+tablero: se compara en un minuto. (En macOS, AirPlay ocupa el 5000 en todas las
+interfaces; la app arranca igual porque escucha solo en `127.0.0.1`. Si no,
+`PUERTO=5050 uv run app.py`.)
 
 `Ctrl+C`.
 
@@ -241,10 +258,10 @@ contenedor. Comparar con el del tablero.
 `ENTORNO`, que fija el `Dockerfile`. Es el principio de configuración por entorno, y es lo
 mismo que hace la API real con `TAXI_MODELO_URI`.
 
-**Nota para el instructor:** este material cambió. Antes había `app.py` y `app_docker.py`,
-dos archivos idénticos al 95% que diferían en el color del fondo. Mencionarlo: es el
-anti-patrón del curso aplicado a un ejemplo de juguete, y la corrección es la misma que en
-un servicio real.
+**El atajo tentador que hay que nombrar:** tener `app.py` y `app_docker.py`, dos archivos
+idénticos al 95% que difieren en el color del fondo y en el `host`. Es el anti-patrón del
+curso aplicado a un ejemplo de juguete, y la corrección es la misma que en un servicio
+real: un solo artefacto y el entorno como configuración.
 
 Las tres verificaciones, que se repiten en el bloque 4 sobre la imagen real:
 
@@ -254,11 +271,14 @@ docker ps                                                # STATUS: (healthy)
 docker logs gatitos                                      # no vacío
 ```
 
-Sobre el healthcheck, contar la historia completa: el compose anterior del curso usaba
-`curl` sobre una imagen `python:3.11-slim`, **que no lo trae**. El check fallaba siempre,
-el contenedor quedaba permanentemente `unhealthy` y cualquier `depends_on:
-service_healthy` se colgaba. Es el tipo de bug que nadie mira porque "el servicio
-responde".
+Sobre el healthcheck, mostrar el atajo tentador: `HEALTHCHECK CMD curl -f ...` sobre una
+imagen `python:3.11-slim`, **que no trae `curl`**. El check falla siempre, el contenedor
+queda permanentemente `unhealthy` y cualquier `depends_on: service_healthy` se cuelga. Es
+el tipo de bug que nadie mira porque "el servicio responde". Comprobarlo en vivo:
+
+```bash
+docker run --rm --entrypoint sh gatitos-app -c 'command -v curl || echo sin curl'
+```
 
 ### 3.4 El cache de capas: medirlo (5 min)
 
@@ -288,7 +308,7 @@ bloque es la diferencia entre los dos.
 
 ### 4.1 Las siete decisiones (12 min)
 
-Recorrer con la tabla del [README sección 4.1](../sesiones/s05-deployment/README.md) proyectada.
+Recorrer con la tabla del [README sección 3.1](../sesiones/s05-deployment/README.md) proyectada.
 Dedicar tiempo real a tres:
 
 **Multi-stage.** Preguntar: "¿por qué dos etapas si la app es la misma?" Respuesta: `uv`,
@@ -380,7 +400,7 @@ docker inspect --format='{{.Id}}' mlops-curso/api:latest   # OTRO id, mismo nomb
 ¿cómo se dan cuenta?"* Respuesta: no se dan cuenta. Los logs de las dos corridas dicen
 `latest`.
 
-Proyectar la tabla del [README sección 4.3](../sesiones/s05-deployment/README.md) y cerrar con la
+Proyectar la tabla del [README sección 3.4](../sesiones/s05-deployment/README.md) y cerrar con la
 analogía, que es el punto pedagógico:
 
 > `:latest` es a `@sha256:...` lo que `@champion` es a `versión 7`. Una **referencia
@@ -398,11 +418,15 @@ push.
 **Archivos:** [`docker-compose.yml`](../docker-compose.yml). **Terminales:** 2.
 
 ```bash
+# `make mlflow` tiene que estar apagado: comparte el puerto 5001 con el stack
 make up
 docker compose ps
 ```
 
-Siete minutos, tres cosas y ninguna más:
+`docker compose ps` debe mostrar seis servicios `Up ... (healthy)` (`grafana` tarda unos
+segundos más); `minio-init` no aparece porque ya terminó, `docker compose ps -a` lo
+muestra como `Exited (0)`. Si la API dice `model_loaded: false`, el registry del stack no
+tiene `@champion`: ver el checklist. Siete minutos, tres cosas y ninguna más:
 
 1. **`--artifacts-destination=s3://mlflow/` con `MLFLOW_S3_ENDPOINT_URL` apuntando a
    MinIO, que habla protocolo S3.** Es la pieza que hace transferible la sesión 6: contra
@@ -410,8 +434,8 @@ Siete minutos, tres cosas y ninguna más:
 2. **El servicio `api` no define `healthcheck`.** Lo define la imagen. Explicar por qué:
    el healthcheck depende de qué binarios tiene la imagen, así que pertenece a la imagen.
    Dos definiciones se desincronizan.
-3. **No hay clave `version:`.** El compose anterior empezaba con `version: '3.8'`; Compose
-   v2 la ignora y avisa que está obsoleta.
+3. **No hay clave `version:`.** Muchos archivos de Compose empiezan con `version: '3.8'`;
+   Compose v2 la ignora y avisa que está obsoleta.
 
 `make logs` para ver el arranque en orden, y seguir. **No** dedicar más tiempo: el stack es
 infraestructura de apoyo, no el tema.
@@ -504,7 +528,8 @@ Las dos decisiones del arranque, con su consecuencia:
 ### 8.2 La decisión central de la sesión (8 min)
 
 Abrir el docstring de [`modelo.py`](../src/taxi/api/modelo.py) y leer las cuatro
-consecuencias del `copy_model.py` que se eliminó. Después mostrar el reemplazo:
+consecuencias del atajo `copy_model.py` (copiar el modelo dentro de la imagen). Después
+mostrar lo que se hace en su lugar:
 
 ```python
 mlflow.pyfunc.load_model("models:/nyc-taxi-duration@champion")
@@ -551,7 +576,7 @@ registry qué versión resolvía en el momento de la carga** y guardarla.
 
 ### 9.1 Cuatro endpoints, cuatro consumidores (5 min)
 
-Proyectar la tabla del [README sección 3.4](../sesiones/s05-deployment/README.md) y detenerse en
+Proyectar la tabla del [README sección 4.4](../sesiones/s05-deployment/README.md) y detenerse en
 la distinción que más se equivoca:
 
 ```bash
@@ -620,10 +645,10 @@ justifica:
 Sin la columna, la respuesta es "todas" o "ninguna". Con la columna, es una cláusula
 `WHERE`.
 
-Después, las cuatro trampas que el docstring de `batch.py` enumera (3 min):
-`np.random.seed(42)` fijo en el generador (cada corrida produce **los mismos datos**
-— inservible para monitoreo), kilómetros contra un modelo entrenado en millas,
-`iterrows()` en el bucle de predicción, y `'stage': 'Production'` como literal.
+Después, los cuatro atajos tentadores de un batch, leyendo el docstring de `batch.py`
+(3 min): datos sintéticos con semilla fija (cada corrida produce **los mismos datos**:
+inservible para monitoreo), kilómetros contra un modelo entrenado en millas, `iterrows()`
+en el bucle de predicción, y `'stage': 'Production'` como literal.
 
 Nombrar el límite de SQLite —un escritor, sin concurrencia, sin acceso remoto— y que
 `batch.py` soporta Postgres con `DATABASE_URL`.
@@ -632,7 +657,7 @@ Nombrar el límite de SQLite —un escritor, sin concurrencia, sin acceso remoto
 
 ## BLOQUE 11 — La decisión y las alternativas (160-165 min)
 
-**Archivos:** [README sección 2 y sección 6](../sesiones/s05-deployment/README.md),
+**Archivos:** [README sección 6 y sección 7](../sesiones/s05-deployment/README.md),
 [ADR 006](../docs/adr/006-serving-online-vs-batch.md). **Terminales:** 0.
 
 Cinco minutos, dos tablas, y es el bloque que ordena todo lo anterior.
@@ -688,7 +713,7 @@ vale más que la rúbrica.
 
 ## BLOQUE 13 — Cierre (220-240 min)
 
-**Archivos:** [README sección 7 y sección 8](../sesiones/s05-deployment/README.md).
+**Archivos:** [README secciones 8, 9 y 10](../sesiones/s05-deployment/README.md).
 
 ### 13.1 Autoverificación (7 min)
 
@@ -699,7 +724,7 @@ es la idea central.
 
 ### 13.2 Trade-offs, dicho honestamente (5 min)
 
-Lo que se ganó hoy y lo que costó:
+Lo que se ganó hoy y lo que costó (es la tabla de la sección 8 del README):
 
 | Ganamos | Nos costó |
 |---|---|
@@ -714,7 +739,7 @@ BentoML, no más FastAPI.**
 
 ### 13.3 Qué NO usar (5 min)
 
-Recorrer la tabla del README sección 8. Detenerse en tres, y en el porqué:
+Recorrer la tabla del README sección 10. Detenerse en tres, y en el porqué:
 
 - `app.run(debug=True, host="0.0.0.0")` → **ejecución remota de código**. Se ve entero en
   la sesión 6.
@@ -737,6 +762,7 @@ Dejar la pregunta sin responder. Es el acto 2 del dolor de la sesión 6.
 ### Limpieza
 
 ```bash
-make down
-docker rm -f api-local gatitos 2>/dev/null || true
+make down                                           # el stack; los volúmenes quedan
+docker rm -f api-local gatitos 2>/dev/null || true  # los contenedores sueltos
+# docker compose down -v                            # solo si quieres borrar también el registry del stack
 ```
