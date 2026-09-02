@@ -7,17 +7,17 @@
 # =============================================================================
 # Imagen de la API de inferencia — build multi-stage con uv
 # =============================================================================
-# El Dockerfile anterior de esta API garantizaba el fallo mas dificil de
-# diagnosticar del curso. Copiaba `pyproject.toml` a la imagen y acto seguido lo
-# ignoraba, instalando a mano:
+# El atajo tentador en un Dockerfile de serving es copiar `pyproject.toml` a la
+# imagen y acto seguido ignorarlo, instalando a mano lo que "hace falta":
 #
 #     RUN pip install --no-cache-dir mlflow==2.17.2 xgboost==2.1.2 scikit-learn==1.5.2
 #
-# El artefacto que servia esa imagen se habia generado con mlflow 3.x,
-# xgboost 3.2 y scikit-learn 1.6.1. Resultado: `InconsistentVersionWarning` en
-# cada arranque, `pickle` deserializando estimadores de otra version y
-# predicciones que podian diferir de las validadas por el gate de promocion. Un
-# modelo aprobado en CI y una imagen que sirve otra cosa.
+# Se ve inofensivo y es el fallo mas dificil de diagnosticar de todo el curso.
+# El artefacto se entreno con las versiones que resuelve `uv.lock` (mlflow 3.x,
+# xgboost 3.x, scikit-learn 1.9.x); la imagen carga ese pickle con otras.
+# Resultado: `InconsistentVersionWarning` en cada arranque y predicciones que
+# pueden diferir de las que valido el gate de promocion. Un modelo aprobado en
+# CI y una imagen que sirve otra cosa, sin un solo error en los logs.
 #
 # La regla que corrige esto: **las versiones se resuelven UNA vez, en `uv.lock`,
 # y todos los entornos —local, CI, entrenamiento, serving— instalan de ahi.**
@@ -194,11 +194,15 @@ EXPOSE 8000
 
 # HEALTHCHECK con Python, no con curl.
 #
-# El compose anterior definia `test: ["CMD","curl","-f",...]` sobre una imagen
-# `python:3.11-slim`, que no trae curl. El comando fallaba siempre, el contenedor
-# quedaba permanentemente `unhealthy` y cualquier `depends_on: service_healthy`
-# se colgaba. Instalar curl solo para esto agregaria una dependencia y ~10 MB;
-# el interprete que ya esta en la imagen resuelve lo mismo.
+# El atajo tentador es `test: ["CMD","curl","-f",...]`. Sobre una imagen
+# `python:*-slim`, que NO trae curl, ese comando falla siempre: el contenedor
+# queda permanentemente `unhealthy` y cualquier `depends_on: service_healthy` se
+# cuelga esperando. Comprobable en un comando:
+#
+#     docker run --rm --entrypoint sh <imagen> -c 'command -v curl || echo sin curl'
+#
+# Instalar curl solo para esto agregaria una dependencia y ~10 MB; el
+# interprete que ya esta en la imagen resuelve lo mismo.
 HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=3 \
     CMD ["python", "-c", "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4).status == 200 else 1)"]
 

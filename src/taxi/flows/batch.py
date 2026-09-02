@@ -21,23 +21,22 @@ empezo con la version 7 o con el cambio de datos, o que se le respondio a un
 cliente en una fecha dada. La trazabilidad datos -> modelo -> prediccion es lo que
 hace auditable el sistema; sin ella hay un modelo, no un sistema.
 
-Bugs del batch anterior que aqui no se repiten
-----------------------------------------------
-1. **`np.random.seed(42)` fijo en el generador** (`batch-deploy/src/data_generator.py:31`):
-   cada corrida horaria generaba **los mismos datos**. Es inservible justo para
-   lo que se necesita —monitoreo y drift—: la distribucion nunca cambia.
-2. **Unidades incoherentes**: el generador documentaba "0.5 a 10 km" y alimentaba
-   un modelo entrenado con `trip_distance` en **millas**.
+Cuatro atajos tentadores en un batch, y por que fallan
+------------------------------------------------------
+1. **Simular "produccion" con un generador sintetico de semilla fija**
+   (`np.random.seed(42)`): cada corrida produce **los mismos datos**, la
+   distribucion nunca cambia y el monitoreo de drift no tiene nada que medir.
+   Aqui la "produccion" son meses reales de la TLC (`PARTICIONES_PRODUCCION`),
+   que traen drift real: estacionalidad, tarifas, patrones de viaje.
+2. **Cambiar de unidad sin avisar**: documentar `trip_distance` en kilometros y
+   alimentar un modelo entrenado en **millas**. No lanza ningun error; solo
+   degrada la prediccion. La unidad se declara donde se persiste.
 3. **`iterrows()` en el bucle de prediccion**: fila por fila, con overhead de
    Python por registro. Aqui se predice sobre el DataFrame completo.
-4. **`'stage': 'Production'` hardcodeado** en la fila persistida: un literal que
-   miente en cuanto el modelo cambia de estado, ademas de venir del vocabulario
-   de stages, deprecado en MLflow. Se persiste el **alias** consultado y la
+4. **Escribir `'stage': 'Production'` como literal** en la fila persistida:
+   miente en cuanto el modelo cambia de estado, y viene del vocabulario de
+   stages, deprecado en MLflow. Se persiste el **alias** consultado y la
    **version** que ese alias resolvia en el momento de la corrida.
-
-El generador sintetico desaparece: aqui la "produccion" son meses reales de la
-TLC (`PARTICIONES_PRODUCCION`), que traen drift real —estacionalidad, tarifas,
-patrones de viaje— en lugar de drift inventado con numpy.
 
 Nota honesta sobre el dato: al ser un mes pasado, la particion trae el label. En
 produccion no lo tendrias en el momento de predecir. Se persiste la prediccion,

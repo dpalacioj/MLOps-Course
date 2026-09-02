@@ -13,18 +13,18 @@
 # -----------------------------------------------------------------------------
 # Sin clave `version:`
 # -----------------------------------------------------------------------------
-# El compose anterior empezaba con `version: '3.8'`. Compose v2 la ignora y
-# ademas emite un warning en cada comando. La clave venia del formato de
+# Muchos archivos de Compose empiezan con `version: '3.8'`. Compose v2 la ignora
+# y ademas emite un warning en cada comando. La clave venia del formato de
 # Compose v1, donde declaraba el esquema del archivo; hoy el schema lo determina
-# la version del binario. Dejarla es ruido que ensena una practica muerta.
+# la version del binario. Ponerla es ruido que ensena una practica muerta.
 #
 # -----------------------------------------------------------------------------
 # Todos los healthchecks de este archivo funcionan de verdad
 # -----------------------------------------------------------------------------
-# El compose anterior definia `test: ["CMD","curl","-f","http://localhost:8000/health"]`
-# sobre una imagen `python:3.11-slim`, que no incluye curl. El comando fallaba
-# siempre y el contenedor quedaba `unhealthy` de forma permanente; cualquier
-# `depends_on: condition: service_healthy` habria esperado para siempre.
+# El atajo tentador es `test: ["CMD","curl","-f","http://localhost:8000/health"]`
+# sobre una imagen `python:*-slim`, que no incluye curl. El comando falla
+# siempre y el contenedor queda `unhealthy` de forma permanente; cualquier
+# `depends_on: condition: service_healthy` espera para siempre.
 #
 # La regla que corrige esto: **el healthcheck solo puede usar binarios que la
 # imagen realmente trae.** Verificable en un comando:
@@ -181,6 +181,13 @@ services:
       #  - La imagen de la API no necesita boto3 ni credenciales de S3. El radio
       #    de exposicion de las llaves se reduce a un solo contenedor.
       #  - Al migrar a AWS solo cambia este servicio; la API queda intacta.
+      #
+      # Matiz: con un destino S3 el servidor anuncia "descargas multipart" y el
+      # cliente intenta bajar los artefactos por URLs prefirmadas que apuntan a
+      # `http://minio:9000`, alcanzable solo desde esta red. Los clientes del
+      # curso lo desactivan en `taxi/config.py` (MLFLOW_ENABLE_PROXY_MULTIPART_
+      # DOWNLOAD=false) para ir siempre por el camino proxiado; sin eso, un
+      # `taxi promote` desde el host tarda un minuto por archivo.
       - --artifacts-destination=s3://${MLFLOW_BUCKET:-mlflow}/
       # 0.0.0.0 es necesario para que el puerto publicado y la red interna de
       # Docker lleguen al servidor. No es una decision de seguridad: quien filtra
@@ -222,7 +229,7 @@ services:
         condition: service_completed_successfully
     healthcheck:
       # Python, no curl: la imagen de MLflow esta basada en python-slim y no trae
-      # curl. Este es el mismo error que hacia inutil el healthcheck anterior.
+      # curl. Un healthcheck con curl aqui fallaria siempre (ver la cabecera).
       test:
         [
           "CMD",

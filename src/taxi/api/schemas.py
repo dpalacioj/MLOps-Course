@@ -290,9 +290,10 @@ class SaludResponse(BaseModel):
     inspeccionable, y quien necesite un *readiness* check (no enviar trafico
     hasta que haya modelo) lo construye sobre el campo ``model_loaded``.
 
-    Anti-patron corregido: el `/health` anterior lanzaba `HTTPException(503,
-    detail=f"...{str(e)}")`, es decir, filtraba el mensaje de la excepcion
-    interna al cliente y ademas hacia imposible arrancar sin modelo.
+    El atajo tentador es un `/health` que lanza `HTTPException(503,
+    detail=f"...{str(e)}")` cuando la carga falla. Falla dos veces: filtra el
+    mensaje de la excepcion interna al cliente y hace imposible arrancar sin
+    modelo, que es justo el momento en que hace falta poder mirar el estado.
     """
 
     model_config = ConfigDict(extra="forbid")
