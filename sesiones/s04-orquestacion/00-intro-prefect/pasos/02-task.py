@@ -1,6 +1,6 @@
-"""Paso: de un flow monolitico a un flow con tasks.
+"""Paso 2 de la progresion: de un flow monolitico a un flow con tasks.
 
-La misma logica de `weather1-bare.py`, ahora partida en dos `@task`. Lo que se
+La misma logica de `01-flow.py`, ahora partida en dos `@task`. Lo que se
 gana: cada paso tiene estado propio, asi que cuando algo falla se sabe *cual*
 paso fallo; y Prefect deriva el orden de ejecucion de las dependencias de datos
 entre tasks, sin que haya que declararlo.

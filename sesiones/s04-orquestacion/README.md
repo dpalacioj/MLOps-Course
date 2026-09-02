@@ -287,7 +287,7 @@ no son válidas o no son la forma canónica:
 | Bloques de infraestructura (`DockerContainer`, `KubernetesJob`) | work pools tipados (`docker`, `kubernetes`) | dejaron de ser el mecanismo de despliegue |
 | `schedule=` singular estilo Prefect 2 (dict `cron`/`timezone`), y `schedule:` en `prefect.yaml` | `schedules=[Cron(...)]` y `schedules:` (lista) | la clave canónica es plural; si en `prefect.yaml` están las dos, el deploy falla |
 | `.deploy()` sin `work_pool_name` | `.deploy(..., work_pool_name="curso-mlops")` | es obligatorio: sin work pool no hay quién ejecute |
-| Rutas absolutas en `prefect.yaml` | rutas relativas al archivo | el `set_working_directory: /Users/<alguien>/…` del repo anterior rompía el deploy en cualquier otra máquina |
+| Rutas absolutas en `prefect.yaml` | rutas relativas al archivo | un `set_working_directory: /Users/<alguien>/…` es la ruta del disco de quien lo escribió: rompe el deploy en cualquier otra máquina |
 
 Y del lado de MLflow, lo que esta sesión no vuelve a hacer:
 `transition_model_version_stage`, URIs de modelo por stage, `artifact_path=` en

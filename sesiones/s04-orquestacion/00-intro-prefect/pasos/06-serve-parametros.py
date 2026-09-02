@@ -1,4 +1,4 @@
-"""Paso 4 de la progresion: `serve()` con parametros.
+"""Paso 6 de la progresion: `serve()` con parametros.
 
 El mismo flow, con valores por defecto que se pueden cambiar desde la UI sin
 tocar el codigo. Es la forma de reentrenar con otros datos, o de correr el mismo
@@ -9,7 +9,7 @@ import httpx
 from prefect import flow
 
 
-@flow
+@flow(log_prints=True)
 def fetch_weather(lat: float = 38.9, lon: float = -77.0) -> float:
     """Devuelve la temperatura pronosticada en unas coordenadas."""
     base_url = "https://api.open-meteo.com/v1/forecast/"

@@ -11,7 +11,7 @@ Tres decisiones de diseno, para que la demo no dependa de nada fragil:
    de unos cientos de miles de filas. El costo de repetir un paso se puede medir
    con `time`, en vez de afirmarlo.
 2. **Sin red y sin terceros.** La misma razon por la que
-   `00-intro-prefect/workflows/retries.py` dejo de llamar a un endpoint publico:
+   `00-intro-prefect/pasos/03-reintentos.py` dejo de llamar a un endpoint publico:
    una demo de resiliencia que depende de un servicio ajeno falla en clase por el
    motivo equivocado.
 3. **Sin metricas inventadas.** Aqui no se entrena nada. El pipeline de verdad
@@ -131,7 +131,7 @@ def paso_3_resumir(origen: Path, intento: int = 1) -> Path:
 
     No entrena un modelo. Calcula tres agregados sobre el CSV limpio, que son
     verificables a mano: eso es lo contrario de las metricas inventadas que se
-    eliminaron de `workflows/artifacts-ml.py`.
+    eliminaron de `workflows/artifacts-ml.py` (eliminado).
     """
     fallar_si_toca(3, intento)
     velocidades: list[float] = []

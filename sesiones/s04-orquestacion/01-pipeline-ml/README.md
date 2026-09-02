@@ -10,10 +10,10 @@ paquete instalable, y esta carpeta solo lo ejecuta y lo analiza:
 | Deployments y schedules | `src/taxi/flows/deploy.py` |
 | Modelo, features y registry | `src/taxi/models/`, `src/taxi/features/`, `src/taxi/data/` |
 
-La versión anterior del curso tenía en esta carpeta un `src/` completo y paralelo
-(`Prefect-pipelines/src/{config,data,features,models}`) que reimplementaba el
-mismo problema con **otras features** y otro nombre de modelo. Tres copias del
-mismo pipeline es tres veces la superficie de bugs y ninguna fuente de verdad.
+Esta carpeta **no** contiene una copia del pipeline: lo importa. Mantener una
+implementación paralela por sesión multiplica la superficie de bugs y deja al
+curso sin una fuente de verdad — dos copias con features distintas entrenan dos
+modelos distintos y ninguna de las dos es la que sirve en producción.
 
 ## Ejecutar
 

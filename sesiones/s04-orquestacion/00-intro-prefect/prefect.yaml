@@ -3,14 +3,12 @@
 # =============================================================================
 # Se despliega ejecutando `prefect deploy --all` DESDE ESTE DIRECTORIO.
 #
-# Dos cosas que este archivo corrige respecto a la version anterior del curso:
+# Dos detalles que hacen que este archivo funcione en cualquier maquina:
 #
-# 1. No hay rutas absolutas. La version anterior tenia un paso
-#    `set_working_directory` apuntando al disco de quien lo escribio
-#    (/Users/<usuario>/Downloads/proyectos/...), asi que `prefect deploy --all`
-#    fallaba en cualquier otra maquina. El `entrypoint` se resuelve relativo al
-#    directorio donde vive este archivo: para desplegar en local no hace falta
-#    ningun paso `pull`.
+# 1. Ninguna ruta absoluta. El `entrypoint` se resuelve relativo al directorio
+#    donde vive este archivo, asi que para desplegar en local no hace falta
+#    ningun paso `pull`. Un `set_working_directory: /Users/<usuario>/...` seria
+#    la ruta del disco de quien lo escribio y fallaria en cualquier otro.
 #
 # 2. La clave es `schedules:` (plural, una lista). El `schedule:` singular con
 #    un mapa cron/timezone es la forma heredada de Prefect 2: esta deprecada, y
@@ -23,7 +21,7 @@ deployments:
   # Un mismo flow puede tener varios deployments: distinto schedule, distintos
   # parametros. El codigo del flow no cambia.
   - name: clima-medellin
-    entrypoint: flows/weather1-flow.py:fetch_weather
+    entrypoint: pasos/01b-flow-entrypoint.py:fetch_weather
     description: Consulta el pronostico de Medellin cada 10 minutos.
     tags: [s04, demo]
     # `prefect deploy` necesita un work pool: quien ejecuta es un worker, no
@@ -40,7 +38,7 @@ deployments:
       lon: -75.5658
 
   - name: clima-bogota
-    entrypoint: flows/weather1-flow.py:fetch_weather
+    entrypoint: pasos/01b-flow-entrypoint.py:fetch_weather
     description: Consulta el pronostico de Bogota cada 2 horas.
     tags: [s04, demo]
     work_pool:

@@ -37,7 +37,7 @@ from prefect.runtime import task_run
 # Los tres decoradores repiten los mismos argumentos a proposito, en vez de
 # factorizarlos en un diccionario: se leen de corrido y se pueden cambiar uno
 # por uno. El porque del backoff creciente (1 s, luego 3 s) esta en
-# `00-intro-prefect/workflows/retries.py`.
+# `00-intro-prefect/pasos/03-reintentos.py`.
 
 
 @task(retries=2, retry_delay_seconds=[1, 3], retry_jitter_factor=0.2)

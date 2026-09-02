@@ -1,4 +1,4 @@
-"""Paso 6b: dos flows con schedules distintos en el mismo proceso.
+"""Paso 7b: dos flows con schedules distintos en el mismo proceso.
 
 Es la forma en que conviven, por ejemplo, un entrenamiento mensual y una
 validacion diaria: dos deployments, dos schedules, un proceso.

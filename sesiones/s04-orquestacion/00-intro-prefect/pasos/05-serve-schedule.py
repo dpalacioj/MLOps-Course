@@ -1,4 +1,4 @@
-"""Paso 3 de la progresion: `serve()` con schedule.
+"""Paso 5 de la progresion: `serve()` con schedule.
 
 `cron="* * * * *"` (cada minuto) sirve para *ver* el mecanismo en clase. En
 produccion la frecuencia se deriva de cuando llegan datos nuevos, no de las ganas
@@ -26,7 +26,7 @@ from prefect import flow
 from prefect.schedules import Cron
 
 
-@flow
+@flow(log_prints=True)
 def fetch_weather(lat: float = 38.9, lon: float = -77.0) -> float:
     """Devuelve la temperatura pronosticada en unas coordenadas."""
     base_url = "https://api.open-meteo.com/v1/forecast/"

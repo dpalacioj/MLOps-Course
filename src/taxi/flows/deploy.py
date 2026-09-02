@@ -17,9 +17,8 @@ lanzar sin que nadie este presente.
 
 En clase usamos `serve`: cero infraestructura y se ve el resultado en la UI en
 treinta segundos. En produccion se usa `deploy` con work pool, y `deploy()`
-**exige** `work_pool_name`: sin work pool no hay quien ejecute. El
-`flows/weather1-deploy.py` del repo anterior llamaba `.deploy()` sin ese
-argumento (linea 19) y por lo tanto no podia funcionar en Prefect 3.
+**exige** `work_pool_name`: sin work pool no hay quien ejecute. Un `.deploy()`
+sin ese argumento no puede funcionar en Prefect 3.
 
 Los **agents fueron eliminados** en Prefect 3: `prefect agent start` no existe.
 El modelo es workers + work pools. Tampoco existen ya `Deployment.build_from_flow`
@@ -28,9 +27,9 @@ mecanismo de despliegue.
 
 Por que `cron="*/2 * * * *"` reentrenando el modelo completo es un anti-patron
 -----------------------------------------------------------------------------
-El `Prefect-pipelines/deploy.py` anterior reentrenaba el modelo **completo** cada
-dos minutos, descargando los parquets de la TLC en cada corrida, y lo documentaba
-como buena practica ("for learning purposes"). Es incorrecto por cinco razones
+Es un ejemplo que circula documentado como buena practica ("for learning
+purposes"): reentrenar el modelo **completo** cada dos minutos, descargando los
+parquets de la TLC en cada corrida. Es incorrecto por cinco razones
 independientes:
 
 1. **No aporta senal.** Los datos son particiones mensuales inmutables: entre las
@@ -39,7 +38,7 @@ independientes:
 2. **Cuesta.** Descarga de decenas de MB por corrida (720 corridas al dia) y CPU
    de entrenamiento. En una nube eso es dinero; contra el servidor de la TLC es
    abuso de un recurso publico y gratuito.
-3. **Ensucia el registry.** Con auto-promocion —como estaba— produce 720
+3. **Ensucia el registry.** Con auto-promocion produce 720
    versiones "de produccion" al dia y hace ilegible el historial: el linaje de
    que modelo sirvio que prediccion deja de poder reconstruirse.
 4. **Rompe la nocion de Continuous Training.** CT no significa "reentrenar

@@ -1,4 +1,4 @@
-"""Paso 6 de la progresion: servir dos flows desde un solo proceso.
+"""Paso 7 de la progresion: servir dos flows desde un solo proceso.
 
 `to_deployment()` construye el objeto deployment sin servirlo; `serve()` sirve
 todos los que se le pasen. Un solo proceso, varios deployments independientes:
@@ -10,13 +10,13 @@ import time
 from prefect import flow, serve
 
 
-@flow
+@flow(log_prints=True)
 def flow_lento(segundos: int = 60) -> None:
     """Duerme el tiempo indicado. Sirve para ver un run en estado Running."""
     time.sleep(segundos)
 
 
-@flow
+@flow(log_prints=True)
 def flow_rapido() -> None:
     """Vuelve de inmediato."""
     return

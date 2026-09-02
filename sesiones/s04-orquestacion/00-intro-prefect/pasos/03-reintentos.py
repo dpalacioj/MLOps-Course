@@ -1,11 +1,11 @@
-"""Reintentos con backoff, sin depender de servicios de terceros.
+"""Paso 3 de la progresion: reintentos con backoff, sin servicios de terceros.
 
-Bug corregido: la version anterior de este archivo llamaba a
-`https://tools-httpstatus.pickup-services.com/{200|500}` para simular fallos.
-Depender de un endpoint de terceros para *ensenar* resiliencia tiene dos
-problemas: si el servicio esta caido la demo no funciona (y el instructor queda
-explicando por que falla lo que no deberia fallar), y el fallo es aleatorio, asi
-que la salida no es reproducible en clase.
+El fallo se simula en local, a proposito. La tentacion es llamar a un endpoint
+publico que devuelve 500 —hay servicios hechos para eso—, pero depender de un
+tercero para *ensenar* resiliencia tiene dos problemas: si el servicio esta caido
+la demo no funciona (y el instructor queda explicando por que falla lo que no
+deberia fallar), y el fallo es aleatorio, asi que la salida no es reproducible en
+clase.
 
 Aqui el fallo es **local y determinista**: la task falla exactamente las primeras
 `fallos_simulados` veces y despues funciona. El numero de intento se lee de

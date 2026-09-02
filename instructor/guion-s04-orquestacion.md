@@ -46,18 +46,18 @@ sesiones/s04-orquestacion/
 │   └── 3-orquestador.py             # Bloque 2, cierre (@flow con retries)
 ├── 00-intro-prefect/
 │   ├── README.md                    # la progresión, en tabla
-│   ├── flows/
-│   │   ├── weather1-bare.py         # Bloque 3
-│   │   ├── weather1-flow.py         # Bloque 3 (variante; entrypoint del YAML)
-│   │   ├── weather1-serve.py        # Bloque 7
-│   │   ├── weather1-serve-schedule.py   # Bloque 8
-│   │   ├── weather1-serve-params.py     # Bloque 7
-│   │   ├── serve-two-flows.py           # Bloque 8
-│   │   ├── serve-two-flows-scheduled.py # Bloque 8
-│   │   └── weather1-deploy.py       # Bloque 10 (deploy + work pool)
-│   ├── workflows/
-│   │   ├── my-first-task.py         # Bloque 4
-│   │   ├── retries.py               # Bloque 5
+│   ├── pasos/                       # la escalera, en orden de ejecución
+│   │   ├── 01-flow.py               # Bloque 3
+│   │   ├── 01b-flow-entrypoint.py   # Bloque 3 (variante; entrypoint del YAML)
+│   │   ├── 02-task.py               # Bloque 4
+│   │   ├── 03-reintentos.py         # Bloque 5
+│   │   ├── 04-serve.py              # Bloque 7
+│   │   ├── 05-serve-schedule.py     # Bloque 8
+│   │   ├── 06-serve-parametros.py   # Bloque 7
+│   │   ├── 07-dos-flows.py          # Bloque 8
+│   │   ├── 07b-dos-flows-schedule.py    # Bloque 8
+│   │   └── 08-deploy.py             # Bloque 10 (deploy + work pool)
+│   ├── extras/                      # complementos, sin orden entre sí
 │   │   ├── simple-artifacts.py      # Bloque 6
 │   │   ├── runtime_context.py       # Bloque 6
 │   │   ├── get_variable.py          # Bloque 6 (mostrar)
@@ -253,7 +253,7 @@ dictar el Bloque 3 completo.
 
 ## BLOQUE 3 — Flow mínimo (40-55 min)
 
-**Archivo:** `sesiones/s04-orquestacion/00-intro-prefect/flows/weather1-bare.py`
+**Archivo:** `sesiones/s04-orquestacion/00-intro-prefect/pasos/01-flow.py`
 **Terminales:** 1.
 
 Una función normal de Python con un decorador encima. Nada más.
@@ -269,7 +269,7 @@ def fetch_weather(lat: float = 38.9, lon: float = -77.0) -> float:
 ### Comando
 
 ```bash
-uv run python sesiones/s04-orquestacion/00-intro-prefect/flows/weather1-bare.py
+uv run python sesiones/s04-orquestacion/00-intro-prefect/pasos/01-flow.py
 ```
 
 ### Salida esperada (la hora y el nombre del run cambian)
@@ -287,14 +287,14 @@ midió su duración, capturó los logs y reportó el estado final. Fíjense en e
 `timeout=30` del `httpx.get`: sin timeout, una petición colgada bloquea el flow
 para siempre y **ningún** reintento se dispara, porque nunca falla."
 
-**Variante:** `weather1-flow.py` es el mismo código con `@flow()`. Las dos formas
+**Variante:** `01b-flow-entrypoint.py` es el mismo código con `@flow()`. Las dos formas
 son válidas; se conserva porque es el `entrypoint` del `prefect.yaml`.
 
 ---
 
 ## BLOQUE 4 — Tasks y el grafo (55-70 min)
 
-**Archivo:** `sesiones/s04-orquestacion/00-intro-prefect/workflows/my-first-task.py`
+**Archivo:** `sesiones/s04-orquestacion/00-intro-prefect/pasos/02-task.py`
 **Terminales:** 1.
 
 > Ver: ![03 - Flow y Task](../sesiones/s04-orquestacion/diagrams/03_flow_y_task.png)
@@ -304,7 +304,7 @@ La misma lógica, ahora partida en dos `@task`: `obtener_temperatura` y
 `guardar_temperatura`.
 
 ```bash
-uv run python sesiones/s04-orquestacion/00-intro-prefect/workflows/my-first-task.py
+uv run python sesiones/s04-orquestacion/00-intro-prefect/pasos/02-task.py
 ```
 
 ### Salida esperada
@@ -335,7 +335,7 @@ uv run python sesiones/s04-orquestacion/00-intro-prefect/workflows/my-first-task
 
 ## BLOQUE 5 — Reintentos y backoff (70-82 min)
 
-**Archivo:** `sesiones/s04-orquestacion/00-intro-prefect/workflows/retries.py`
+**Archivo:** `sesiones/s04-orquestacion/00-intro-prefect/pasos/03-reintentos.py`
 **Terminales:** 1.
 
 > Ver: ![06 - Reintentos](../sesiones/s04-orquestacion/diagrams/06_reintentos.png)
@@ -350,7 +350,7 @@ la task falla exactamente las primeras N veces, leyendo el número de intento de
 `prefect.runtime.task_run.run_count`.
 
 ```bash
-uv run python sesiones/s04-orquestacion/00-intro-prefect/workflows/retries.py
+uv run python sesiones/s04-orquestacion/00-intro-prefect/pasos/03-reintentos.py
 ```
 
 ### Salida esperada (verificada; los tiempos varían por el jitter)
@@ -393,14 +393,14 @@ se propaga y el flow termina en `Failed`.
 
 ## BLOQUE 6 — Artifacts, contexto, variables y secretos (82-95 min)
 
-**Archivos:** `00-intro-prefect/workflows/simple-artifacts.py`, `runtime_context.py`,
+**Archivos:** `00-intro-prefect/extras/simple-artifacts.py`, `runtime_context.py`,
 `get_variable.py`, `create_secret.py`, `openai_with_secret.py`.
 **Terminales:** 1 (aún no hace falta el servidor; los runs quedan en el temporal).
 
 ### 6.1 Artifacts (6 min)
 
 ```bash
-uv run python sesiones/s04-orquestacion/00-intro-prefect/workflows/simple-artifacts.py
+uv run python sesiones/s04-orquestacion/00-intro-prefect/extras/simple-artifacts.py
 ```
 
 Termina solo. En la UI (cuando se levante, bloque 7): **Runs → demo-artifacts →
@@ -414,7 +414,7 @@ número solo tiene sentido junto al baseline."
 ### 6.2 Contexto de ejecución (3 min)
 
 ```bash
-uv run python sesiones/s04-orquestacion/00-intro-prefect/workflows/runtime_context.py
+uv run python sesiones/s04-orquestacion/00-intro-prefect/extras/runtime_context.py
 ```
 
 **Qué explicar:** "El uso que nos importa en MLOps es escribir el id del flow run
@@ -453,7 +453,7 @@ uv run python -m taxi.flows.training
 
 ## BLOQUE 7 — Dashboard y `serve` (110-128 min)
 
-**Archivos:** `00-intro-prefect/flows/weather1-serve.py` y `weather1-serve-params.py`
+**Archivos:** `00-intro-prefect/pasos/04-serve.py` y `06-serve-parametros.py`
 **Terminales:** 2, de aquí al final.
 
 > Ver: ![09 - Arquitectura](../sesiones/s04-orquestacion/diagrams/09_arquitectura.png)
@@ -493,7 +493,7 @@ Updated profile 'default'.
 ### 7.3 Terminal 2 — servir el primer flow
 
 ```bash
-uv run python sesiones/s04-orquestacion/00-intro-prefect/flows/weather1-serve.py
+uv run python sesiones/s04-orquestacion/00-intro-prefect/pasos/04-serve.py
 ```
 
 ```
@@ -514,7 +514,7 @@ To trigger a run for this flow, use the following command:
 ### 7.5 Parámetros (Ctrl+C y siguiente archivo)
 
 ```bash
-uv run python sesiones/s04-orquestacion/00-intro-prefect/flows/weather1-serve-params.py
+uv run python sesiones/s04-orquestacion/00-intro-prefect/pasos/06-serve-parametros.py
 ```
 
 En **Deployments → clima-con-parametros → Run**, el formulario llega con
@@ -531,13 +531,13 @@ Ctrl+C antes de seguir.
 
 ## BLOQUE 8 — Schedules (128-140 min)
 
-**Archivos:** `weather1-serve-schedule.py`, `serve-two-flows-scheduled.py`
+**Archivos:** `05-serve-schedule.py`, `07b-dos-flows-schedule.py`
 **Terminales:** 2.
 
 > Ver: ![08 - Deployment y Cron](../sesiones/s04-orquestacion/diagrams/08_deployment.png)
 
 ```bash
-uv run python sesiones/s04-orquestacion/00-intro-prefect/flows/weather1-serve-schedule.py
+uv run python sesiones/s04-orquestacion/00-intro-prefect/pasos/05-serve-schedule.py
 ```
 
 ```python
@@ -572,7 +572,7 @@ Pizarra:
 Ctrl+C. Después, dos flows con schedules distintos en un solo proceso:
 
 ```bash
-uv run python sesiones/s04-orquestacion/00-intro-prefect/flows/serve-two-flows-scheduled.py
+uv run python sesiones/s04-orquestacion/00-intro-prefect/pasos/07b-dos-flows-schedule.py
 ```
 
 **Qué explicar:** "`to_deployment()` construye el deployment, `serve()` sirve
@@ -687,7 +687,7 @@ batch anterior en cada fila. Un literal que miente en cuanto el modelo cambia."
 
 ## BLOQUE 10 — Deployments de verdad y el trigger (158-165 min)
 
-**Archivos:** `src/taxi/flows/deploy.py`, `00-intro-prefect/flows/weather1-deploy.py`,
+**Archivos:** `src/taxi/flows/deploy.py`, `00-intro-prefect/pasos/08-deploy.py`,
 `00-intro-prefect/prefect.yaml`
 **Terminales:** 2.
 
@@ -704,7 +704,7 @@ batch anterior en cada fila. Un literal que miente en cuanto el modelo cambia."
 ```bash
 uv run prefect work-pool create curso-mlops --type process
 uv run prefect worker start --pool curso-mlops        # Terminal 3
-uv run python sesiones/s04-orquestacion/00-intro-prefect/flows/weather1-deploy.py
+uv run python sesiones/s04-orquestacion/00-intro-prefect/pasos/08-deploy.py
 ```
 
 **Qué explicar:** "Este archivo tenía un bug: llamaba a `.deploy()` **sin**
@@ -722,10 +722,10 @@ que hacía fallar `prefect deploy --all` en cualquier otra máquina.
 Mostrar `src/taxi/flows/deploy.py`: `CRON_ENTRENAMIENTO = "0 3 5 * *"`,
 zona `America/Bogota`.
 
-> **Preguntar antes de explicar:** "El repo anterior reentrenaba el modelo
+> **Preguntar antes de explicar:** "Imaginen un pipeline que reentrena el modelo
 > completo con `cron='*/2 * * * *'`, cada dos minutos, descargando los parquets de
-> la TLC en cada corrida. Estaba documentado como buena práctica *for learning
-> purposes*. Denme tres razones por las que está mal."
+> la TLC en cada corrida. Es un ejemplo que se encuentra documentado como buena
+> práctica *for learning purposes*. Denme tres razones por las que está mal."
 
 Las cinco razones, para completar lo que falte:
 

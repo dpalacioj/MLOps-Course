@@ -1,6 +1,6 @@
 """Variante del paso 1: `@flow()` con parentesis.
 
-No cambia nada funcional respecto a `weather1-bare.py`; las dos formas son
+No cambia nada funcional respecto a `01-flow.py`; las dos formas son
 validas. Este es el archivo al que apunta el `entrypoint` de `prefect.yaml`.
 """
 

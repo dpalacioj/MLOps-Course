@@ -1,9 +1,9 @@
 """Bloques `Secret` de Prefect: como guardar una credencial y como NO guardarla.
 
-Bug corregido: la version anterior de este archivo commiteaba el valor del
-secreto en el codigo:
+Lo que NUNCA hay que escribir, aunque sea la forma mas corta y la que aparece
+en muchos ejemplos:
 
-    my_secret_block = Secret(value="shhh!-it's-a-secret")   # <-- en el repo
+    my_secret_block = Secret(value="shhh!-it's-a-secret")   # <-- jamas
 
 Un secreto que esta en el repositorio no es un secreto. Y no se arregla borrando
 la linea: queda en el historial de git para siempre, asi que hay que **rotar la

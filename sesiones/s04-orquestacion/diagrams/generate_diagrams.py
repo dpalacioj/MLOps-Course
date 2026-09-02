@@ -1430,18 +1430,13 @@ def diagram_11_prefect_mlflow():
 def diagram_12_ecosystem():
     """Panorama de orquestadores, alineado con la seccion 5 del README de S04.
 
-    Bug corregido: este diagrama contradecia la tabla del README. Ponia a Mage
-    como primera opcion del eje, etiquetada "Prototipos / Ensenanza", cuando el
-    README advierte que su ultima release open source es de enero de 2026 y que
-    la implementacion en Mage se elimino del repositorio. Mostraba cuatro
-    herramientas de las ocho de la tabla, y las ordenaba con un conteo de
-    estrellas de GitHub hardcodeado y sin fecha: el dato que envejece peor, y que
-    ademas no es uno de los cuatro criterios declarados.
+    Muestra las ocho herramientas de la tabla, separadas en las dos familias que
+    el README distingue y ordenadas por costo de entrada, con el estado de cada
+    proyecto. Si la tabla del README cambia, este diagrama tiene que regenerarse
+    con ella: es la unica fuente de la comparacion.
 
-    Ahora: las ocho herramientas de la tabla, separadas en las dos familias que
-    el README distingue, ordenadas por costo de entrada, con el estado del
-    proyecto y sin contar estrellas. Si la tabla del README cambia, este diagrama
-    tiene que regenerarse con ella.
+    Deliberadamente NO ordena por estrellas de GitHub. Es el dato que envejece
+    peor y no es uno de los cuatro criterios declarados en el README.
     """
     fig, ax = setup_figure((17, 10), "12 - Panorama de orquestadores (evaluado en agosto de 2026)")
 
