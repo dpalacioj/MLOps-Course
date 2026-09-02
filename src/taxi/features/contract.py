@@ -32,9 +32,9 @@ COL_DROPOFF: Final[str] = "lpep_dropoff_datetime"
 #: Zonas de origen y destino. Son IDs numericos, pero semanticamente son
 #: categorias: la zona 42 no es "mayor" que la 41.
 CRUDAS_CATEGORICAS: Final[list[str]] = ["PULocationID", "DOLocationID"]
-#: Distancia del viaje. Viene en MILLAS (no en km — el generador de datos
-#: sinteticos del repo anterior documentaba km y alimentaba un modelo entrenado
-#: en millas).
+#: Distancia del viaje. Viene en MILLAS, no en km. Queda declarado aqui porque
+#: mezclar las dos unidades no rompe nada de forma visible: solo degrada la
+#: prediccion.
 CRUDAS_NUMERICAS: Final[list[str]] = ["trip_distance"]
 
 COLUMNAS_CRUDAS_REQUERIDAS: Final[list[str]] = [

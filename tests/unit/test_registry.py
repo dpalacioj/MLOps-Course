@@ -107,8 +107,7 @@ def test_explicar_por_que_no_stages_es_coherente_con_el_codigo() -> None:
 
     El notebook y la model card imprimen ESTA funcion. Si la explicacion
     estuviera duplicada en un markdown, en seis meses habria dos versiones
-    incompatibles: es literalmente lo que le paso al repo anterior, donde un
-    modulo ensenaba aliases y otro promovia con stages.
+    incompatibles: un modulo ensenando aliases y otro promoviendo con stages.
     """
     texto = registry.explicar_por_que_no_stages()
     assert config.ALIAS_PRODUCCION in texto

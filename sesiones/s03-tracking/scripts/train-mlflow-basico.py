@@ -46,9 +46,9 @@ from taxi.features import contract as fc
 from taxi.models import train
 
 #: Puerto 5001 en TODO el curso: el puerto por defecto de `mlflow server` lo
-#: ocupa AirPlay Receiver en macOS. El repo anterior mezclaba los dos puertos
-#: entre scripts y notebooks, y el estudiante acababa con el server en uno y el
-#: cliente en el otro. El valor vive en `taxi.config`, no repetido en cada archivo.
+#: ocupa AirPlay Receiver en macOS. El valor vive en `taxi.config` y no repetido
+#: en cada archivo: mezclar los dos puertos entre scripts y notebooks deja el
+#: server escuchando en uno y el cliente hablando al otro.
 TRACKING_URI = config.MLFLOW_TRACKING_URI
 
 

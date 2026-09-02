@@ -1,7 +1,8 @@
 """Tests del contrato de features.
 
-Cada test aqui corresponde a un bug concreto del repositorio anterior. No son
-tests de cobertura: son la prueba de que el bug no puede volver.
+Cada test aqui corresponde a un fallo concreto y silencioso del pipeline de
+features. No son tests de cobertura: son la prueba de que ese fallo no puede
+entrar sin que algo se ponga rojo.
 """
 
 from __future__ import annotations

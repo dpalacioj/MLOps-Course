@@ -590,7 +590,7 @@ def test_particion_desde_etiqueta_valida_el_formato() -> None:
 
 
 def test_nombre_del_reporte_dice_que_compara() -> None:
-    """El repo anterior sobreescribia `drift_report.html` en cada corrida."""
+    """Un nombre fijo se sobreescribe en cada corrida y borra el historico."""
     nombre = cd.nombre_reporte(cd.PARTICIONES_TRAIN, cd.PARTICIONES_PRODUCCION)
     assert nombre == "drift_2023-01_2023-02_2023-03__vs__2023-07_2024-01"
 

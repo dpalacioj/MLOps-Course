@@ -2,9 +2,9 @@
 
 Problema que resuelve
 ---------------------
-El repo anterior tenia rutas absolutas de la maquina del autor incrustadas en
-YAML y notebooks (ver ``scripts/hooks/sin_rutas_absolutas.py``). El sintoma es
-siempre el mismo: funciona para quien lo escribio y falla para todos los demas.
+Las rutas absolutas incrustadas en YAML y notebooks tienen siempre el mismo
+sintoma: funciona para quien lo escribio y falla para todos los demas. El hook
+``scripts/hooks/sin_rutas_absolutas.py`` existe para atajarlas antes del commit.
 
 Aqui todo se resuelve desde ``__file__``, asi que los scripts de la sesion se
 pueden correr desde la raiz del repo, desde la carpeta de la sesion o desde un

@@ -346,9 +346,9 @@ def loguear_en_mlflow(
 def nombre_reporte(referencia: Sequence[Particion], actual: Sequence[Particion]) -> str:
     """Nombre estable y autodescriptivo del reporte.
 
-    Que el nombre lleve las particiones comparadas evita el problema real del
-    repo anterior: un `drift_report.html` que se sobreescribia en cada corrida y
-    del que no se podia saber que comparaba.
+    Que el nombre lleve las particiones comparadas evita el problema de un
+    `drift_report.html` fijo: se sobreescribe en cada corrida y deja de poder
+    saberse que comparaba.
     """
     ref = "_".join(p.etiqueta for p in referencia)
     act = "_".join(p.etiqueta for p in actual)

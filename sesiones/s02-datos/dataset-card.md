@@ -112,9 +112,9 @@ Definidas en un solo sitio,
 | `dia_semana_pickup` | `pickup.dt.dayofweek` | 0-6 (0 = lunes) | ídem |
 
 **El orden importa y está separado a propósito:** las zonas se castean a `str` **solo
-al construir features**, nunca sobre el parquet crudo. Castear el crudo completo era la
-causa del `KeyError: "['PU_DO'] not in index"` que impedía arrancar el `pipeline`
-estrella del curso anterior.
+al construir features**, nunca sobre el parquet crudo. Castear el crudo completo
+produce un `KeyError: "['PU_DO'] not in index"` más adelante, lejos de la línea
+que lo causó.
 
 ```bash
 # Reproducir el esquema y los nulos

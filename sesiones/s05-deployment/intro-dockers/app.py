@@ -14,13 +14,13 @@ responde, Docker esta bien.
 
 Una sola app, no dos
 --------------------
-La version anterior de este material tenia `app.py` y `app_docker.py`: dos
-archivos identicos al 95% que diferian en el color del fondo y en el `host` del
+La forma habitual de resolver esto es tener `app.py` y `app_docker.py`: dos
+archivos identicos al 95% que difieren en el color del fondo y en el `host` del
 `uvicorn.run`. Es el anti-patron central del curso aplicado a un ejemplo de
 juguete: dos copias del mismo codigo que se desincronizan en el primer cambio.
 
-La correccion es la misma que en un servicio real: **un solo artefacto, y el
-entorno entra como configuracion**. `ENTORNO` es una variable que el `Dockerfile`
+Aqui se hace como en un servicio real: **un solo artefacto, y el entorno entra
+como configuracion**. `ENTORNO` es una variable que el `Dockerfile`
 fija en `docker` y que en local no esta puesta. Es el mismo principio que aplica
 `src/taxi/api/main.py` con `TAXI_MODELO_URI`.
 """

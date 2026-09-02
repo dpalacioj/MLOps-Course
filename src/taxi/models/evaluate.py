@@ -46,8 +46,8 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 # Los cortes son de negocio, no estadisticos: responden a "en que situaciones
 # distintas se usa este modelo". Definirlos aqui, en un solo lugar, evita que
-# el entrenamiento y el gate midan subgrupos diferentes y las cifras no se
-# puedan comparar (ese desacuerdo era endemico en el repo anterior).
+# el entrenamiento y el gate midan subgrupos diferentes: si cada uno define sus
+# propios cortes, las cifras dejan de poder compararse entre si.
 
 #: Franjas horarias por hora de pickup. Limites inclusivos en ambos extremos.
 FRANJAS_HORARIAS: Final[dict[str, tuple[int, int]]] = {

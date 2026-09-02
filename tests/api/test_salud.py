@@ -65,8 +65,9 @@ def test_modelo_sin_modelo_devuelve_503(crear_cliente) -> None:
 def test_modelo_expone_las_features_del_contrato(crear_cliente) -> None:
     """`/modelo` debe declarar las features reales del contrato compartido.
 
-    Sirve de red contra la regresion mas costosa del repo anterior: que la API
-    sirviera un subconjunto de features distinto al del entrenamiento.
+    Garantiza que la API no sirva un subconjunto de features distinto al del
+    entrenamiento. Es la regresion mas costosa posible aqui: no falla, solo
+    devuelve predicciones peores.
     """
     from taxi.features.contract import FEATURES
 

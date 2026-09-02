@@ -266,9 +266,9 @@ def cargar_modelo(
     """Carga el modelo por alias y resuelve **que version** resolvio el alias.
 
     Se carga desde el registry (`models:/nombre@alias`) y no desde un archivo
-    local. El repo anterior copiaba directorios de modelo con `shutil.copytree`
-    entre modulos y luego cargaba un pickle suelto: eso rompe toda la
-    trazabilidad y hace imposible saber que se esta sirviendo.
+    local. Copiar directorios de modelo con `shutil.copytree` entre modulos para
+    luego cargar un pickle suelto rompe toda la trazabilidad: deja de haber forma
+    de saber que se esta sirviendo.
 
     Resolver la version es imprescindible para persistirla: el alias es mutable,
     la version no. Guardar solo "champion" no dice nada dentro de seis meses.

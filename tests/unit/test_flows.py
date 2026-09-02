@@ -126,7 +126,7 @@ def _puerto_abierto(url: str, timeout: float = 0.4) -> bool:
 # Helpers puros: calculo de la particion siguiente
 # =============================================================================
 class TestParticiones:
-    """El `calculate_next_period` del repo anterior no tenia un solo test."""
+    """El salto de diciembre a enero: donde esta funcion se rompe siempre."""
 
     def test_mes_intermedio(self) -> None:
         assert training.siguiente_particion(Particion(2023, 3)) == Particion(2023, 4)

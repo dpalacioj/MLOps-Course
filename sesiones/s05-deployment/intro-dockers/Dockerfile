@@ -18,12 +18,13 @@
 # multi-stage, ARGs de version, cache mounts de BuildKit y una etapa aparte para
 # el servidor de MLflow. Comparar los dos archivos es el ejercicio.
 #
-# Diferencias con la version anterior de este mismo archivo:
-#   - `pip install -r requirements.txt` -> `uv sync --locked` (ver pyproject.toml)
-#   - corria como root -> usuario `gatos`
-#   - sin healthcheck -> HEALTHCHECK con el interprete de la imagen
-#   - `COPY app_docker.py app.py` (dos copias del codigo) -> un solo `app.py`
-#     mas la variable de entorno ENTORNO
+# Cuatro decisiones de esta imagen, cada una frente a su alternativa comun:
+#   - `uv sync --locked` en vez de `pip install -r requirements.txt`: instala el
+#     arbol exacto del lockfile (ver pyproject.toml)
+#   - usuario `gatos` en vez de correr como root
+#   - HEALTHCHECK con el interprete de la imagen, en vez de sin healthcheck
+#   - un solo `app.py` mas la variable de entorno ENTORNO, en vez de dos copias
+#     del codigo (`COPY app_docker.py app.py`)
 # =============================================================================
 
 FROM python:3.11-slim-bookworm

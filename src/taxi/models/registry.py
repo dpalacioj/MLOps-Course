@@ -11,9 +11,9 @@ referenciarlo sin ambiguedad. Hacen falta tres cosas que el filesystem no da:
    que metricas, contra que holdout).
 3. Un **rollback** que no requiera reentrenar ni redeployar.
 
-Los aliases dan (1) y (3); los tags dan (2). El repo anterior resolvia esto
-copiando directorios con ``shutil.copytree`` entre modulos, lo que destruia
-toda la trazabilidad que el modulo de tracking acababa de ensenar a construir.
+Los aliases dan (1) y (3); los tags dan (2). La alternativa —copiar directorios
+de modelo con ``shutil.copytree`` entre modulos— destruye toda la trazabilidad
+que el modulo de tracking acaba de ensenar a construir.
 
 Este modulo es una capa delgada sobre ``MlflowClient``. No abstrae MLflow: lo
 envuelve para que el nombre del alias, el del tag y el manejo de "todavia no

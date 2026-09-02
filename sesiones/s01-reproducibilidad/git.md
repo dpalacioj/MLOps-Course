@@ -207,16 +207,16 @@ proyecto y ajústalo. Lo que **nunca** se commitea, con su razón:
 | `.env` | secretos. Commitea `.env.example` |
 | `data/raw/`, `data/processed/` | se descargan y se verifican por hash (`make data`) |
 | `mlruns/`, `mlflow.db`, `mlartifacts/` | el estado del `tracking server`, no el código |
-| `*.pkl`, `*.bin`, `*.ubj`, `*.onnx` | el modelo se obtiene del `registry`, no del control de versiones. En el repositorio anterior había tres artefactos binarios commiteados y la imagen de Docker servía uno de ellos en lugar del promovido |
+| `*.pkl`, `*.bin`, `*.ubj`, `*.onnx` | el modelo se obtiene del `registry`, no del control de versiones. Un binario commiteado acaba servido por la imagen de Docker en lugar del que se promovió, y nadie lo nota |
 | `reports/*.html` | se regeneran con `make drift` |
 | Notebooks con `outputs` | no se ignoran, se **limpian** con `nbstripout` ([`calidad.md`](calidad.md) sección 4) |
 
-Trampa real de este repositorio, que vale como lección: el `.gitignore` anterior
-ignoraba globalmente `*.json`, `*.yaml`, `*.yml` y `*.txt`. Con eso desaparecían de
-la vista los `metadata.json` de los modelos y varios `.yaml` de configuración, y dos
-módulos del curso dejaban de funcionar al clonar. Un `.gitignore` demasiado amplio
-no es "más seguro": es una forma de perder archivos sin enterarse. Por eso el actual
-lleva excepciones explícitas (`!**/metadata.json`).
+Trampa que vale como lección: un `.gitignore` que ignore globalmente `*.json`,
+`*.yaml`, `*.yml` y `*.txt` hace desaparecer de la vista los `metadata.json` de
+los modelos y los `.yaml` de configuración, y el proyecto deja de funcionar al
+clonar — sin ningún error que apunte a la causa. Un `.gitignore` demasiado amplio
+no es "más seguro": es una forma de perder archivos sin enterarse. Por eso el de
+este repositorio lleva excepciones explícitas (`!**/metadata.json`).
 
 ---
 

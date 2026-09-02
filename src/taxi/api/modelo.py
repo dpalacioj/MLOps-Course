@@ -1,16 +1,16 @@
 """Carga del modelo desde el Model Registry, encapsulada y perezosa.
 
-Problema que resuelve. El repo anterior obtenia el modelo asi: un script
-`copy_model.py` hacia ``shutil.copytree`` del directorio de un run de MLflow
-hacia ``deploy/web-service/model/``, y el Dockerfile hacia ``COPY model/``. Las
-consecuencias no eran teoricas:
+Problema que resuelve. La forma intuitiva de llevar un modelo a un servicio es
+un script `copy_model.py` que haga ``shutil.copytree`` del directorio de un run
+de MLflow hacia ``deploy/web-service/model/``, con un ``COPY model/`` en el
+Dockerfile. Funciona el primer dia y despues:
 
-- El artefacto quedaba versionado por el sistema de archivos, no por el
-  registry. Nadie podia decir que version servia un contenedor en produccion.
-- Cambiar de modelo exigia reconstruir la imagen.
-- El `run_id` de origen acabo hardcodeado en el codigo, asi que el paso solo
-  funcionaba en la maquina donde se genero ese run.
-- Todo el linaje que la sesion de tracking ensena a construir se perdia en el
+- El artefacto queda versionado por el sistema de archivos, no por el registry.
+  Nadie puede decir que version sirve un contenedor en produccion.
+- Cambiar de modelo exige reconstruir la imagen.
+- El `run_id` de origen acaba hardcodeado, asi que el paso solo funciona en la
+  maquina donde se genero ese run.
+- Todo el linaje que la sesion de tracking ensena a construir se pierde en el
   `copytree`.
 
 La forma correcta es referirse al modelo por **alias del registry**

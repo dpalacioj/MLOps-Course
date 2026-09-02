@@ -11,9 +11,10 @@ errores. La logica vive en modulos separados y testeables por su cuenta
 instrumentacion). Un `main.py` que ademas carga modelos y construye features es
 el que nadie puede testear sin levantar el servidor completo.
 
-Anti-patrones corregidos respecto a la version anterior de esta API:
+Cuatro anti-patrones que este modulo evita, y que son los mas comunes en una API
+de inferencia escrita a las prisas:
 
-1. ``@app.on_event("startup")`` esta deprecado desde FastAPI 0.93 -> se usa
+1. ``@app.on_event("startup")``, deprecado desde FastAPI 0.93. Aqui se usa
    ``lifespan``, que ademas permite liberar recursos al apagar y es lo unico que
    funciona igual bajo tests y bajo uvicorn.
 2. ``allow_origins=["*"]`` junto a ``allow_credentials=True`` es una combinacion
@@ -21,9 +22,9 @@ Anti-patrones corregidos respecto a la version anterior de esta API:
    ``Access-Control-Allow-Origin: *`` con credenciales. Ademas, si funcionara,
    cualquier sitio web podria hacer requests autenticados a la API. Aqui los
    origenes son explicitos y configurables.
-3. ``HTTPException(detail=f"...{str(e)}")`` en tres endpoints filtraba la
-   excepcion interna al cliente. Ahora el detalle va al log con un id de
-   correlacion y al cliente va un mensaje estable.
+3. ``HTTPException(detail=f"...{str(e)}")``, que filtra la excepcion interna al
+   cliente. Aqui el detalle va al log con un id de correlacion y al cliente va
+   un mensaje estable.
 4. Los endpoints de prediccion eran ``async def`` y dentro llamaban a
    ``model.predict``, que es bloqueante: cada inferencia congelaba el event loop
    y el servidor perdia toda su concurrencia. Se declaran ``def`` (sincronos) a
@@ -404,9 +405,9 @@ def _predecir_lote(
 
     Devuelve las predicciones y la latencia, o una respuesta de error ya
     formateada. Vive en una sola funcion para que la instrumentacion y el manejo
-    de errores no se dupliquen: en el repo anterior el endpoint individual y el
-    de lote tenian dos copias del try/except, y solo una de las dos se corrigio
-    cuando cambio el contrato de features.
+    de errores no se dupliquen. Con una copia del try/except por endpoint, solo
+    una se mantiene al dia cuando cambia el contrato de features, y el otro
+    camino empieza a filtrar.
     """
     meta = cargador.metadatos
     if meta is None or not cargador.cargado:
@@ -467,8 +468,8 @@ def _predecir_lote(
 if __name__ == "__main__":  # pragma: no cover
     # Solo para depurar a mano. En el contenedor arranca uvicorn como comando de
     # la imagen, y en local `make serve` usa `uvicorn --reload`. Un `uvicorn.run`
-    # aqui con host 0.0.0.0 hardcodeado —como tenia el repo anterior— expone el
-    # servicio en toda la red del equipo sin que nadie lo pida.
+    # aqui con host 0.0.0.0 hardcodeado expone el servicio en toda la red del
+    # equipo sin que nadie lo pida; de ahi que el default sea 127.0.0.1.
     import uvicorn
 
     uvicorn.run(

@@ -392,7 +392,8 @@ repositorio del curso, y el criterio nº 1 del
    protegen esas constantes de cambios accidentales. Lee uno.
 4. Busca en `src/taxi/features/contract.py` el comentario que explica por qué
    `PU_DO` se deriva y no llega en el parquet. Ese comentario documenta un
-   `KeyError` que tumbaba el `pipeline` estrella del curso anterior.
+   `KeyError: "['PU_DO'] not in index"`, que es lo que ocurre al castear las
+   zonas sobre el parquet crudo en vez de al construir features.
 
 Siguiente: [`entorno.md`](../entorno.md) — bloque A.
 """

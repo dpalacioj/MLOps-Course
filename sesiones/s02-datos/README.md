@@ -273,7 +273,7 @@ un fallo real.
 
 | `Fixture` | Qué rompe | De dónde viene |
 |---|---|---|
-| `df_crudo_en_kilometros` | `trip_distance` en km | el generador sintético del repo anterior documentaba km y alimentaba un modelo entrenado en millas |
+| `df_crudo_en_kilometros` | `trip_distance` en km | un generador de datos que documenta km alimentando un modelo entrenado en millas: nada falla, la predicción solo empeora |
 | `df_crudo_zona_invalida` | zona fuera de `1-265` | aparece cuando alguien inventa datos de prueba sin leer el diccionario de datos |
 | `df_crudo_con_nulos` | nulos en columna obligatoria | una descarga cortada, o un `join` que no encontró pareja |
 
@@ -799,7 +799,7 @@ Respóndelas sin mirar arriba. Entre paréntesis, dónde está la respuesta.
 | Un contrato sin control negativo | "detecta el fallo" no demuestra nada: un contrato que rechaza todo también lo detecta | un test que valide varios lotes independientes de datos **buenos** (sección 2) |
 | Filtrar filas en silencio | si mañana se descarta el 40 % de los datos, nadie se entera | contar y **registrar** cuántas se descartaron, con un aviso por encima de un umbral, como [`loaders.preparar_particion`](../../src/taxi/data/loaders.py) |
 | Git LFS como versionado de datos | resuelve el tamaño del `blob` en Git; no da `diff`, ni `time travel`, ni ramas, ni `lineage` | la estrategia 1 siempre, y DVC / lakeFS / Delta según el problema (sección 6) |
-| `datetime.now()` para elegir la partición de datos | acopla el `pipeline` al reloj y rompe la reproducibilidad entre cohortes. Era el bug que impedía arrancar el `pipeline` estrella del curso anterior | particiones **fijas** en `config.py` ([ADR 001](../../docs/adr/001-caso-guia-y-particiones.md)) |
+| `datetime.now()` para elegir la partición de datos | acopla el `pipeline` al reloj: rompe la reproducibilidad entre cohortes y pide particiones que pueden no estar publicadas todavía | particiones **fijas** en `config.py` ([ADR 001](../../docs/adr/001-caso-guia-y-particiones.md)) |
 
 ---
 

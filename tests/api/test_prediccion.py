@@ -6,8 +6,8 @@ detalles esteticos:
 1. Sin modelo se responde 503, no 500 ni una prediccion inventada.
 2. La respuesta incluye ``model_version``: sin ese campo el sistema no es
    auditable.
-3. Un fallo interno NO viaja al cliente. El repo anterior devolvia
-   ``str(e)`` y con eso filtraba cadenas de conexion y rutas del servidor.
+3. Un fallo interno NO viaja al cliente. Devolver ``str(e)`` filtra cadenas de
+   conexion y rutas del servidor a quien mande un request malformado.
 """
 
 from __future__ import annotations
@@ -129,8 +129,8 @@ def test_error_interno_no_filtra_el_mensaje_de_la_excepcion(crear_cliente) -> No
 def test_error_interno_en_lote_tampoco_filtra(crear_cliente) -> None:
     """Los dos endpoints comparten el mismo camino de error, y se comprueba.
 
-    En el repo anterior el try/except estaba duplicado y solo una de las copias
-    se mantenia al dia.
+    Con un try/except duplicado por endpoint, solo una de las copias se mantiene
+    al dia y el otro camino filtra.
     """
     cargador, _ = cargador_con_modelo(excepcion=ValueError("ruta interna /srv/app/model"))
     cliente = crear_cliente(cargador)

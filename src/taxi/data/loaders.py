@@ -1,12 +1,14 @@
 """Descarga, verificacion y preparacion de datos.
 
-Cambios respecto al repo anterior:
+Cuatro decisiones de diseno:
 
-1. **Particiones fijas** (`config.py`), no `datetime.now()`. El pipeline pedia
-   2025-01, un parquet que puede no estar publicado todavia.
+1. **Particiones fijas** (`config.py`), no `datetime.now()`. Derivar la
+   particion del reloj hace que el pipeline pida un parquet que puede no estar
+   publicado todavia, y que dos cohortes entrenen sobre datos distintos.
 2. **Verificacion por hash**. Se registra el SHA-256 de cada archivo en
-   `data/raw/metadata.json`. Ese archivo estaba gitignorado por la regla global
-   `*.json`, asi que la buena practica existia y era invisible.
+   `data/raw/metadata.json`. Ojo con las reglas globales del `.gitignore`: un
+   `*.json` deja este archivo fuera del repo y la verificacion se vuelve
+   invisible.
 3. **Muestreo determinista** a un tamano fijo, para que entrenar tome segundos
    en clase.
 4. **El casteo de zonas a string ocurre en `features/contract.py`**, no aqui.

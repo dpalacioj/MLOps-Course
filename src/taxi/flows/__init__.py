@@ -2,8 +2,8 @@
 
 Este paquete contiene **la unica** implementacion orquestada del pipeline. El
 material de clase (`sesiones/s04-orquestacion/`) importa de aqui en lugar de
-duplicar el pipeline, que era el problema del repo anterior: el mismo problema
-estaba resuelto tres veces, con features distintas en cada copia.
+duplicarlo. Una copia por sesion significa el mismo problema resuelto varias
+veces, con features distintas en cada copia y ninguna fuente de verdad.
 
 Modulos:
 

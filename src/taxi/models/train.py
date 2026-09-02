@@ -11,14 +11,14 @@ quien lo corrio.
 Tres decisiones estructurales, con su motivo:
 
 **1. El preprocesamiento va DENTRO del artefacto.** El pipeline serializado
-incluye el vectorizador. El repo anterior guardaba `preprocessor.b` y
-`model.ubj` como archivos separados y los copiaba a mano entre modulos: si los
-dos archivos se desincronizaban, el modelo servia predicciones sobre features
-mal codificadas y nada fallaba. Un artefacto, una version, un hash.
+incluye el vectorizador. Guardar `preprocessor.b` y `model.ubj` como archivos
+separados y copiarlos a mano entre modulos tiene un fallo silencioso: si los dos
+se desincronizan, el modelo sirve predicciones sobre features mal codificadas y
+nada lanza una excepcion. Un artefacto, una version, un hash.
 
-**2. Los valores por defecto viven en un solo lugar.** El pipeline anterior
-declaraba `EARLY_STOPPING_ROUNDS = 50` y entrenaba con `num_boost_round=30`:
-el early stopping no podia dispararse nunca, porque el entrenamiento terminaba
+**2. Los valores por defecto viven en un solo lugar.** Declarar
+`EARLY_STOPPING_ROUNDS = 50` y entrenar con `num_boost_round=30` hace que el
+early stopping no pueda dispararse nunca, porque el entrenamiento termina
 antes de acumular 50 rondas sin mejora. Ademas definia constantes
 (`MAX_DEPTH`, `LEARNING_RATE`) que ningun call site usaba. Aqui las constantes
 son la unica fuente y el test `test_early_stopping_tiene_margen` verifica que la

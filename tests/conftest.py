@@ -6,11 +6,12 @@ propiedad tiene), se desactualiza cuando el contrato cambia y no explica por que
 cada fixture roto esta roto. Generarlo con una semilla fija da lo mismo que un
 archivo —reproducibilidad bit a bit— y ademas documenta la intencion.
 
-Los tres fixtures rotos no son ruido aleatorio: cada uno reproduce un fallo real
-del repo anterior.
+Los tres fixtures rotos no son ruido aleatorio: cada uno reproduce un fallo que
+NO lanza excepciones, que es la unica clase de fallo de datos que hace falta
+testear.
 
-1. `df_crudo_en_kilometros` — el generador de datos sinteticos documentaba km y
-   alimentaba un modelo entrenado en millas. El pipeline entrenaba sin quejarse.
+1. `df_crudo_en_kilometros` — datos en km alimentando un modelo entrenado en
+   millas. El pipeline entrena sin quejarse.
 2. `df_crudo_zona_invalida` — una zona fuera del rango 1-265 de la TLC. Aparece
    cuando alguien inventa datos de prueba sin leer el diccionario de datos.
 3. `df_crudo_con_nulos` — nulos en una columna obligatoria. Es lo que llega

@@ -302,9 +302,9 @@ child runs.
 | parent | `trials_podados` | si es 0 con muchos trials, el pruner no actúa |
 | child | `mejor_iteracion` | si es siempre `n_estimators - 1`, el early stopping no actúa |
 
-El segundo y el tercero son bugs reales del repositorio anterior: declaraba
-`EARLY_STOPPING_ROUNDS = 50` y entrenaba `num_boost_round=30`, así que el early
-stopping no podía dispararse nunca.
+El segundo y el tercero detectan configuraciones que no hacen nada y no avisan.
+El caso típico: declarar `EARLY_STOPPING_ROUNDS = 50` y entrenar con
+`num_boost_round=30`, con lo que el early stopping no puede dispararse nunca.
 
 ### 6.3 El script, para quien prefiera leer 60 líneas (8 min)
 

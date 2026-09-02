@@ -24,9 +24,10 @@ Dos decisiones que conviene notar:
    sistema: sin ese campo, una prediccion mala es imposible de atribuir a un
    modelo concreto tres semanas despues.
 
-Anti-patron corregido del repo anterior: los schemas usaban ``class Config``
-(API de Pydantic v1, deprecada en v2) y la respuesta devolvia los mismos datos
-de entrada mas la prediccion, sin ninguna referencia a que artefacto la produjo.
+Dos anti-patrones que este modulo evita: ``class Config`` (la API de Pydantic
+v1, deprecada en v2 — aqui se usa ``model_config``), y una respuesta que devuelve
+los datos de entrada mas la prediccion sin referencia al artefacto que la
+produjo.
 """
 
 from __future__ import annotations
@@ -48,9 +49,9 @@ from taxi.config import UMBRAL_VIAJE_LARGO_MIN
 ZONA_MIN: Final[int] = 1
 ZONA_MAX: Final[int] = 265
 
-#: MILLAS, no kilometros. El repo anterior documentaba km en el generador de
-#: datos sinteticos y alimentaba un modelo entrenado en millas: el error no
-#: lanzaba excepciones, solo degradaba la prediccion un 60%.
+#: MILLAS, no kilometros. La unidad esta declarada aqui porque confundirla no
+#: lanza ninguna excepcion: alimentar en km un modelo entrenado en millas solo
+#: degrada la prediccion (~60%), en silencio.
 DISTANCIA_MIN_MI: Final[float] = 0.0
 DISTANCIA_MAX_MI: Final[float] = 100.0
 
@@ -335,8 +336,8 @@ class ModeloResponse(BaseModel):
 class ErrorResponse(BaseModel):
     """Error devuelto al cliente. Nunca contiene la excepcion interna.
 
-    Anti-patron corregido: tres endpoints del repo anterior devolvian
-    ``detail=f"Error: {str(e)}"``. Eso filtra rutas del filesystem, cadenas de
+    El anti-patron a evitar es ``detail=f"Error: {str(e)}"``, que es la forma
+    mas rapida de escribir un handler y filtra rutas del filesystem, cadenas de
     conexion, nombres de columnas y trazas del ORM a cualquiera que sepa mandar
     un request malformado. El detalle tecnico va al log del servidor; al cliente
     va un mensaje estable mas un ``id_correlacion`` para cruzar ambos.

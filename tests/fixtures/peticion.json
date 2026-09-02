@@ -4,7 +4,7 @@
     "Solo lleva las columnas CRUDAS del contrato: PU_DO, hora_pickup y",
     "dia_semana_pickup las deriva el pipeline dentro del artefacto. Si el cliente",
     "tuviera que enviarlas, cada consumidor reimplementaria la derivacion y",
-    "acabarian divergiendo (fue el problema del repo anterior).",
+    "acabarian divergiendo.",
     "trip_distance esta en MILLAS, no en kilometros."
   ],
   "lpep_pickup_datetime": "2023-05-15T08:30:00",

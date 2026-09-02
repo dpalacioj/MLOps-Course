@@ -87,8 +87,8 @@ repositorio de cada uno de ustedes."
 NYC Green Taxi, particiones **fijas**: train 2023-01..03, valid 2023-04, holdout
 2023-05, producción 2023-07 y 2024-01. Abrir
 [`docs/adr/001-caso-guia-y-particiones.md`](../docs/adr/001-caso-guia-y-particiones.md)
-y mostrar **solo la tabla del contexto**: cada módulo del curso anterior usaba un
-`dataset` distinto, o el mismo con features incompatibles.
+y mostrar **solo la tabla del contexto**: el problema que resuelve es que cada
+módulo use un `dataset` distinto, o el mismo con features incompatibles.
 
 La frase: "No van a aprender de taxis. Van a poder comparar el número de la sesión 3
 con el de la sesión 7, que es lo que hace que MLOps signifique algo."
@@ -482,8 +482,9 @@ oid sha256:...
 size ...
 ```
 
-**Este es exactamente lo que veía cualquiera que clonara el repositorio anterior**,
-donde LFS era el documento nº 10 de 13. Los 12 diagramas de la sesión 4, roros.
+**Esto es lo que ve cualquiera que clone sin `git lfs pull`**: los 12 diagramas
+de la sesión 4 convertidos en archivos de texto de tres líneas. Por eso LFS no
+puede ser el documento nº 10 de 13 de la puesta en marcha.
 
 ### 7.2 El orden, que es el punto (7 min)
 

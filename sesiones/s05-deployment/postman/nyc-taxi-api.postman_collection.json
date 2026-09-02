@@ -205,7 +205,7 @@
             "batch"
           ]
         },
-        "description": "La clave es 'viajes', NO 'trips': la version anterior de esta coleccion usaba 'trips' y hoy eso devuelve 422. Entre 1 y 500 viajes.",
+        "description": "La clave es 'viajes', NO 'trips': el schema la valida y cualquier otro nombre devuelve 422. Entre 1 y 500 viajes.",
         "body": {
           "mode": "raw",
           "raw": "{\n  \"viajes\": [\n    {\n      \"PULocationID\": 43,\n      \"DOLocationID\": 238,\n      \"trip_distance\": 2.4,\n      \"pickup_datetime\": \"2023-05-15T08:30:00\"\n    },\n    {\n      \"PULocationID\": 161,\n      \"DOLocationID\": 236,\n      \"trip_distance\": 5.2,\n      \"pickup_datetime\": \"2023-05-15T09:00:00\"\n    }\n  ]\n}",

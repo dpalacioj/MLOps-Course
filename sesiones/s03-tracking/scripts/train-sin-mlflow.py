@@ -30,12 +30,11 @@ mira antes de abrir MLflow.
 
 Nota sobre el codigo
 --------------------
-Los datos y el pipeline se importan de `taxi` en lugar de redefinirse aqui. La
-version anterior de este modulo tenia DOS rutas de preprocesamiento
-incompatibles para el mismo problema (una con pickles y `DictVectorizer`, otra
-con parquet y `ColumnTransformer`), y los notebooks y los scripts leian de
-rutas distintas. La regla es la de S01: la logica vive en el paquete, el
-material de clase la ejecuta.
+Los datos y el pipeline se importan de `taxi` en lugar de redefinirse aqui. Dos
+rutas de preprocesamiento para el mismo problema (una con pickles y
+`DictVectorizer`, otra con parquet y `ColumnTransformer`) acaban dando resultados
+distintos segun por donde entres. La regla es la de S01: la logica vive en el
+paquete, el material de clase la ejecuta.
 """
 
 from __future__ import annotations

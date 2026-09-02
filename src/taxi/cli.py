@@ -2,12 +2,12 @@
 
 Problema que resuelve
 ---------------------
-El repo anterior se operaba con una coleccion de scripts sueltos que se invocaban
-de formas distintas (`python 02-.../train.py`, `python -m src.pipeline`, celdas
-de notebook) y cada uno resolvia por su cuenta rutas, puerto de MLflow y nombres
-de experimento. El resultado previsible: los pasos funcionaban aislados y no
-encadenados, y en clase se perdian veinte minutos averiguando desde que
-directorio habia que ejecutar cada cosa.
+Un curso operado con scripts sueltos, invocados de formas distintas
+(`python 02-.../train.py`, `python -m src.pipeline`, celdas de notebook) y cada
+uno resolviendo por su cuenta rutas, puerto de MLflow y nombres de experimento,
+tiene un resultado previsible: los pasos funcionan aislados y no encadenados, y
+en clase se pierden veinte minutos averiguando desde que directorio hay que
+ejecutar cada cosa.
 
 Un unico punto de entrada arregla tres cosas a la vez:
 
