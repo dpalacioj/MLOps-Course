@@ -237,9 +237,10 @@ Recorrer `troubleshooting-so.md` sección 2, sección 3, sección 4 y sección 6
    `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`.
    Decir en voz alta por qué `CurrentUser` y no `LocalMachine` (no necesita
    administrador), y por qué `RemoteSigned` y no `Bypass`.
-   *Qué se corrigió:* en el material anterior este remedio estaba en el documento
-   nº 7, y el script de setup se ofrecía en el nº 0.
-2. **El punto inicial** (sección 3). El material anterior escribía
+   *Por qué va en el paso 1:* si el script de setup se ofrece al principio y su
+   primer fallo previsible se documenta capítulos más adelante, el estudiante lo
+   ejecuta, falla y se queda parado.
+2. **El punto inicial** (sección 3). Se escribe muy a menudo como
    `` `\.venv\Scripts\Activate.ps1` ``, **sin el punto**. Eso apunta a la raíz del
    disco. Escribirlo mal en pantalla, ver el error, y arreglarlo. Vale más que
    explicarlo.
@@ -341,12 +342,12 @@ uv update pandas
 
 **Salida esperada:** `error: unrecognized subcommand 'update'`.
 
-Y el remate: **el material anterior de este curso lo documentaba dos veces**,
-incluida su tabla resumen de comandos.
+Y el remate: **es un comando que circula documentado**, en tablas resumen y en
+respuestas de foros.
 
-**La pregunta que hay que hacer:** "Ese documento no tenía fecha ni versión. ¿Cómo
-habrían sabido que el comando era inventado, sin ejecutarlo?" Respuesta que se busca:
-no se puede. De ahí la regla del curso: **toda tabla de herramientas declara criterio,
+**La pregunta que hay que hacer:** "Si ese documento no tiene fecha ni versión,
+¿cómo habrían sabido que el comando era inventado, sin ejecutarlo?" Respuesta que
+se busca: no se puede. De ahí la regla del curso: **toda tabla de herramientas declara criterio,
 fecha de evaluación y un enlace a la doc oficial por fila.** Mostrar la tabla del
 [README sección 7](../sesiones/s01-reproducibilidad/README.md#7-alternativas-y-trade-offs)
 como el formato que se les va a pedir en su ADR.
@@ -735,8 +736,8 @@ README sección 7 y sección 8. Leer en voz alta los que más daño hacen:
 
 Y el meta-mensaje, que es el que sostiene todo el curso: **cada tabla comparativa de
 este material lleva criterio, fecha de evaluación y un enlace a la doc oficial por
-fila.** Las del material anterior no, y por eso documentaban un comando que no existe.
-Es exactamente lo que se les va a exigir en su ADR y en su `dataset card`.
+fila.** Una tabla sin esos tres datos es cómo se acaba documentando un comando que
+no existe. Es exactamente lo que se les va a exigir en su ADR y en su `dataset card`.
 
 ### 10.3 Tarea y puente a S02 (6 min)
 

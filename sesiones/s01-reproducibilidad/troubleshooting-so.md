@@ -72,12 +72,11 @@ Tres notas que evitan hacer esto mal:
   ese caso, salta a [sección 12](#12-el-plan-b-el-devcontainer): no pierdas la clase
   peleando con una GPO.
 
-> **Qué se corrigió aquí.** En el material anterior, este remedio estaba en
-> `07-os-notes.md`, es decir en el documento nº 7, mientras que
-> `setup_uv_windows.ps1` se ofrecía en el nº 0. El estudiante ejecutaba el script,
-> fallaba, y la solución estaba siete documentos más adelante. Ahora está en el paso
-> 1 del [Quick Start](README.md#5-quick-start) y en el encabezado del propio
-> [`scripts/setup_uv_windows.ps1`](scripts/setup_uv_windows.ps1).
+> **Por qué este remedio va aquí y no en un anexo.** Si el script se ofrece al
+> principio y su primer fallo previsible se documenta siete capítulos más
+> adelante, el estudiante lo ejecuta, falla y se queda parado. Por eso está en el
+> paso 1 del [Quick Start](README.md#5-quick-start) y también en el encabezado del
+> propio [`scripts/setup_uv_windows.ps1`](scripts/setup_uv_windows.ps1).
 
 ---
 
@@ -92,9 +91,8 @@ Tres notas que evitan hacer esto mal:
 | Cualquiera (recomendado) | **no activar**: `uv run <comando>` |
 | Desactivar | `deactivate` |
 
-**El error que corrige esta tabla.** El material anterior
-(`07-os-notes.md`, líneas 8-9) escribía la activación de Windows como
-`` `\.venv\Scripts\Activate.ps1` `` — **sin el punto inicial**. En PowerShell, una
+**El error que corrige esta tabla.** La activación de Windows se escribe muy a
+menudo como `` `\.venv\Scripts\Activate.ps1` `` — **sin el punto inicial**. En PowerShell, una
 ruta que empieza por `\` es absoluta desde la **raíz de la unidad actual**, así que
 ese comando busca el entorno en la raíz del disco, no en tu proyecto. El síntoma es
 un `ObjectNotFound` que parece decir que el entorno no se creó, cuando el entorno

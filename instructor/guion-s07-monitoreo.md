@@ -97,13 +97,13 @@ ellos?" Respuesta que se busca: declarando la versión con la que se verificó, 
 lockfile.
 
 Segundo golpe, en la misma línea: `pip index versions whylogs` (o la página de PyPI).
-Última release, diciembre de 2024. Estaba recomendado en la tabla de herramientas del
-material anterior, sin fecha.
+Última release, diciembre de 2024. Y sigue apareciendo recomendado en tablas de
+herramientas que no declaran fecha.
 
 ### Acto 2 — El detector que siempre dice sí (10 min)
 
-Mostrar el otro snippet del material anterior: `np.random.exponential(3.0)` contra
-`(5.5)`, y `drift = p_value < 0.05`.
+Mostrar el snippet que aparece en casi cualquier tutorial de drift:
+`np.random.exponential(3.0)` contra `(5.5)`, y `drift = p_value < 0.05`.
 
 Dos problemas, y hay que dejar que la clase los encuentre:
 
@@ -302,9 +302,9 @@ Por eso el curso lee el `status` de la sección `tests` en lugar de comparar a m
 Abrir `reporte.desde_evidently`. Una función, un archivo. Diagrama del README sección 4.4.
 
 **La lección, que no es sobre monitoreo:** depende de la interfaz que **tú** controlas,
-no de la que controla tu proveedor. El material anterior tenía el parsing del dict en el
-snippet que el estudiante copiaba, así que un cambio de versión de la librería rompió el
-material y todos los proyectos a la vez.
+no de la que controla tu proveedor. Con el parsing del dict copiado en cada snippet
+que el estudiante pega, un cambio de versión de la librería rompe el material y todos
+los proyectos a la vez.
 
 Segundo argumento, en la misma función: es tolerante a claves faltantes **a propósito**.
 Un monitoreo que se cae por un cambio de dependencia deja al sistema sin señal justo

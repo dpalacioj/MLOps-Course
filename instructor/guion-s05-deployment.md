@@ -620,10 +620,10 @@ justifica:
 Sin la columna, la respuesta es "todas" o "ninguna". Con la columna, es una cláusula
 `WHERE`.
 
-Después, los cuatro bugs del batch anterior, leyendo el docstring de `batch.py` (3 min):
-`np.random.seed(42)` fijo (cada corrida horaria generaba **los mismos datos** — inservible
-para monitoreo), kilómetros contra un modelo entrenado en millas, `iterrows()` en el bucle
-de predicción, y `'stage': 'Production'` como literal.
+Después, las cuatro trampas que el docstring de `batch.py` enumera (3 min):
+`np.random.seed(42)` fijo en el generador (cada corrida produce **los mismos datos**
+— inservible para monitoreo), kilómetros contra un modelo entrenado en millas,
+`iterrows()` en el bucle de predicción, y `'stage': 'Production'` como literal.
 
 Nombrar el límite de SQLite —un escritor, sin concurrencia, sin acceso remoto— y que
 `batch.py` soporta Postgres con `DATABASE_URL`.

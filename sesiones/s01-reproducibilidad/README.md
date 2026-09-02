@@ -125,11 +125,10 @@ Documentos: **[`git.md`](git.md)** y **[`calidad.md`](calidad.md)**.
 
 `git.md` cubre el flujo diario, `conventional commits` (que el `hook`
 `commit-msg` de este repositorio verifica de verdad) y **Git LFS al principio, no
-al final**. Ese orden es una corrección deliberada: en el material anterior LFS era
-el documento nº 10 de 13, y el resultado medible fue que los 12 diagramas de la
-sesión 4 aparecían como archivos de texto de tres líneas para cualquiera que
-clonara sin LFS. Un binario mal versionado no se arregla después; se reescribe el
-historial.
+al final**. Ese orden es deliberado: dejar LFS para el final tiene un efecto
+medible —los 12 diagramas de la sesión 4 aparecen como archivos de texto de tres
+líneas para cualquiera que clone sin LFS— y un binario mal versionado no se
+arregla después: se reescribe el historial.
 
 `calidad.md` cubre `ruff` (lint **y** formato), `mypy`, `pre-commit`, `nbstripout`
 y el CI. La regla que ordena todo el documento: **el `hook` local y el CI corren lo
@@ -172,15 +171,12 @@ scripts/smoke_test.py         el diagnóstico del entorno
 .devcontainer/                el plan B: entorno listo en 3 minutos
 ```
 
-Los cuatro documentos de contenido (`entorno`, `git`, `calidad`,
-`troubleshooting-so`) sustituyen a los **quince** archivos del material anterior
-(`01-git-github`, `01.1-conventional-commits`, `02-python-envs`,
-`02.1-uv-conda-venv`, `03-dependency-management`, `04-tooling`,
-`05-data-and-secrets`, `06-github-actions`, `07-os-notes`, `08-pre-commit`,
-`09-cicd-guide`, `10-git-lfs`, `Resumen.md`, `ejercicio-setup.md` y las 437 líneas
-de `referencia-uv/README.md`). No fue una poda estética: los quince se contradecían
-entre sí en el comando de activación de Windows, en qué formatter usar y en qué CI
-copiar, y el estudiante no tenía forma de saber cuál de las tres versiones era la
+Son **cuatro** documentos de contenido (`entorno`, `git`, `calidad`,
+`troubleshooting-so`), y ese número es una decisión, no una casualidad. Repartir
+lo mismo en quince archivos —uno por herramienta, más un resumen, más una
+referencia— garantiza que se contradigan entre sí en el comando de activación de
+Windows, en qué formatter usar y en qué CI copiar, y el estudiante no tiene forma
+de saber cuál de las tres versiones es la
 vigente.
 
 ---
@@ -300,8 +296,8 @@ El razonamiento completo, con lo que cada una cuesta, está en
 
 | No usar | Por qué | En su lugar |
 |---|---|---|
-| `uv update <pkg>` | **el subcomando no existe.** `uv update pandas` responde `error: unrecognized subcommand 'update'` (verificado con `uv 0.8.17`, agosto de 2026). Aparecía dos veces en el material anterior del curso, incluida su tabla resumen | `uv lock --upgrade-package pandas` y después `uv sync` |
-| `\.venv\Scripts\Activate.ps1` (sin el punto inicial) | la ruta empieza en la **raíz del disco**, no en el directorio actual. `07-os-notes.md` del material anterior lo escribía así y era el primer error de la sesión en Windows | `.\.venv\Scripts\Activate.ps1` |
+| `uv update <pkg>` | **el subcomando no existe.** `uv update pandas` responde `error: unrecognized subcommand 'update'` (verificado con `uv 0.8.17`, agosto de 2026). Circula documentado en tablas resumen y respuestas de foros | `uv lock --upgrade-package pandas` y después `uv sync` |
+| `\.venv\Scripts\Activate.ps1` (sin el punto inicial) | la ruta empieza en la **raíz del disco**, no en el directorio actual. Es el primer error de la sesión en Windows | `.\.venv\Scripts\Activate.ps1` |
 | `pyenv-win` vía `Invoke-WebRequest` + reinicio de terminal como ruta por defecto en Windows | es el paso más frágil de todo el setup: descarga un `.ps1` de GitHub, lo ejecuta contra la `ExecutionPolicy`, edita el `PATH` del usuario y exige cerrar la terminal. Cada uno de esos cuatro pasos falla en algún alumno | `uv python install 3.11`. `pyenv-win` queda como alternativa documentada en [`troubleshooting-so.md`](troubleshooting-so.md) sección 5 |
 | `chmod +x setup.sh && ./setup.sh` en Windows | `chmod` no existe en PowerShell y el bit de ejecución no es un concepto de NTFS. Solo funciona dentro de WSL o de Git Bash | el `.ps1` equivalente, o WSL declarado explícitamente ([`troubleshooting-so.md`](troubleshooting-so.md) sección 4) |
 | Black **y** `ruff format` en el mismo repositorio | la doc de Ruff dice que su formatter "is not intended to be used interchangeably with Black on an ongoing basis, as the formatter *does* differ from Black in a few conscious ways". Dos formatters alternándose producen PRs de cientos de líneas de reformateo y un CI rojo para todo el mundo | uno solo. En este curso, `ruff format` ([`calidad.md`](calidad.md) sección 2) |

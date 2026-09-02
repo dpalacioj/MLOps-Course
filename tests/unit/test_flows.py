@@ -287,7 +287,7 @@ class TestFilaPersistida:
         assert filas["batch_id"].nunique() == 1
 
     def test_no_persiste_un_stage_hardcodeado(self, features_produccion: pd.DataFrame) -> None:
-        # El batch anterior escribia {'stage': 'Production'} literal en cada fila.
+        # Un {'stage': 'Production'} literal miente en cuanto el modelo cambia.
         filas = self._filas(features_produccion)
         assert "stage" not in filas.columns
         assert "model_stage" not in filas.columns

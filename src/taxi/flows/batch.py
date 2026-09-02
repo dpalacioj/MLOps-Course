@@ -21,23 +21,22 @@ empezo con la version 7 o con el cambio de datos, o que se le respondio a un
 cliente en una fecha dada. La trazabilidad datos -> modelo -> prediccion es lo que
 hace auditable el sistema; sin ella hay un modelo, no un sistema.
 
-Bugs del batch anterior que aqui no se repiten
-----------------------------------------------
-1. **`np.random.seed(42)` fijo en el generador** (`batch-deploy/src/data_generator.py:31`):
-   cada corrida horaria generaba **los mismos datos**. Es inservible justo para
-   lo que se necesita —monitoreo y drift—: la distribucion nunca cambia.
-2. **Unidades incoherentes**: el generador documentaba "0.5 a 10 km" y alimentaba
-   un modelo entrenado con `trip_distance` en **millas**.
-3. **`iterrows()` en el bucle de prediccion**: fila por fila, con overhead de
-   Python por registro. Aqui se predice sobre el DataFrame completo.
-4. **`'stage': 'Production'` hardcodeado** en la fila persistida: un literal que
-   miente en cuanto el modelo cambia de estado, ademas de venir del vocabulario
-   de stages, deprecado en MLflow. Se persiste el **alias** consultado y la
-   **version** que ese alias resolvia en el momento de la corrida.
+Cuatro trampas que este flow evita, y que son las mas comunes al escribir un
+batch de inferencia:
 
-El generador sintetico desaparece: aqui la "produccion" son meses reales de la
-TLC (`PARTICIONES_PRODUCCION`), que traen drift real —estacionalidad, tarifas,
-patrones de viaje— en lugar de drift inventado con numpy.
+1. **Datos sinteticos con semilla fija.** Un `np.random.seed(42)` en el generador
+   hace que cada corrida produzca **los mismos datos**, lo que inutiliza
+   justamente aquello para lo que se necesitan: monitoreo y drift. Aqui la
+   "produccion" son meses reales de la TLC (`PARTICIONES_PRODUCCION`), que traen
+   drift de verdad —estacionalidad, tarifas, patrones de viaje.
+2. **Unidades incoherentes.** Documentar el generador en km y alimentar un modelo
+   entrenado en **millas** no lanza ninguna excepcion: solo degrada la prediccion.
+3. **`iterrows()` en el bucle de prediccion.** Fila por fila, con overhead de
+   Python por registro. Aqui se predice sobre el DataFrame completo.
+4. **`'stage': 'Production'` hardcodeado** en la fila persistida. Es un literal
+   que miente en cuanto el modelo cambia de estado, y ademas viene del
+   vocabulario de *stages*, deprecado en MLflow. Se persiste el **alias**
+   consultado y la **version** que ese alias resolvia en el momento de la corrida.
 
 Nota honesta sobre el dato: al ser un mes pasado, la particion trae el label. En
 produccion no lo tendrias en el momento de predecir. Se persiste la prediccion,

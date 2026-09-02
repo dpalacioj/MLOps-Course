@@ -1,10 +1,14 @@
 """Mide el efecto del caching: ejecuta la task `preparar` dos veces y compara.
 
 Por que un script y no un numero en el material: la duracion depende de la red,
-del disco y de si el parquet ya estaba descargado. El material anterior afirmaba
-"la primera vez descarga los datos (45 seg), la segunda tarda 0 segundos", y en
-clase eso se desmiente solo. Lo que se ensena es **como medirlo**, y el resultado
-es el que salga en esa maquina.
+del disco y de si el parquet ya estaba descargado. Afirmar "la primera vez tarda
+45 s y la segunda 0 s" se desmiente en clase la primera vez que la maquina no
+coincide. Lo que se ensena es **como medirlo**; el resultado es el que salga.
+
+Ojo al interpretarlo: la clave de cache no depende del flow run, asi que si ya
+corriste el pipeline antes, **las dos ejecuciones saldran `Cached`** y la
+aceleracion sera ~1x. Eso no es un fallo del caching: es que no habia nada que
+medir. Para ver el contraste hay que enfriar la cache primero.
 
     uv run python sesiones/s04-orquestacion/01-pipeline-ml/medir_caching.py
 

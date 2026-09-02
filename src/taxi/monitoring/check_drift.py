@@ -2,11 +2,11 @@
 
 Problema que resuelve
 ---------------------
-El monitoreo del material anterior producia **un HTML que nadie abria**. Peor: lo
-producia sobre datos inventados con `numpy.random.exponential(3.0)` contra
-`exponential(5.5)`, de modo que el drift siempre se detectaba, el resultado nunca
-era ambiguo y el estudiante no tenia que decidir nada. Un check que siempre dice
-"drift" no ensena a monitorear; ensena a confiar en una salida verde.
+El monitoreo que se queda a medias produce **un HTML que nadie abre**, y peor si
+lo produce sobre datos inventados —un `numpy.random.exponential(3.0)` contra
+`exponential(5.5)`, por ejemplo—: el drift se detecta siempre, el resultado nunca
+es ambiguo y no hay nada que decidir. Un check que siempre dice "drift" no ensena
+a monitorear; ensena a confiar en una salida verde.
 
 Este modulo cambia tres cosas:
 

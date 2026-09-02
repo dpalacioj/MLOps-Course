@@ -1,16 +1,15 @@
 # Ejercicio guiado: orquestar el pipeline de clasificación
 
-## Qué cambia respecto al ejercicio anterior
+## Cómo está planteado
 
-El ejercicio anterior (`ejercicio_pipeline_clasificacion.ipynb`) se titulaba
-"Ejercicio Guiado", pero **todas** sus celdas eran `%%writefile` con el código ya
-escrito: ejecutarlas en orden no requería resolver nada. Y tenía un riesgo real:
-si se ejecutaba con el directorio de trabajo equivocado, los `%%writefile`
-**sobreescribían el pipeline del curso**.
+El enunciado es un **archivo Python con los cuerpos de función vacíos**, `TODO`
+numerados y criterios de aceptación verificables. Se completa y se ejecuta.
 
-Aquí el enunciado es un archivo Python con los cuerpos de función vacíos, TODO
-numerados y criterios de aceptación verificables. No hay `%%writefile`, así que no
-hay nada que sobreescribir.
+Dos cosas que este formato evita a propósito. Un "ejercicio guiado" hecho de
+celdas `%%writefile` con el código ya escrito no exige resolver nada: ejecutarlas
+en orden es todo el trabajo. Y `%%writefile` escribe rutas relativas al directorio
+de trabajo del kernel, así que ejecutado desde la carpeta equivocada **sobreescribe
+archivos del curso**. Aquí no hay nada que sobreescribir.
 
 ## El problema
 

@@ -49,18 +49,30 @@ resumen, incluida la frase que importa: el candidato **no** fue promovido.
 3. **`preparar`** — `cache_key_fn=task_input_hash` + `cache_expiration` +
    `persist_result`. Sin persistencia no hay caché entre corridas.
 4. **`entrenar`** — `log_model(..., name="model")` (no `artifact_path=`), con
-   `signature` e `input_example`. Y **sin** `try/except` alrededor del logging: el
-   pipeline anterior degradaba ese fallo a un warning y terminaba "en verde" con
-   un run sin modelo.
+   `signature` e `input_example`. Y **sin** `try/except` alrededor del logging:
+   envolverlo degrada el fallo a un warning y el flow termina "en verde" con un
+   run sin modelo, que es lo peor de los dos mundos.
 5. **`evaluar`** — mide en validación. El holdout de test es del gate (S06).
 6. **`registrar_candidato`** — alias `candidate`, `validation_status=pending`,
    tags con la evidencia. **No** mueve `champion`.
 
 ## Consultar las predicciones del batch
 
+> **Antes de correrlo, dos cosas que confunden en clase.** El batch **no crea
+> ningún run de MLflow**: no llama a `start_run` ni loguea métricas, porque
+> predecir no es un experimento. MLflow aquí es solo el almacén de donde sale el
+> modelo, y el resultado del flow son las filas de la base de datos. Y la task
+> `cargar_modelo` se queda **entre 20 y 30 segundos en silencio** la primera vez:
+> es MLflow descargando el artefacto del registry, no un cuelgue.
+
 ```bash
 sqlite3 -header -column data/predicciones.db < sesiones/s04-orquestacion/01-pipeline-ml/consultas-predicciones.sql
 ```
+
+Con **una sola corrida y una sola versión** de modelo, las consultas 2
+(comparación entre versiones) y 5 (predicciones atípicas) tienen poco que decir:
+no hay con qué comparar. Cobran sentido cuando existan varios batches y el gate
+haya promovido una segunda versión.
 
 Las seis consultas de `consultas-predicciones.sql` están ordenadas por la
 pregunta que responden: volumen por corrida, comparación entre versiones,
