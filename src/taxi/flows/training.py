@@ -15,16 +15,15 @@ no se ve en la salida de la terminal:
 5. **Programacion**: el flow se puede desplegar con un schedule (ver
    :mod:`taxi.flows.deploy`).
 
-Decision de diseno central del rediseno
----------------------------------------
+Decision de diseno central
+--------------------------
 El flow **registra el candidato con el alias ``candidate`` y NO lo promueve**.
 
-El repo anterior hacia lo contrario (`Prefect-pipelines/src/models/model_registry.py`
-lineas 94-99): en **cada** corrida movia la version al stage `Production` con la
-antigua API de stages de MLflow, archivando de paso todas las versiones
-anteriores. Eso significa que un modelo llegaba a produccion por el solo hecho de
-que el entrenamiento termino sin excepciones. Sin gate, sin holdout, sin
-posibilidad de rechazo — y con una API deprecada desde MLflow 2.9.0.
+El atajo tentador es que cada corrida mueva la version a produccion usando la
+antigua API de *stages* de MLflow (deprecada desde 2.9.0), que ademas archiva de
+paso las versiones anteriores. Eso hace que un modelo llegue a produccion por el
+solo hecho de que el entrenamiento termino sin excepciones: sin gate, sin
+holdout y sin posibilidad de rechazo.
 
 Aqui la responsabilidad esta separada:
 
@@ -72,8 +71,8 @@ from taxi.features import contract as fc
 #: Hiperparametros del **fallback** de este modulo. La fuente de verdad de los
 #: hiperparametros del curso es `taxi.models.train.PARAMS_XGBOOST`; estos solo se
 #: usan si ese modulo no esta disponible, para que el flow siga siendo ejecutable
-#: por si mismo. Duplicar hiperparametros en dos lugares es como el repo anterior
-#: acabo con cuatro definiciones distintas del mismo modelo.
+#: por si mismo. Duplicarlos en dos lugares es como se acaba con cuatro
+#: definiciones distintas del mismo modelo y ninguna que sea la de verdad.
 PARAMS_FALLBACK: Final[dict[str, Any]] = {
     "n_estimators": 200,
     "max_depth": 6,
@@ -132,9 +131,9 @@ def particion_desde_etiqueta(etiqueta: str) -> Particion:
 def siguiente_particion(particion: Particion) -> Particion:
     """Devuelve la particion mensual siguiente.
 
-    Reemplaza al `calculate_next_period` del repo anterior. El calculo es el
-    mismo; lo que cambia es que aqui esta testeado, incluido el salto de
-    diciembre a enero, que es donde este tipo de funcion se rompe siempre.
+    Tiene test propio, incluido el salto de diciembre a enero: es donde este
+    tipo de funcion se rompe siempre, y es una linea de codigo que nadie duda en
+    escribir a mano y casi nadie prueba.
 
     >>> siguiente_particion(Particion(2023, 12))
     Particion(anio=2024, mes=1)
@@ -181,11 +180,10 @@ def _configurar_mlflow(experimento: str) -> None:
 def _url_ui_mlflow() -> str | None:
     """URL navegable del tracking server, o ``None`` si el backend no es HTTP.
 
-    El repo anterior construia esta URL con
-    ``get_tracking_uri().replace("sqlite:///", "http://localhost:5000/")``
-    (`pipeline.py:91`, `optimization.py:261`), que con un backend SQLite produce
-    `http://localhost:5000/mlflow.db`: un enlace roto en el artifact. Si no hay
-    UI, lo correcto es no publicar un enlace.
+    Se comprueba el esquema antes de construirla. El atajo habitual —
+        ``get_tracking_uri().replace("sqlite:///", "http://localhost:5000/")`` —
+        produce con un backend SQLite un `http://localhost:5000/mlflow.db`: un enlace
+        roto dentro del artifact. Si no hay UI, lo correcto es no publicar enlace.
     """
     import mlflow
 
@@ -225,7 +223,8 @@ def _construir_estimador(params: dict[str, Any]) -> Any:
     if modulo is not None and hasattr(modulo, "pipeline_xgboost"):
         return modulo.pipeline_xgboost(**params)
 
-    # TODO: usar taxi.models.train cuando este disponible.
+    # Fallback: solo se llega aqui si `taxi.models.train` no se pudo importar
+    # (por ejemplo, sin xgboost instalado). Construye el mismo pipeline en linea.
     from sklearn.feature_extraction import DictVectorizer
     from sklearn.pipeline import Pipeline
     from sklearn.preprocessing import FunctionTransformer
@@ -261,7 +260,8 @@ def _ajustar(estimador: Any, df_train: pd.DataFrame, df_valid: pd.DataFrame) -> 
     if modulo is not None and hasattr(modulo, "ajustar"):
         return modulo.ajustar(estimador, df_train, df_valid)
 
-    # TODO: usar taxi.models.train cuando este disponible.
+    # Fallback sin early stopping: sin `taxi.models.train.ajustar` no hay forma
+    # de pasar el `eval_set` transformado, asi que se ajusta sobre train a secas.
     estimador.fit(df_train, df_train[fc.TARGET_REGRESION])
     return estimador
 
@@ -443,9 +443,9 @@ def entrenar(
             # artefactos de un registry propio.
             serialization_format="cloudpickle",
         )
-        # Sin try/except alrededor del logging. El repo anterior lo envolvia y
-        # degradaba el fallo a un warning: el pipeline terminaba "en verde" con
-        # un run sin modelo, y el problema se descubria al desplegar.
+        # Sin try/except alrededor del logging, a proposito. Envolverlo degrada
+        # el fallo a un warning: el pipeline termina "en verde" con un run sin
+        # modelo, y el problema se descubre al desplegar.
         run_id = run.info.run_id
 
     logger.info("Modelo entrenado en el run %s (%s)", run_id, info.model_uri)
@@ -544,7 +544,8 @@ def registrar_candidato(
             descripcion="Candidato producido por el flow de Prefect (Sesion 4).",
         )
     else:
-        # TODO: usar taxi.models.registry cuando este disponible.
+        # Fallback: registra sin la descripcion ni las validaciones que anade
+        # `taxi.models.registry.registrar_candidato`.
         version_registrada = mlflow.register_model(modelo.model_uri, nombre_modelo)
 
     version = str(version_registrada.version)
