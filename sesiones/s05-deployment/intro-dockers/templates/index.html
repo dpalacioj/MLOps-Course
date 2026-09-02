@@ -84,7 +84,7 @@
     <h1>Gatitos App</h1>
     <span class="insignia">entorno: {{ entorno }}</span>
 
-    <img src="{{ gatito_url }}" alt="Un gato aleatorio servido por cataas.com">
+    <img id="gatito" src="{{ gatito_url }}" alt="Un gato aleatorio servido por cataas.com">
 
     <a class="boton" href="/">Otro gatito</a>
 
@@ -105,5 +105,19 @@
         <code>HEALTHCHECK</code> de la imagen.</dd>
     </dl>
   </main>
+  <script>
+    // La foto viene de un servicio publico (cataas.com). Si el salon no tiene
+    // red, la <img> quedaria rota y pareceria que la app fallo. La demo es sobre
+    // contenedores, no sobre gatos: con un fallback local la pagina sigue
+    // demostrando lo suyo (entorno y hostname) aunque no haya internet.
+    document.getElementById("gatito").addEventListener("error", function () {
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">'
+        + '<rect width="400" height="200" rx="12" fill="#e9ebf3"/>'
+        + '<text x="200" y="92" font-size="22" text-anchor="middle" fill="#333">gato no disponible (sin red)</text>'
+        + '<text x="200" y="128" font-size="14" text-anchor="middle" fill="#666">cataas.com no respondio; la app sigue funcionando</text>'
+        + '</svg>';
+      this.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    }, { once: true });
+  </script>
 </body>
 </html>

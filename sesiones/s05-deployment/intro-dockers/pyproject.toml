@@ -1,26 +1,26 @@
 # =============================================================================
-# Proyecto minimo con uv — reemplaza al requirements.txt de la version anterior
+# Proyecto minimo con uv — un lockfile en vez de un requirements.txt a mano
 # =============================================================================
-# Por que este cambio. La version anterior traia:
+# El atajo tentador para un ejemplo de este tamano es un requirements.txt:
 #
 #     requirements.txt:  fastapi==0.115.0
 #                        uvicorn[standard]==0.32.0
 #                        jinja2==3.1.4
 #
-# y el Dockerfile hacia `pip install -r requirements.txt`. Tres problemas:
+# y un Dockerfile que haga `pip install -r requirements.txt`. Tres problemas:
 #
-# 1. Los pines estaban escritos a mano y solo cubrian las tres dependencias
-#    DIRECTAS. Las transitivas (starlette, pydantic, anyio, h11...) quedaban
-#    libres: dos builds del mismo Dockerfile en dos semanas distintas producian
-#    imagenes con arboles de dependencias diferentes. Un `requirements.txt` sin
-#    hashes ni resolucion completa no es un lockfile.
-# 2. Reproducir el entorno en local exigia recordar `pip install -r ...` con el
+# 1. Los pines escritos a mano solo cubren las tres dependencias DIRECTAS. Las
+#    transitivas (starlette, pydantic, anyio, h11...) quedan libres: dos builds
+#    del mismo Dockerfile en dos semanas distintas producen imagenes con arboles
+#    de dependencias diferentes. Un `requirements.txt` sin hashes ni resolucion
+#    completa no es un lockfile.
+# 2. Reproducir el entorno en local exige recordar `pip install -r ...` con el
 #    venv correcto activado.
 # 3. Es un mecanismo distinto al del resto del repositorio, que usa uv. Dos
 #    formas de instalar dependencias en un mismo curso es una fuente garantizada
 #    de "en mi maquina funciona".
 #
-# Ahora: `uv lock` resuelve TODO el arbol y lo escribe en `uv.lock`; local, CI e
+# Aqui: `uv lock` resuelve TODO el arbol y lo escribe en `uv.lock`; local, CI e
 # imagen instalan de ese archivo con `uv sync --locked`. Es el mismo patron del
 # `pyproject.toml` de la raiz, en miniatura.
 #
