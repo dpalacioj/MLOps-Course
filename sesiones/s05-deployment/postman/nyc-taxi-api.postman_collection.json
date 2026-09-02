@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "NYC Taxi Duration API (S05)",
-    "description": "Coleccion de la API de inferencia del curso de MLOps.\n\nContrato: sesiones/s05-deployment/api-contract.md\nCodigo: src/taxi/api/\n\nLevantar el servicio antes de correr la coleccion:\n    make serve\n\nCada request lleva tests de Postman, asi que 'Run collection' es una verificacion del contrato completo y no un click por endpoint.\n\nActualizada respecto a la version anterior: la clave del lote es 'viajes' (no 'trips'), los requests incluyen pickup_datetime y las respuestas verifican model_version.",
+    "description": "Coleccion de la API de inferencia del curso de MLOps.\n\nContrato: sesiones/s05-deployment/api-contract.md\nCodigo: src/taxi/api/\n\nLevantar el servicio antes de correr la coleccion:\n    make serve\n\nCada request lleva tests de Postman, asi que 'Run collection' es una verificacion del contrato completo y no un click por endpoint.\n\nLa clave del lote es 'viajes'; los requests de prediccion mandan pickup_datetime explicito (sin el, la prediccion no es reproducible) y los tests verifican model_version en cada respuesta.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [

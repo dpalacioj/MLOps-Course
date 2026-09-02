@@ -23,7 +23,7 @@ tuyo**, cargado desde tu registry por alias.
 
 Antes de escribir código, un párrafo en el PR: **batch, online o streaming**, y por
 qué, usando los cinco criterios de la
-[matriz de decisión](README.md#2-batch-online-o-streaming-la-decisión-antes-de-la-herramienta):
+[matriz de decisión](README.md#6-batch-online-o-streaming-la-decisión-antes-de-la-herramienta):
 latencia tolerada, volumen, frescura de features, costo, complejidad operativa.
 
 Si tu consumidor puede esperar al próximo corte, **elegir batch es la respuesta
@@ -158,7 +158,7 @@ lleva sus tests, así que el resultado es una verificación del contrato complet
 
 | Síntoma | Causa casi siempre |
 |---|---|
-| `422` en todos los requests del lote | la clave del lote cambió a `viajes`; estás mandando `trips` |
+| `422` en todos los requests del lote, con `Field required` y `Extra inputs are not permitted` | la clave del lote que manda el cliente no es la que declara tu schema (en la API del curso es `viajes`) |
 | `/health` devuelve `model_loaded: false` con una URI válida | el registry no está arriba, o `MLFLOW_TRACKING_URI` apunta al puerto equivocado (el curso usa **5001**) |
 | El contenedor queda `unhealthy` para siempre | el `HEALTHCHECK` usa `curl` y la base es `python:*-slim`, que no lo trae |
 | `docker logs` sale vacío tras un fallo | falta `ENV PYTHONUNBUFFERED=1` |
