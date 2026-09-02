@@ -401,7 +401,9 @@ def predecir_lote(
         total=len(predicciones),
         model_name=primera.model_name,
         model_version=primera.model_version,
-        latencia_ms=latencia_ms,
+        # Redondeada igual que en cada elemento: el contrato promete que es el
+        # MISMO valor, y un cliente que compare los dos campos debe obtener True.
+        latencia_ms=round(latencia_ms, 3),
     )
 
 
