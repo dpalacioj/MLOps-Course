@@ -9,9 +9,9 @@
 # --no-verify.
 # =============================================================================
 # `default_install_hook_types` incluye pre-push porque la validacion del nombre
-# de rama vive aqui desde que se elimino `.githooks/`. Ver el docstring de
-# scripts/hooks/nombre_de_rama.py: git admite un solo `core.hooksPath`, y tener
-# dos sistemas de hooks hacia que pre-commit se negara a instalarse.
+# de rama vive aqui, no en una carpeta `.githooks/` aparte. Ver el docstring de
+# scripts/hooks/nombre_de_rama.py: git admite un solo `core.hooksPath`, y con
+# dos sistemas de hooks pre-commit se niega a instalarse.
 default_install_hook_types: [pre-commit, commit-msg, pre-push]
 
 repos:
@@ -32,9 +32,9 @@ repos:
       - id: mixed-line-ending
         args: [--fix=lf]
       - id: check-added-large-files
-        # 500 KB. Los artefactos binarios commiteados (model.ubj, preprocessor.b,
-        # lin_reg.bin) fueron uno de los problemas del repo: el modelo se obtiene
-        # del registry, no del control de versiones.
+        # 500 KB. El atajo tentador es commitear el artefacto (model.ubj,
+        # preprocessor.b, lin_reg.bin) "para que el compañero lo tenga": el modelo
+        # se obtiene del registry, no del control de versiones.
         args: ["--maxkb=500"]
       - id: detect-private-key
 
@@ -49,9 +49,9 @@ repos:
       - id: ruff-format
 
   # --- Notebooks sin outputs ---
-  # Los notebooks del repo llegaron a tener 82 KB de imagenes en base64 y rutas
-  # absolutas de la autora original en los outputs. Los outputs son ruido en el
-  # diff y filtran informacion del entorno de quien ejecuto.
+  # Un notebook con outputs arrastra imagenes en base64 y rutas absolutas del
+  # equipo de quien lo ejecuto. Los outputs son ruido en el diff y filtran
+  # informacion del entorno.
   - repo: https://github.com/kynan/nbstripout
     rev: 0.8.1
     hooks:
@@ -90,9 +90,9 @@ repos:
       - id: sin-rutas-absolutas
         name: sin rutas absolutas de usuario
         description: >
-          Bloquea /Users/<algo> y C:\Users\<algo>. El repo tenia la ruta del
-          disco de la autora original en prefect.yaml, lo que hacia fallar
-          `prefect deploy` en cualquier otra maquina.
+          Bloquea /Users/<algo> y C:\Users\<algo>. Una ruta absoluta en un
+          prefect.yaml o en un notebook funciona en un solo disco del mundo y hace
+          fallar `prefect deploy` en cualquier otra maquina.
         entry: python scripts/hooks/sin_rutas_absolutas.py
         language: system
         types_or: [python, yaml, jupyter, markdown, toml]
@@ -131,9 +131,9 @@ repos:
       - id: nombre-de-rama
         name: convencion de nombre de rama
         description: >
-          Valida <tipo>/<descripcion-en-kebab-case> antes de un push. Sustituye
-          a .githooks/pre-push, que quedaba inutilizado junto con el resto de
-          pre-commit por el conflicto de core.hooksPath.
+          Valida <tipo>/<descripcion-en-kebab-case> antes de un push. Vive en
+          pre-commit y no en un .githooks/pre-push propio: dos sistemas de hooks
+          se pelean por core.hooksPath y el segundo queda inutilizado.
         entry: python scripts/hooks/nombre_de_rama.py
         language: system
         stages: [pre-push]
