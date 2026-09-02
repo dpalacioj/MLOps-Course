@@ -726,7 +726,23 @@ taxi_modelo_info{model_name="nyc-taxi-duration",model_uri="models:/nyc-taxi-dura
 El label `model_version` en cada serie es el puente con la sesión 7: sin él, un
 cambio de modelo es invisible en Grafana.
 
-Documentación interactiva en <http://127.0.0.1:8000/docs>; la raíz redirige ahí.
+**Tres formas de ser el cliente, y son la misma cosa.** Todo lo anterior se hizo
+con `curl`, que manda un request a mano desde la terminal. La página
+<http://127.0.0.1:8000/docs> (la raíz redirige ahí) es la segunda: FastAPI genera
+del contrato un formulario donde cada endpoint se prueba con un clic; es la mejor
+para la demo. La tercera es la colección de [`postman/`](postman/): los mismos
+once requests guardados, cada uno con una aserción, y *Run collection* los corre
+todos y dice cuáles cumplen el contrato. Postman no es parte de la API: es un
+cliente que además se acuerda de lo que preguntó. Sin instalar nada, la misma
+colección se corre desde la terminal:
+
+```bash
+npx -y newman run sesiones/s05-deployment/postman/nyc-taxi-api.postman_collection.json \
+  -e sesiones/s05-deployment/postman/nyc-taxi-api.postman_environment.json
+```
+
+Con la API arriba y el modelo cargado debe terminar con `assertions │ 18 │ 0`
+(dieciocho aserciones, cero fallos).
 
 ---
 

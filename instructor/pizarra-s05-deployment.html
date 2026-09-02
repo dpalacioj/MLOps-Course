@@ -147,7 +147,7 @@
 <header class="top">
   <p class="kicker">Sesión 5 · guion de tablero</p>
   <h1>Pizarra de deployment</h1>
-  <p class="standfirst">Nueve dibujos que se hacen a mano en menos de un minuto cada uno, con la frase que va encima. Para dibujar mientras se habla, antes de abrir la terminal en cada bloque.</p>
+  <p class="standfirst">Once dibujos que se hacen a mano en menos de un minuto cada uno, con la frase que va encima. Para dibujar mientras se habla, antes de abrir la terminal en cada bloque.</p>
 </header>
 
 <section class="block">
@@ -387,7 +387,7 @@
     <svg viewBox="0 0 720 300" role="img" aria-label="Un cliente manda una petición HTTP a uvicorn, que la pasa a FastAPI; FastAPI valida con Pydantic, construye features y llama al modelo, que fue pedido al registry al arrancar.">
       <rect class="box" x="20" y="60" width="130" height="90" rx="6"/>
       <text class="sk" x="36" y="82">CLIENTE</text>
-      <text class="ss" x="36" y="104">app, curl o Postman</text>
+      <text class="ss" x="36" y="104">app o curl</text>
       <text class="ss" x="36" y="122">manda JSON</text>
       <text class="ss" x="36" y="140">no ve el modelo</text>
 
@@ -438,6 +438,113 @@
   <div class="say">
     <span class="lbl">La frase</span>
     <p>«La imagen no contiene el modelo. Contiene el código que sabe pedirlo.»</p>
+  </div>
+</section>
+
+<section class="block">
+  <p class="num">06b · la sintaxis</p>
+  <h2>Una función, un letrero en la puerta</h2>
+  <p>Para quien nunca escribió una API. Una sola línea desmontada en cuatro partes, y debajo la prueba de que ya la vieron: la app de gatitos del bloque 3 y la API real del bloque 7 son la misma línea con otra ruta. El decorador ya se explicó en la sesión 4 como fábrica; aquí basta con decir que <em>conecta</em> la función a una URL.</p>
+
+  <figure>
+    <svg viewBox="0 0 720 330" role="img" aria-label="La línea @app.post('/predict') desmontada: el símbolo del decorador, la app, el método HTTP y la ruta. Debajo, la misma estructura en la app de gatitos y en la API real, y de dónde sale /docs.">
+      <rect class="box-a" x="120" y="24" width="480" height="46" rx="6"/>
+      <text class="sh" x="360" y="53" text-anchor="middle" style="font-size:17px">@app.post("/predict")</text>
+
+      <path class="edge" d="M172 70 V104"/>
+      <path class="edge" d="M262 70 V104"/>
+      <path class="edge" d="M352 70 V104"/>
+      <path class="edge" d="M500 70 V104"/>
+
+      <rect class="box" x="110" y="104" width="120" height="58" rx="5"/>
+      <text class="sh" x="170" y="126" text-anchor="middle">@</text>
+      <text class="ss" x="170" y="146" text-anchor="middle">conecta la función</text>
+
+      <rect class="box" x="238" y="104" width="100" height="58" rx="5"/>
+      <text class="sh" x="288" y="126" text-anchor="middle">app</text>
+      <text class="ss" x="288" y="146" text-anchor="middle">tu FastAPI()</text>
+
+      <rect class="box" x="346" y="104" width="100" height="58" rx="5"/>
+      <text class="sh" x="396" y="126" text-anchor="middle">.post</text>
+      <text class="ss" x="396" y="146" text-anchor="middle">manda datos</text>
+
+      <rect class="box" x="454" y="104" width="150" height="58" rx="5"/>
+      <text class="sh" x="529" y="126" text-anchor="middle">"/predict"</text>
+      <text class="ss" x="529" y="146" text-anchor="middle">la URL, la puerta</text>
+
+      <text class="ss" x="360" y="186" text-anchor="middle">.get pide algo (leer); .post manda algo (el JSON del viaje va en el cuerpo)</text>
+
+      <path class="rule" d="M30 204 H690"/>
+
+      <text class="sk" x="30" y="228">GATITOS · BLOQUE 3</text>
+      <text class="sh" x="30" y="250">@app.get("/health")</text>
+      <text class="sh" x="30" y="270">def salud():</text>
+      <text class="ss" x="30" y="290">    return {"status": "ok"}</text>
+      <text class="plus" x="30" y="316">+ ya era FastAPI, sin decirlo</text>
+
+      <text class="sk" x="270" y="228">API REAL · BLOQUE 7</text>
+      <text class="sh" x="270" y="250">@app.post("/predict")</text>
+      <text class="sh" x="270" y="270">def predecir(viaje: ViajeRequest):</text>
+      <text class="ss" x="270" y="290">    ...  # valida solo, por el tipo</text>
+      <text class="plus" x="270" y="316">+ el tipo del parámetro ES el contrato</text>
+
+      <rect class="box-a" x="556" y="216" width="134" height="90" rx="6"/>
+      <text class="sk" x="570" y="238">/docs · gratis</text>
+      <text class="ss" x="570" y="260">FastAPI lee estas</text>
+      <text class="ss" x="570" y="278">líneas y arma la</text>
+      <text class="ss" x="570" y="296">página de pruebas</text>
+    </svg>
+    <figcaption>Cuatro partes y nada más. Lo único nuevo respecto a los gatos es el parámetro con tipo: <span class="mono">viaje: ViajeRequest</span> es lo que hace que un request malo dé 422 sin escribir un solo if.</figcaption>
+  </figure>
+
+  <div class="say">
+    <span class="lbl">La frase</span>
+    <p>«El decorador es el letrero en la puerta: dice qué función atiende cuando alguien toca en /predict.»</p>
+  </div>
+
+  <p style="margin-top:32px">Y el otro lado de la puerta: quién toca. Tres formas de ser el cliente, de la más cruda a la más cómoda. Dibujarlas evita la confusión de que Postman "sea parte" de la API: es solo un cliente con memoria.</p>
+
+  <figure>
+    <svg viewBox="0 0 720 230" role="img" aria-label="Tres clientes distintos, curl, la página /docs y Postman, mandan el mismo JSON a la misma API y reciben la misma respuesta. Postman además guarda los requests y sus tests.">
+      <rect class="box" x="20" y="30" width="180" height="120" rx="6"/>
+      <text class="sk" x="36" y="52">CURL · la terminal</text>
+      <text class="ss" x="36" y="76">un request, a mano</text>
+      <text class="ss" x="36" y="94">se copia y se pega</text>
+      <text class="ss" x="36" y="112">sirve para un script</text>
+      <text class="minus" x="36" y="138">− no recuerda nada</text>
+
+      <rect class="box" x="220" y="30" width="180" height="120" rx="6"/>
+      <text class="sk" x="236" y="52">/DOCS · el navegador</text>
+      <text class="ss" x="236" y="76">formulario generado</text>
+      <text class="ss" x="236" y="94">del contrato</text>
+      <text class="ss" x="236" y="112">ideal para la demo</text>
+      <text class="minus" x="236" y="138">− un request a la vez</text>
+
+      <rect class="box-a" x="420" y="30" width="190" height="120" rx="6"/>
+      <text class="sk" x="436" y="52">POSTMAN · colección</text>
+      <text class="ss" x="436" y="76">11 requests guardados</text>
+      <text class="ss" x="436" y="94">con un test cada uno</text>
+      <text class="ss" x="436" y="112">Run collection = test</text>
+      <text class="plus" x="436" y="138">+ el contrato de un clic</text>
+
+      <path class="edge" d="M110 150 V180 H360"/>
+      <path class="edge" d="M310 150 V180"/>
+      <path class="edge" d="M510 150 V180 H360"/>
+      <path class="edge" d="M360 180 V196"/>
+      <polygon class="head" points="356,192 360,200 364,192"/>
+      <rect class="box" x="250" y="200" width="220" height="26" rx="5"/>
+      <text class="sh" x="360" y="218" text-anchor="middle">la misma API, el mismo JSON</text>
+
+      <text class="ss" x="626" y="76">newman corre</text>
+      <text class="ss" x="626" y="94">la colección</text>
+      <text class="ss" x="626" y="112">en la terminal</text>
+    </svg>
+    <figcaption>Postman no es parte del servicio ni del curso: es el cliente que además guarda los requests y sus aserciones. En el taller, «Run collection» en verde es la evidencia de que el contrato se cumple.</figcaption>
+  </figure>
+
+  <div class="say">
+    <span class="lbl">La frase</span>
+    <p>«/docs, curl y Postman tocan la misma puerta. Postman es el único que se acuerda de lo que preguntó.»</p>
   </div>
 </section>
 
@@ -624,7 +731,7 @@
 </section>
 
 <footer class="end">
-  <p>Estos dibujos parten de la guía visual de la sesión (roadmap, problema sin Docker, analogía de la receta, flujo build/run, API como restaurante, FastAPI y uvicorn, tiempo real contra lotes, batch por dentro, panorama), redibujados para trazarse a mano y corregidos en tres puntos: el modelo no viaja dentro de la imagen, las dependencias vienen del lockfile y no de un requirements.txt, y la nube queda para la sesión 6.</p>
+  <p>Estos dibujos parten de la guía visual de la sesión (roadmap, problema sin Docker, analogía de la receta, flujo build/run, API como restaurante, FastAPI y uvicorn, sintaxis de FastAPI, tiempo real contra lotes, batch por dentro, panorama), redibujados para trazarse a mano y corregidos en tres puntos: el modelo no viaja dentro de la imagen, las dependencias vienen del lockfile y no de un requirements.txt, y la nube queda para la sesión 6.</p>
 </footer>
 
 </div>
