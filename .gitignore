@@ -62,6 +62,10 @@ credentials
 # --- Datos (se descargan con `make data`, se verifican por hash) ---
 data/raw/
 data/processed/
+# La escribe el pipeline batch (`src/taxi/flows/batch.py`). Se regenera
+# ejecutandolo; son 11 MB por corrida y no se versiona.
+data/predicciones.db
+data/*.db
 data/interim/
 data/external/
 *.parquet
