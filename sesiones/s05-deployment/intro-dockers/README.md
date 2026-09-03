@@ -37,6 +37,8 @@ Al terminar puedes:
    en un proceso local.
 4. **Verificar** que el contenedor no corre como `root` y que su `HEALTHCHECK`
    reporta `healthy`.
+5. **Diagnosticar** un contenedor que reporta `(healthy)` y no responde, y
+   **nombrar** por qué el tag de una imagen no dice qué hay dentro.
 
 ## Archivos
 
@@ -110,16 +112,139 @@ código tiene que correr en una máquina que no controlas.
 
 ## Parte 2 — En Docker
 
+### Antes de construir: comprueba dónde estás
+
+El punto final de `docker build -t gatitos-app .` significa **"usa este
+directorio"**. No es decoración: es lo que decide qué `Dockerfile` se lee. Este
+repositorio tiene dos, y construir el equivocado es el error más común de todo el
+paso. Dos segundos de comprobación:
+
 ```bash
+pwd                    # debe terminar en sesiones/s05-deployment/intro-dockers
+ls Dockerfile app.py   # los dos archivos tienen que estar AQUÍ
+```
+
+```
+.../MLOps-Course/sesiones/s05-deployment/intro-dockers
+Dockerfile	app.py
+```
+
+Tu `pwd` imprime la ruta completa desde la raíz de tu disco; lo que importa son
+los tres últimos tramos.
+
+Si `pwd` te devuelve la raíz del repositorio, vuelve con
+`cd sesiones/s05-deployment/intro-dockers`.
+
+### El error, hecho a propósito
+
+Antes de construir bien, constrúyelo mal. Cuesta cinco segundos y es la única
+forma de reconocerlo cuando te pase de verdad. **Desde la raíz del
+repositorio:**
+
+```bash
+cd ../../..            # a la raíz del repositorio
+docker build -t gatitos-app .
+```
+
+**Mira las primeras líneas y cancela con `Ctrl+C` en cuanto las leas.** No hace
+falta esperar: el error ya está a la vista.
+
+| Build correcto, desde `intro-dockers` | Build equivocado, desde la raíz |
+|---|---|
+| `#8 [stage-0 1/8] FROM python:3.11-slim` | `#7 [builder 1/8] FROM python:3.11-slim` |
+| — | `#8 [uv-bin 1/1] FROM ghcr.io/astral-sh/uv` |
+| ocho pasos, una sola etapa sin nombre | veinte pasos y etapas con nombre |
+
+**La señal que lo delata:** las etiquetas entre corchetes. `stage-0` es la única
+etapa de este ejemplo. `builder` y `uv-bin` son etapas del `Dockerfile` de la
+raíz, que construye la API del curso. Si ves un nombre de etapa que no
+reconoces, estás construyendo otra cosa.
+
+**Y si no lo cancelas**, esto es exactamente lo que pasa, y es lo que hay que
+aprender a reconocer:
+
+```bash
+docker run -d -p 8080:5000 --name gatitos gatitos-app
+docker ps
+curl -sS http://localhost:8080
+```
+
+```
+NAMES     IMAGE         STATUS                   PORTS
+gatitos   gatitos-app   Up 8 seconds (healthy)   0.0.0.0:8080->5000/tcp
+
+curl: (56) Recv failure: Connection reset by peer
+```
+
+**Léelo dos veces: el contenedor dice `(healthy)` y no sirve nada.** Es el
+momento más útil de este ejemplo. El `HEALTHCHECK` que trae esa imagen consulta
+el puerto 8000 *por dentro*, donde sí hay un servidor, así que reporta salud con
+toda honestidad. Lo que no puede saber es que tú publicaste el 5000, donde no hay
+nadie escuchando. **Un healthcheck solo prueba lo que le pediste probar.**
+
+Los logs son los que cantan la verdad:
+
+```bash
+docker logs gatitos
+```
+
+```
+INFO:     Started server process [1]
+2026-09-03 14:21:05,650 INFO taxi.api.main Arrancando API version=1.0.0 uri_modelo=ninguno
+2026-09-03 14:21:05,650 WARNING taxi.api.modelo Arranque SIN modelo (TAXI_MODELO_URI=ninguno).
+```
+
+Ni una palabra de gatos: dice `taxi.api.main` y `uri_modelo`. Esa es la
+confirmación. Y para verlo sin ambigüedad, pregúntale a la imagen qué es:
+
+```bash
+docker image inspect gatitos-app   --format 'titulo={{index .Config.Labels "org.opencontainers.image.title"}} cmd={{.Config.Cmd}}'
+docker images gatitos-app --format '{{.Size}}'
+```
+
+```
+titulo=nyc-taxi-duration-api cmd=[uvicorn taxi.api.main:app --host 0.0.0.0 --port 8000]
+3.33GB
+```
+
+La app de gatitos pesa unos 370 MB, arranca `uvicorn app:app` y escucha en el
+5000. Nada de eso coincide. **El tag `gatitos-app` es un nombre que le pusiste
+tú; no dice nada de lo que hay dentro.** Es la misma idea que la sesión trabaja
+con `:latest` frente al digest, en miniatura y en tu propia terminal.
+
+### La corrección
+
+Si cancelaste el build con `Ctrl+C`, no quedó ninguna imagen y basta con volver a
+la carpeta correcta:
+
+```bash
+cd sesiones/s05-deployment/intro-dockers    # desde la raíz del repositorio
+docker build -t gatitos-app .
+docker images gatitos-app --format '{{.Size}}'    # ~370 MB, no 3.33 GB
+```
+
+Si lo dejaste terminar, primero se retira lo que quedó mal etiquetado. Los dos
+`|| true` están porque cada comando falla si eso ya no existe, y aquí da igual:
+
+```bash
+docker rm -f gatitos || true       # el contenedor equivocado
+docker rmi gatitos-app || true     # la imagen con el nombre de otra cosa
+cd sesiones/s05-deployment/intro-dockers
 docker build -t gatitos-app .
 docker run -d -p 8080:5000 --name gatitos gatitos-app
 ```
 
-`docker build` lee el `Dockerfile` y produce una imagen llamada `gatitos-app`.
-La primera vez descarga la imagen base de Python (unos 50 MB) y tarda un par de
-minutos; imprime una línea por paso (`[4/8] COPY pyproject.toml uv.lock ./`,
-`[5/8] RUN uv sync --locked --no-dev`…) y termina con
-`naming to docker.io/library/gatitos-app:latest`.
+Con la imagen correcta, `curl -s http://127.0.0.1:8080/health` responde
+`{"status":"ok","entorno":"docker",...}` y el tamaño baja a unos 370 MB. Ese es el
+estado desde el que sigue el resto de la parte 2.
+
+### Qué hace cada comando
+
+`docker build` lee el `Dockerfile` **de este directorio** y produce una imagen
+llamada `gatitos-app`. La primera vez descarga la imagen base de Python (unos 50 MB) y tarda un par de
+minutos; imprime una línea por paso, todos con la etiqueta `stage-0`
+(`[4/8] COPY pyproject.toml uv.lock ./`, `[5/8] RUN uv sync --locked --no-dev`…)
+y termina con `naming to docker.io/library/gatitos-app:latest`.
 
 `docker run -d` arranca un contenedor **en segundo plano** (por eso la terminal
 no se bloquea, a diferencia de la parte 1) e imprime solo su id, una línea de 64
@@ -261,6 +386,9 @@ haya pedido. Por eso `app.py` usa `127.0.0.1` por defecto y el `CMD` del
 | `Conflict. The container name "/gatitos" is already in use` | quedó un contenedor de una corrida anterior | `docker rm -f gatitos` y vuelve a correr |
 | `ERROR: [Errno 48] Address already in use` (local) | el 5000 está ocupado en tu equipo | `PUERTO=5050 uv run app.py` |
 | `docker ps` dice `(unhealthy)` | el comando del `HEALTHCHECK` falla | `docker inspect --format '{{json .State.Health.Log}}' gatitos \| jq` |
+| `curl: (56) Recv failure: Connection reset by peer`, con el contenedor en `(healthy)` | construiste el `Dockerfile` de la raíz: la imagen escucha en otro puerto | ver [El error, hecho a propósito](#el-error-hecho-a-propósito) |
+| El build imprime pasos `[builder ...]` o `[uv-bin ...]` | estás en la raíz del repositorio, no en esta carpeta | `Ctrl+C` y `cd sesiones/s05-deployment/intro-dockers` |
+| `docker logs gatitos` habla de `taxi.api.main` | el tag dice `gatitos-app` pero la imagen es otra | `docker rmi gatitos-app` y reconstruye desde esta carpeta |
 
 ## Qué NO usar
 

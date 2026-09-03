@@ -224,7 +224,11 @@ Lo que hay que traerse de ahí a la sección 3:
 - por qué las dependencias se copian **antes** que el código (cache de capas);
 - las **tres verificaciones**: no corre como `root`, `docker ps` dice
   `(healthy)`, `docker logs` no sale vacío;
-- por qué `0.0.0.0` es correcto dentro del contenedor y peligroso fuera.
+- por qué `0.0.0.0` es correcto dentro del contenedor y peligroso fuera;
+- que **el tag de una imagen no dice qué hay dentro**. Ahí se construye a
+  propósito el `Dockerfile` equivocado y sale un contenedor que reporta
+  `(healthy)` sin servir nada. Es la versión en miniatura de la sección 3.4, y
+  la primera vez que se ve que un healthcheck solo prueba lo que le pediste.
 
 ---
 
@@ -985,6 +989,8 @@ después, para saber desde dónde se llamó. Se lee de abajo hacia arriba.
 | `make mlflow` o `make up` | `[Errno 48] Address already in use` / `Bind for 0.0.0.0:5001 failed: port is already allocated` | los dos MLflow usan el 5001 | apaga uno: Ctrl+C en `make mlflow`, o `make down` |
 | cualquier `docker ...` | `Cannot connect to the Docker daemon at unix:///.../docker.sock` | Docker Desktop no está abierto | ábrelo y espera a que el ícono deje de animarse |
 | `make batch` | `FileNotFoundError: ... data/processed/2023-07.parquet` | falta `make data` | `make data` (tarda) |
+| cualquier `docker build` | pasos con etiquetas de etapa que no reconoces, como `[builder 1/8]` o `[uv-bin 1/1]` | el punto final del comando apunta a otro directorio, así que se está leyendo otro `Dockerfile` | `Ctrl+C`, `pwd`, y vuelve a la carpeta correcta |
+| `curl` a un contenedor en `(healthy)` | `curl: (56) Recv failure: Connection reset by peer` | la imagen escucha en un puerto distinto del que publicaste; el healthcheck consulta el de dentro y no ve el problema | `docker image inspect <imagen> --format '{{.Config.Cmd}}'` y compara con tu `-p` |
 | `curl .../metrics \| grep taxi_` | no imprime nada | la API acaba de arrancar sin modelo: las series de predicción existen solo cuando hay modelo cargado; las de errores sí deben aparecer siempre | `curl -s .../metrics \| head` para ver el texto completo |
 
 ---

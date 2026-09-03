@@ -215,13 +215,13 @@ sola fuente de verdad. `uv.lock` para el entorno, el Model Registry para el arte
 
 ---
 
-## BLOQUE 3 — Local vs contenedor (40-58 min)
+## BLOQUE 3 — Local vs contenedor (40-62 min)
 
 **Archivos:** `sesiones/s05-deployment/intro-dockers/`. **Terminales:** 2.
 
 Es el único bloque que se corre desde otro directorio.
 
-### 3.1 Local (5 min)
+### 3.1 Local (4 min)
 
 ```bash
 cd sesiones/s05-deployment/intro-dockers
@@ -235,7 +235,7 @@ interfaces; la app arranca igual porque escucha solo en `127.0.0.1`. Si no,
 
 `Ctrl+C`.
 
-### 3.2 Preguntar antes de dockerizar (3 min)
+### 3.2 Preguntar antes de dockerizar (2 min)
 
 "¿Qué problemas tiene esto como forma de entregar software?" Recoger respuestas y
 ordenarlas: Python del host, dependencias del host, cero aislamiento, "en mi máquina
@@ -244,7 +244,7 @@ funciona".
 Y la frase que enmarca todo el bloque A: **el contenedor convierte el entorno completo en
 el artefacto que se despliega.** Eso es todo lo que hace, y es suficiente.
 
-### 3.3 El contenedor (10 min)
+### 3.3 El contenedor (9 min)
 
 ```bash
 docker build -t gatitos-app .
@@ -280,7 +280,33 @@ el tipo de bug que nadie mira porque "el servicio responde". Comprobarlo en vivo
 docker run --rm --entrypoint sh gatitos-app -c 'command -v curl || echo sin curl'
 ```
 
-### 3.4 El cache de capas: medirlo (5 min)
+### 3.4 El error del contexto, a propósito (4 min)
+
+**Hazlo tú en pantalla, no lo dejes de lectura.** Desde la raíz del repositorio:
+
+```bash
+docker build -t gatitos-app .     # el Dockerfile EQUIVOCADO
+```
+
+Cancela con `Ctrl+C` en cuanto salgan las primeras líneas y señala las etiquetas
+`[builder 1/8]` y `[uv-bin 1/1]`: son etapas del `Dockerfile` de la raíz, no de este
+ejemplo, que solo tiene `stage-0`. **La pregunta:** *"¿en qué se nota, sin leer el
+Dockerfile, que este build no es el nuestro?"*
+
+Después proyecta el resultado que trae el README de `intro-dockers` si no se cancela: el
+contenedor arranca, `docker ps` dice **`(healthy)`** y `curl` responde `Connection reset
+by peer`. Ahí están las dos frases del bloque:
+
+> «El healthcheck solo prueba lo que le pediste probar. Ese consulta el 8000 por dentro,
+> donde sí hay un servidor; nadie le dijo que mirara el 5000.»
+
+> «El tag lo pusiste tú. No dice nada de lo que hay dentro.»
+
+Es la versión de juguete del bloque 5, y conviene decirlo aquí para que el digest no
+llegue como una idea nueva. Si vas justo de tiempo, este es el sub-bloque que se recorta:
+el README lo trae completo con las salidas reales.
+
+### 3.5 El cache de capas: medirlo (3 min)
 
 ```bash
 docker build --no-cache -t gatitos-app .    # línea base
@@ -296,9 +322,12 @@ inventado en un README es peor que ningún número.
 
 Limpieza: `docker stop gatitos && docker rm gatitos && cd -`
 
+Si hiciste la demo del error, borra también la imagen mal etiquetada antes de seguir:
+`docker rmi gatitos-app` y reconstrúyela desde `intro-dockers`.
+
 ---
 
-## BLOQUE 4 — El `Dockerfile` real (58-78 min)
+## BLOQUE 4 — El `Dockerfile` real (62-80 min)
 
 **Archivos:** [`Dockerfile`](../Dockerfile), [`.dockerignore`](../.dockerignore),
 [`ci.yml`](../.github/workflows/ci.yml). **Terminales:** 1.
@@ -306,7 +335,7 @@ Limpieza: `docker stop gatitos && docker rm gatitos && cd -`
 Abrir el `Dockerfile` de la raíz **al lado** del de `intro-dockers`. La sesión de este
 bloque es la diferencia entre los dos.
 
-### 4.1 Las siete decisiones (12 min)
+### 4.1 Las siete decisiones (10 min)
 
 Recorrer con la tabla del [README sección 3.1](../sesiones/s05-deployment/README.md) proyectada.
 Dedicar tiempo real a tres:
@@ -375,12 +404,13 @@ Limpieza: `docker rm -f api-local`
 
 ---
 
-## BLOQUE 5 — Del tag mutable al digest inmutable (78-88 min)
+## BLOQUE 5 — Del tag mutable al digest inmutable (80-88 min)
 
 **Archivos:** ninguno; terminal y tablero. **Terminales:** 1.
 
-Es el bloque que prepara la sesión 6. Diez minutos, y son de los mejor invertidos de la
-sesión.
+Es el bloque que prepara la sesión 6. Ocho minutos, y son de los mejor invertidos de la
+sesión. Si hiciste la demo del error del contexto en el bloque 3, la clase ya vio en
+miniatura que un tag no dice qué hay dentro; enlaza con eso.
 
 ```bash
 docker inspect --format='{{.Id}}' mlops-curso/api:local
