@@ -271,7 +271,7 @@ al final.
 
 ## Referencias
 
-- Material de la sesión: [`sesiones/s06-cloud-cicd/cicd.md`](../../sesiones/s06-cloud-cicd/cicd.md)
+- Material de la sesión: [`sesiones/s06-cloud-cicd/01-el-gate-de-promocion.md`](../../sesiones/s06-cloud-cicd/01-el-gate-de-promocion.md)
 - [ADR 002 — aliases y tags en vez de stages](002-aliases-en-vez-de-stages.md)
 - [ADR 006 — servir online y en batch](006-serving-online-vs-batch.md)
 - [ADR 003 — umbrales de drift](003-umbrales-de-drift.md) (mismo problema de calibración,

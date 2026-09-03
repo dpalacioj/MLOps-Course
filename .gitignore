@@ -175,3 +175,7 @@ limpiar-y-finalizar.sh
 # lado deja de ser un enunciado. Si hace falta compartirlas, se entregan por
 # otro canal despues de la entrega del taller.
 sesiones/*/_soluciones/
+
+# --- Demo de nube (S06): el modelo exportado del registry para meterlo en la imagen
+# Es un artefacto: se regenera con `mlflow artifacts download` y no se versiona.
+sesiones/s06-cloud-cicd/04-demo-ecr-fargate/modelo-exportado/
