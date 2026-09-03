@@ -200,12 +200,27 @@ def ejecutar_gate(
     # minutos reintentando. La descarga de los ARTEFACTOS (mas abajo) usa los
     # defaults, porque ahi tardar si es legitimo.
     with registry.fallar_rapido():
+        # Primero se comprueba que el registry RESPONDE, y solo despues se busca
+        # el candidato. Sin esta separacion, un MLflow caido y un registry vacio
+        # producen el mismo "no hay ninguna version registrada", y el mensaje
+        # manda a reentrenar para arreglar un problema de red: la confusion
+        # exacta entre "modelo malo" e "infraestructura" que este gate evita.
+        try:
+            cli.search_registered_models(max_results=1)
+        except Exception as exc:
+            consola.print(
+                f"[red]No se pudo hablar con MLflow en {config.MLFLOW_TRACKING_URI} "
+                f"({type(exc).__name__}).[/red]\n"
+                "No es un problema del modelo: es infraestructura. Levanta el tracking "
+                "server (make mlflow, o make up) y vuelve a correr el gate."
+            )
+            return ERROR_INFRA
         if candidato_version is None:
             mv = registry.ultima_version(nombre_modelo, cliente_mlflow=cli)
             if mv is None:
                 consola.print(
                     f"[red]No hay ninguna version registrada de '{nombre_modelo}'.[/red]\n"
-                    "Entrena y registra un candidato primero: taxi train --hpo"
+                    "Entrena y registra un candidato primero: taxi train --registrar"
                 )
                 return ERROR_INFRA
             candidato_version = str(mv.version)
