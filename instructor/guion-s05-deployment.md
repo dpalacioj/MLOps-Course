@@ -1,8 +1,8 @@
 # Guion de clase — Sesión 5: Deployment
 
 Para seguir **al pie de la letra**: cada bloque abre con su **caja de comandos**, numerados,
-con la terminal y la salida esperada. Debajo va lo que se dice. Primero se ejecuta la caja,
-después se habla.
+con la terminal y la salida esperada. Debajo de cada caja va **qué hace cada comando y por
+qué está ahí**, y después lo que se dice. Primero se ejecuta la caja, después se habla.
 
 **Duración total:** 240 min (4 h), con pausa de 15 min.
 
@@ -14,8 +14,15 @@ después se habla.
 | **T2** | lo que se construye y despliega | `docker build`, `docker run`, `make batch` |
 | **T3** | el cliente | `curl`, `jq`, `sqlite3`, `uv run python -c` |
 
+Por qué tres y no una: un servidor **bloquea** la terminal donde corre (se queda esperando
+requests), así que el cliente que le manda peticiones tiene que vivir en otra. Y separar
+"lo que construyo" de "el stack que ya corre" evita el error más común en vivo: matar el
+stack con un `Ctrl+C` que iba dirigido a otra cosa.
+
 **Un solo registry en toda la clase: el del stack de Compose (`make up`).** `make mlflow` no
-se usa en clase; está en el anexo al final por si Docker falla.
+se usa en clase; está en el anexo al final por si Docker falla. Los dos comparten el puerto
+5001 y **no comparten el `@champion`**: si se mezclan, la API dice que no hay modelo y
+nadie entiende por qué.
 
 **El único bloque que cambia de directorio es el 3** (`intro-dockers`). El guion dice cuándo
 entrar y cuándo volver.
@@ -30,7 +37,8 @@ entrar y cuándo volver.
 | Taller | 165-220 | 12 |
 | Cierre | 220-240 | 13 |
 
-**Pizarra:** [`pizarra-s05-deployment.html`](pizarra-s05-deployment.html).
+**Pizarra:** [`pizarra-s05-deployment.html`](pizarra-s05-deployment.html), trece
+diapositivas que se pasan con la flecha derecha.
 **Material del estudiante:** [`sesiones/s05-deployment/`](../sesiones/s05-deployment/).
 
 ---
@@ -61,6 +69,19 @@ docker pull python:3.11-slim-bookworm
 docker pull ghcr.io/astral-sh/uv:0.8.17
 ```
 
+**Qué hace cada comando:**
+
+| Comando | Qué hace | Por qué antes de clase |
+|---|---|---|
+| `make up` | levanta con Docker Compose los seis servicios del curso: Postgres, MinIO, MLflow, la API, Prometheus y Grafana | el bloque 6 los muestra ya arriba; arrancarlos en vivo son dos minutos de pantalla quieta |
+| `docker compose ps` | lista los contenedores del stack con su estado de salud | `(healthy)` en todos es la señal de que el stack sirve; `(unhealthy)` en uno es lo que hay que arreglar ahora, no en clase |
+| `uv run python -c "...version_por_alias..."` | le pregunta al registry qué versión tiene el alias `champion` | la API carga el modelo **por ese alias**; sin él arranca degradada y toda la parte B se cae |
+| `taxi train --registrar && taxi promote` | entrena el modelo lineal, lo registra como candidato, y el gate lo promueve porque no hay champion contra el que comparar | crea el champion en unos 20 s. No usar `--hpo`: tarda minutos y aquí no aporta |
+| `docker compose restart api` | reinicia solo el contenedor de la API para que recargue el modelo | la API resuelve el alias **al arrancar**; si el champion se creó después, hay que reiniciarla |
+| `curl .../health \| jq .model_version` | pide el estado de la API y extrae la versión del modelo | `null` significa que no cargó modelo: volver al paso anterior |
+| `command -v jq sqlite3` | imprime la ruta de cada herramienta si está instalada | los bloques 9 y 10 las usan en vivo; que falten se descubre ahora |
+| `docker pull ...` | descarga las dos imágenes base que usan los Dockerfiles | el `docker build` del bloque 4 no espera a la red del salón |
+
 Dejar el stack **arriba** durante toda la clase. Los bloques 3 a 5 no lo usan, pero no
 molesta y ahorra el arranque del bloque 6.
 
@@ -90,6 +111,10 @@ uv run python -c "import importlib.metadata as m; print({p: m.version(p) for p i
 
 **Salida esperada:** `{'mlflow': '3.15.1', 'xgboost': '3.2.0', 'scikit-learn': '1.9.0'}`
 (o las que tenga tu lock).
+
+**Qué hace:** `importlib.metadata` lee, del entorno que `uv` instaló desde `uv.lock`, la
+versión exacta de cada paquete. Es la prueba de con qué se entrenó el modelo, para
+contrastarla con los pines a mano del Dockerfile que se proyectan a continuación.
 
 **Archivos que se proyectan:** la cabecera del [`Dockerfile`](../Dockerfile) de la raíz y
 [`_contraejemplo-insegure-aws/predict.py`](../sesiones/s06-cloud-cicd/_contraejemplo-insegure-aws/predict.py).
@@ -177,6 +202,25 @@ cd ../../..
 pwd                                        # debe terminar en /MLOps-Course
 ```
 
+**Qué hace cada comando:**
+
+| Comando | Qué hace | Qué enseña |
+|---|---|---|
+| `cd sesiones/s05-deployment/intro-dockers` | entra a la carpeta de la app de gatitos | el `docker build` lee el `Dockerfile` **del directorio actual**; desde la raíz construiría la API del curso por error |
+| `uv run app.py` | crea el entorno desde `uv.lock` si no existe y arranca el servidor en `127.0.0.1:5000`; **bloquea** la terminal hasta `Ctrl+C` | así se corre software sin contenedor: depende del Python y del `uv` del host |
+| `pwd` | imprime el directorio actual | dos segundos que evitan construir el Dockerfile equivocado |
+| `docker build -t gatitos-app .` | ejecuta la receta del `Dockerfile` y produce una imagen llamada `gatitos-app`; el punto es "este directorio" | la imagen es código, dependencias e intérprete congelados; cada paso `[n/8]` es una capa |
+| `docker run -d -p 8080:5000 --name gatitos gatitos-app` | arranca un contenedor en segundo plano (`-d`), conecta el puerto 8080 del equipo con el 5000 de adentro (`-p afuera:adentro`) y le pone nombre | la terminal no se bloquea; el `hostname` de la página es el id del contenedor, no el del equipo |
+| `docker run --rm --entrypoint sh ... -c 'id -u'` | arranca un contenedor efímero de la misma imagen, pero en vez de la app ejecuta `id -u` y lo borra al salir | imprime el UID del usuario del proceso; `1001` es el usuario sin privilegios, `0` sería root |
+| `docker ps` | lista los contenedores corriendo con su estado | `(healthy)` sale del `HEALTHCHECK` de la imagen; los primeros 10 s dice `(health: starting)` |
+| `docker logs gatitos` | muestra lo que el proceso escribió a la salida estándar | si sale vacío falta `PYTHONUNBUFFERED=1`; la línea `GET /health` que aparece sola es el healthcheck |
+| `... -c 'command -v curl \|\| echo sin curl'` | busca el binario `curl` dentro de la imagen | imprime `sin curl`: por eso el healthcheck usa Python y no `curl` |
+| `docker build --no-cache ...` | reconstruye ignorando el cache de capas | es la línea base de tiempo para comparar los dos builds siguientes |
+| `docker build ...` tras editar `app.py` | reconstruye reutilizando lo que no cambió | `[4/8]` y `[5/8]` dicen `CACHED`: cambiar código no reinstala dependencias |
+| `docker build ...` tras editar `pyproject.toml` | reconstruye desde la capa que cambió | ahora reinstala todo: la capa de dependencias depende de ese archivo |
+| `docker stop gatitos && docker rm gatitos` | detiene y borra el contenedor | un contenedor con `-d` sigue corriendo aunque cierres la terminal |
+| `cd ../../..` y `pwd` | vuelve a la raíz del repositorio y lo comprueba | todo lo que sigue se corre desde la raíz |
+
 **Salidas esperadas:** en local, `Gatitos App en http://127.0.0.1:5000 (entorno=local)` y el
 proceso se queda esperando. En Docker, `curl -s http://127.0.0.1:8080/health` devuelve
 `{"status":"ok","entorno":"docker","hostname":"<12 caracteres>"}`. `docker ps` dice
@@ -226,7 +270,21 @@ curl -s http://127.0.0.1:8001/health | jq
 docker rm -f api-local
 ```
 
+**Qué hace cada comando:**
+
+| Comando | Qué hace | Qué enseña |
+|---|---|---|
+| `docker build -t mlops-curso/api:local .` | construye la imagen de la API del curso con el `Dockerfile` de la raíz | es multi-stage: la etapa `builder` instala desde `uv.lock` y la etapa `runtime` solo se lleva el entorno resultante |
+| `docker images \| grep mlops-curso` | lista las imágenes cuyo nombre contiene `mlops-curso`, con su tamaño | unos 3,3 GB: MLflow, XGBoost y scikit-learn pesan. Es el tamaño que viaja en cada despliegue |
+| `docker history ... \| head -15` | muestra las capas de la imagen, de la más nueva a la más vieja, con el tamaño de cada una | se ve qué instrucción aportó cuánto peso, y que no hay ninguna capa con un `.env` |
+| `docker run --rm --entrypoint sh ... -c 'id -u'` | igual que en el bloque 3, sobre la imagen real | `1001`: el CI falla si esto da `0` |
+| `docker run -d --name api-local -p 8001:8000 -e TAXI_MODELO_URI=ninguno ...` | arranca la API en segundo plano, publicada en el **8001** del equipo, con la variable que le dice "arranca sin modelo" | `-e` inyecta configuración por entorno; `ninguno` es lo que permite verificar la imagen sin un registry |
+| `sleep 5 && docker ps --filter name=api-local` | espera y muestra solo ese contenedor | el `HEALTHCHECK` tiene un período de gracia; después debe decir `(healthy)` |
+| `curl -s .../health \| jq` | pide el estado a la API y lo formatea | `status: degradado`, `model_loaded: false`: viva pero sin modelo, a propósito |
+| `docker rm -f api-local` | detiene y borra el contenedor en un solo paso | el bloque 6 usa la API del stack, no esta |
+
 **Nota:** se publica en el **8001** porque el 8000 lo tiene la API del stack (`make up`).
+Dos procesos no pueden escuchar en el mismo puerto del equipo.
 
 **Salida esperada del `curl`:**
 
@@ -263,6 +321,15 @@ docker build -t mlops-curso/api:latest .
 docker inspect --format='{{.Id}}' mlops-curso/api:latest    # OTRO id, mismo nombre
 ```
 
+**Qué hace cada comando:**
+
+| Comando | Qué hace | Qué enseña |
+|---|---|---|
+| `docker inspect --format='{{.Id}}' <imagen>` | imprime el identificador de contenido de la imagen, un `sha256:` calculado a partir de sus bytes | ese hash **es** la imagen; si cambia un byte, cambia el hash |
+| `docker tag api:local api:latest` | le pone un segundo nombre a la misma imagen | dos tags, un solo id: el tag es solo una etiqueta pegada encima |
+| `docker build -t mlops-curso/api:latest .` tras editar un archivo | construye otra imagen y le pega la **misma** etiqueta `latest` | el nombre no cambió y el contenido sí: `latest` ahora apunta a otros bytes |
+| `docker inspect ...` otra vez | muestra el id nuevo | dos despliegues "de `latest`" pueden ser dos imágenes distintas y los logs no lo dicen |
+
 **Qué decir:** *"si esto pasó entre que probaron staging y que desplegaron producción,
 ¿cómo se dan cuenta?"* No se dan cuenta: los logs de las dos corridas dicen `latest`.
 Proyectar la tabla del README sección 3.4 y cerrar con la analogía:
@@ -286,6 +353,14 @@ make logs                # ver el arranque en orden; Ctrl+C para salir del segui
 curl -s http://127.0.0.1:8000/health | jq -c '{model_loaded, model_version}'   # true y una versión
 ```
 
+**Qué hace cada comando:**
+
+| Comando | Qué hace | Qué enseña |
+|---|---|---|
+| `docker compose ps` | lista los servicios definidos en `docker-compose.yml` y su estado | seis contenedores, cada uno con su healthcheck; `minio-init` no aparece porque terminó su trabajo y salió |
+| `make logs` | sigue los logs de todos los servicios a la vez (`docker compose logs -f`) | se ve el orden de arranque: Postgres, MinIO, MLflow, y la API que espera a que MLflow esté sano. `Ctrl+C` solo corta el seguimiento, **no apaga nada** |
+| `curl .../health \| jq -c '{model_loaded, model_version}'` | pide el estado a la API **del stack** (puerto 8000) y muestra dos campos | `true` y una versión: esta API sí cargó el champion del registry del stack, a diferencia de la del bloque 4 |
+
 **Archivo:** [`docker-compose.yml`](../docker-compose.yml). Siete minutos, tres cosas y
 ninguna más:
 
@@ -307,6 +382,11 @@ El stack es infraestructura de apoyo, no el tema. Seguir.
 make batch               # equivale a: uv run python -m taxi.flows.batch
 # (si data/ no está preparado: uv run taxi data primero, y por eso se lanza aquí)
 ```
+
+**Qué hace:** corre el pipeline batch, que carga el champion del registry por alias, predice
+sobre una partición completa y escribe una fila por viaje en `data/predicciones.db`, con la
+versión del modelo en cada fila. Se lanza ahora porque tarda un par de minutos con los datos
+ya descargados, y el bloque 10 los consulta.
 
 ---
 
@@ -331,6 +411,15 @@ curl -sX POST http://127.0.0.1:8000/predict -H 'Content-Type: application/json' 
 curl -sX POST http://127.0.0.1:8000/predict -H 'Content-Type: application/json' \
   -d '{"PULocationId": 43, "DOLocationID": 238, "trip_distance": 2.4}' | jq
 ```
+
+**Qué hace cada comando:**
+
+| Comando | Qué hace | Qué enseña |
+|---|---|---|
+| abrir `/docs` | FastAPI genera esa página a partir de las clases de `schemas.py` | el contrato y la documentación son el mismo objeto: no pueden divergir |
+| `curl -sX POST .../predict -H 'Content-Type: application/json' -d '{...}'` | manda un request HTTP de tipo POST con un cuerpo JSON. `-s` silencia la barra de progreso, `-X POST` fija el método, `-H` declara que el cuerpo es JSON, `-d` es el cuerpo | es lo que haría cualquier aplicación cliente; `\| jq` solo formatea la respuesta |
+| el request con `PULocationID: 9999` | manda una zona fuera del rango 1-265 que declara el contrato | la API responde `422` diciendo **qué campo** falló, en vez de predecir con un valor que el modelo nunca vio |
+| el request con `PULocationId` (i minúscula) | manda un campo que no existe en el contrato | `extra="forbid"` lo rechaza con 422; sin esa opción, el campo se ignoraría y la predicción saldría con el valor por defecto, en silencio |
 
 **Salidas esperadas:** el primero devuelve `duration_min`, `viaje_largo`, `model_name`,
 `model_version` y `latencia_ms`. Los otros dos, `422` con `detalle_validacion`.
@@ -382,6 +471,17 @@ curl -s http://127.0.0.1:8000/health | jq '{model_version, model_uri}'
 uv run python -c "from taxi.models import registry; registry.asignar_alias('nyc-taxi-duration', 'champion', '<version del paso 1>')"
 ```
 
+**Qué hace cada comando:**
+
+| Paso | Qué hace | Qué enseña |
+|---|---|---|
+| 1. `curl .../health \| jq '{model_version, model_uri}'` | muestra qué versión resolvió el alias al arrancar y con qué URI se pidió | la URI dice `@champion`; la versión es la que ese alias apuntaba **en el momento de la carga** |
+| 2. `search_model_versions(...)` | lista todas las versiones registradas del modelo y sus aliases | hace falta elegir una versión **que exista**; mover el alias a una inexistente falla |
+| 3. `registry.asignar_alias(..., 'champion', '2')` | mueve el alias `champion` a la versión 2 en el registry | es una escritura de metadatos: nada se reentrena, nada se copia |
+| 4. `docker compose restart api && sleep 8` | reinicia solo el contenedor de la API y espera a que recargue | el `lifespan` vuelve a pedir `models:/...@champion` y ahora recibe la versión 2 |
+| 5. `curl .../health` otra vez | muestra la versión nueva con la **misma** URI | cambió el modelo servido sin reconstruir ni redesplegar la imagen |
+| 6. `asignar_alias(..., '<version del paso 1>')` | devuelve el alias a donde estaba | los bloques siguientes y la próxima clase esperan el champion original |
+
 **Salida esperada:** entre el paso 1 y el 5 cambia `model_version`; `model_uri` es el mismo
 (`models:/nyc-taxi-duration@champion`). **No se reconstruyó nada.**
 
@@ -418,6 +518,15 @@ curl -s http://127.0.0.1:8000/metrics | grep -E "^taxi_" | head -20
 uv run pytest tests/api -q
 ```
 
+**Qué hace cada comando:**
+
+| Comando | Qué hace | Quién lo consume en la vida real |
+|---|---|---|
+| `curl .../health` | ¿el proceso está vivo? Responde 200 mientras el proceso exista, con `model_loaded` como dato adicional | el orquestador (Docker, Kubernetes), para decidir si reiniciar |
+| `curl .../modelo` | nombre, versión, URI y lista de features del modelo que está sirviendo | una persona, para responder "¿qué está respondiendo?" sin abrir el código |
+| `curl .../metrics \| grep -E "^taxi_" \| head -20` | el texto en formato Prometheus con contadores y latencias; el `grep` deja solo las métricas propias del servicio | Prometheus, que lo consulta cada pocos segundos (sesión 7). El label `model_version` es lo que hace visible un cambio de modelo en Grafana |
+| `uv run pytest tests/api -q` | corre los tests de la API con un modelo falso inyectado | pasan sin MLflow y sin red, gracias a la costura `cargar_pyfunc` |
+
 **Qué decir:**
 
 - **9.1 (5 min):** la tabla del README sección 4.4 y **la pregunta trampa**: *"`/health`
@@ -446,6 +555,12 @@ sqlite3 -header -column data/predicciones.db \
           ROUND(AVG(prediccion_minutos), 2) AS media_min
      FROM predicciones GROUP BY 1,2,3,4 ORDER BY 1;"
 ```
+
+**Qué hace:** abre la base SQLite que escribió el batch y agrupa las predicciones por
+corrida (`batch_id`), partición y versión del modelo, contando filas y promediando la
+predicción. `-header -column` solo hacen la salida legible. Cada `batch_id` es una
+ejecución del pipeline; si el champion cambia entre dos corridas, la columna
+`model_version` lo muestra fila por fila.
 
 **Qué decir (8 min):** cada fila lleva la versión que la produjo. *"Mañana hacen rollback
 del modelo. ¿Qué predicciones de esta tabla hay que revisar?"* Sin la columna: "todas" o
@@ -520,6 +635,14 @@ docker rmi mlops-curso/api:latest 2>/dev/null || true
 make down                 # el stack; los volúmenes conservan el registry
 ```
 
+**Qué hace cada comando:**
+
+| Comando | Qué hace | Por qué |
+|---|---|---|
+| `docker rm -f api-local gatitos` | borra los dos contenedores sueltos de los bloques 3 y 4, si quedaron | un contenedor olvidado sigue ocupando puerto y memoria; el `2>/dev/null \|\| true` es para que no falle si ya no existen |
+| `docker rmi mlops-curso/api:latest` | borra la etiqueta `latest` que se creó en el bloque 5 | no deja una imagen con nombre engañoso en la máquina; `api:local` se conserva para la próxima clase |
+| `make down` | apaga el stack de Compose | los volúmenes **no** se borran: el registry con el champion sigue ahí para la sesión 6. Borrarlos sería `docker compose down -v`, y no se hace |
+
 ---
 
 ## Anexo — Plan B si Docker falla en tu equipo
@@ -540,6 +663,14 @@ uv run taxi train --registrar && uv run taxi promote
 # T2 — la API en el 8000 (bloquea; déjala abierta)
 make serve
 ```
+
+**Qué hace cada comando:**
+
+| Comando | Qué hace | Diferencia con el camino principal |
+|---|---|---|
+| `make mlflow` | levanta un servidor de MLflow con SQLite y artefactos en disco, sin Docker, en el puerto 5001 | es **otro registry**, vacío: el champion del stack no está aquí |
+| `taxi train --registrar && taxi promote` | crea un champion en este registry | el mismo par de comandos del bloque 0, contra el otro registry |
+| `make serve` | arranca la API con `uvicorn` directamente en el host, con recarga automática | sin contenedor: es el equivalente del `uv run app.py` del bloque 3 |
 
 En el bloque 8, "reiniciar solo el proceso" es `Ctrl+C` en T2 y `make serve` otra vez.
 Todo lo demás es idéntico.
