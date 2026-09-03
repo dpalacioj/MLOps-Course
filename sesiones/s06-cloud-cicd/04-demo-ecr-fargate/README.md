@@ -4,7 +4,9 @@
 > antelación, sobre su propia cuenta.** Ningún estudiante necesita una cuenta de AWS
 > para aprobar la sesión ni el taller. Este documento está escrito para que puedas
 > seguirlo solo, comando por comando, el día que tengas una cuenta; hasta entonces,
-> léelo con la grabación al lado.
+> léelo con la grabación al lado. Todas las salidas marcadas como reales se obtuvieron
+> ejecutando estos comandos, en este orden, en una cuenta de AWS el 3 de septiembre
+> de 2026, y la cuenta quedó vacía al terminar.
 
 **Qué vas a construir.** La misma imagen de la API de la sesión 5, con el modelo
 `@champion` dentro, publicada en un registro privado de AWS y ejecutándose en un
@@ -27,8 +29,9 @@ flowchart LR
 números del paso 03, leídos el 3 de septiembre de 2026). Una demo de dos horas cuesta
 menos de 0,10 USD. Olvidada un mes, unos 33 USD. **El costo está en no apagarla.**
 
-**Cuánto tarda.** Unos 40 minutos la primera vez, la mitad de ellos esperando: el push
-de la imagen y el arranque de la tarea son los pasos lentos.
+**Cuánto tarda.** Unos 20 minutos la primera vez si ya tienes la imagen de la sesión 5
+construida. Los dos pasos que esperan son el push de la imagen (35 s con buena red, varios
+minutos con la del salón) y el arranque de la tarea (48 s).
 
 ---
 
@@ -229,15 +232,14 @@ aws ecr create-repository \
   --image-tag-mutability IMMUTABLE
 ```
 
-**Qué debes ver** (salida de ejemplo; tu cuenta y fechas serán otras):
+**Qué debes ver:** un JSON con el repositorio creado. Las claves que importan (tu
+cuenta será otra):
 
 ```json
 {
     "repository": {
-        "repositoryArn": "arn:aws:ecr:us-east-1:123456789012:repository/mlops-curso/taxi-demo",
-        "registryId": "123456789012",
         "repositoryName": "mlops-curso/taxi-demo",
-        "repositoryUri": "123456789012.dkr.ecr.us-east-1.amazonaws.com/mlops-curso/taxi-demo",
+        "repositoryUri": "<cuenta>.dkr.ecr.us-east-1.amazonaws.com/mlops-curso/taxi-demo",
         "imageTagMutability": "IMMUTABLE",
         ...
     }
@@ -266,11 +268,13 @@ docker tag "mlops-curso/api-con-modelo:${ETIQUETA}" "${REGISTRO}/${REPO_ECR}:${E
 time docker push "${REGISTRO}/${REPO_ECR}:${ETIQUETA}"
 ```
 
-**Qué debes ver:** `Login Succeeded`, y después una línea por capa con `Pushed` o
-`Layer already exists`, terminando con el digest:
+**Qué debes ver** (salida real): `Login Succeeded`, y después una línea por capa con
+`Pushed` o `Layer already exists`, terminando con el digest:
 
 ```text
-v1-modelo1: digest: sha256:9f2c...e41a size: 3245
+7337582cdf1b: Pushed
+v1-modelo1: digest: sha256:468c198bbf705376b1100c5040472dc4f989d6f206925e26d5272918345d3f81 size: 856
+push: 35 s
 ```
 
 El usuario es literalmente `AWS` y el token vale **12 horas**. La contraseña entra por
@@ -278,10 +282,11 @@ El usuario es literalmente `AWS` y el token vale **12 horas**. La contraseña en
 lista de procesos.
 
 **Mide el tiempo del push y dilo en clase.** La imagen pesa 3,3 GB descomprimida; ECR
-recibe las capas comprimidas (alrededor de un tercio), y con la red de un salón de
-clase son varios minutos. Es el primer costo real de "el modelo viaja en la imagen":
-cada versión de modelo es un push. Las capas de la base ya subidas no se repiten en el
-segundo push, así que la segunda versión sube en segundos.
+recibe las capas comprimidas, que son **892 MB** (se lee en el paso siguiente). Con una
+conexión buena son 35 segundos; con la red de un salón de clase, varios minutos. Es el
+primer costo real de "el modelo viaja en la imagen": cada versión de modelo es un push.
+Las capas de la base ya subidas no se repiten en el segundo push, así que la segunda
+versión sube en segundos.
 
 ### 2.3 El digest, que es lo que vas a desplegar
 
@@ -298,16 +303,27 @@ aws ecr describe-images --repository-name "$REPO_ECR" \
   --query 'imageDetails[].{tag:imageTags[0],MB:imageSizeInBytes,subida:imagePushedAt}' --output table
 ```
 
-**Qué debes ver:**
+**Qué debes ver** (salida real):
 
 ```text
-123456789012.dkr.ecr.us-east-1.amazonaws.com/mlops-curso/taxi-demo@sha256:9f2c...e41a
+<cuenta>.dkr.ecr.us-east-1.amazonaws.com/mlops-curso/taxi-demo@sha256:468c198bbf705376b1100c5040472dc4f989d6f206925e26d5272918345d3f81
+-----------------------------------------------------------------
+|    MB     |              subida                |     tag      |
++-----------+------------------------------------+--------------+
+|  1639     |  2026-09-03T10:35:52.627000-05:00  |  None        |
+|  892379807|  2026-09-03T10:35:52.712000-05:00  |  None        |
+|  892379807|  2026-09-03T10:35:53.169000-05:00  |  v1-modelo1  |
 ```
 
 Ese string, con `@sha256:…` y no con `:v1-modelo1`, es la **unidad de despliegue**. Es
 exactamente lo que produce el job `imagen` de `cd.yml` como salida. El tag es para que
-un humano lo lea; el digest es para que la plataforma lo ejecute. La tabla te da el
-tamaño **comprimido**, que es por el que cobra ECR.
+un humano lo lea; el digest es para que la plataforma lo ejecute.
+
+Dos cosas de la tabla. La columna `MB` está en bytes pese al nombre: **892 MB
+comprimidos** es por lo que cobra ECR. Y hay tres filas para un solo push: Docker
+publica la imagen, una atestación de cómo se construyó, y un **índice** de 1,6 KB que
+apunta a las dos. El tag y el digest que obtuviste señalan al índice, y eso es lo que
+ECS va a resolver.
 
 ---
 
@@ -533,25 +549,46 @@ Nota sobre el `healthCheck`: es Python y no `curl` por la misma razón de la ses
 
 ### 8.1 Lanzar
 
+La configuración de red va en un archivo JSON, igual que la task definition. La CLI
+también acepta una sintaxis abreviada en una sola línea, pero con esta estructura (un
+objeto que contiene listas) el parser de la CLI la rechaza; el error está en la sección
+12. JSON en un archivo es más largo y siempre funciona.
+
 ```bash
+cat > "${TMPDIR:-/tmp}/${DEMO}-red.json" <<JSON
+{
+  "awsvpcConfiguration": {
+    "subnets": ["${SUBNET_ID}"],
+    "securityGroups": ["${SG_ID}"],
+    "assignPublicIp": "ENABLED"
+  }
+}
+JSON
+
 export TASK_ARN="$(aws ecs run-task \
   --cluster "$DEMO" \
   --launch-type FARGATE \
   --task-definition "$DEMO" \
-  --network-configuration "awsvpcConfiguration={subnets=[${SUBNET_ID}],securityGroups=[${SG_ID}],assignPublicIp=ENABLED}" \
+  --network-configuration "file://${TMPDIR:-/tmp}/${DEMO}-red.json" \
   --region "$AWS_REGION" \
   --query 'tasks[0].taskArn' --output text)"
 echo "$TASK_ARN"
 
-# Espera a que la tarea llegue a RUNNING. Incluye bajar 3 GB de imagen: mide cuánto tarda.
+# Espera a que la tarea llegue a RUNNING. Incluye bajar la imagen: mide cuánto tarda.
 time aws ecs wait tasks-running --cluster "$DEMO" --tasks "$TASK_ARN" --region "$AWS_REGION"
 ```
 
-**Qué debes ver:** el ARN de la tarea
-(`arn:aws:ecs:us-east-1:123456789012:task/taxi-demo/3f9a…`) y, tras uno a tres
-minutos, el `wait` termina sin imprimir nada. Silencio es éxito. **Mide el tiempo y
-compáralo con el `docker run` local de la sección 1.3**: esa diferencia es el precio de
-que la imagen viaje con el modelo dentro.
+**Qué debes ver** (salida real): el ARN de la tarea y, tras unos 48 segundos, el `wait`
+termina sin imprimir nada. Silencio es éxito.
+
+```text
+arn:aws:ecs:us-east-1:<cuenta>:task/taxi-demo/bbe49c2d767440c2a11afe1bf8fabbcc
+wait tasks-running: 48 s
+```
+
+**Compara ese tiempo con el `docker run` local de la sección 1.3**: la diferencia es lo
+que tarda Fargate en conseguir una máquina y bajar 892 MB de imagen. Es el precio de que
+la imagen viaje con el modelo dentro.
 
 `assignPublicIp=ENABLED` hace dos cosas: le da a la tarea una IP a la que puedas llegar,
 y le da salida a internet para bajar la imagen de ECR (en la subred por defecto no hay
@@ -572,7 +609,9 @@ export IP="$(aws ec2 describe-network-interfaces --network-interface-ids "$ENI_I
 echo "http://${IP}:8000"
 ```
 
-**Qué debes ver:** una URL como `http://54.173.x.x:8000`.
+**Qué debes ver:** una URL como `http://44.203.102.x:8000` (la IP es distinta en cada
+lanzamiento: la tarea no tiene una dirección estable, y eso es una de las cosas que
+resuelve un balanceador).
 
 ### 8.3 Probar
 
@@ -593,14 +632,28 @@ aws ecs describe-tasks --cluster "$DEMO" --tasks "$TASK_ARN" --region "$AWS_REGI
   --query 'tasks[0].{estado:lastStatus,salud:healthStatus,cpu:cpu,memoria:memory}'
 ```
 
-**Qué debes ver:** las mismas tres respuestas de la sección 1.3, pero desde una IP
-pública; y `"salud": "HEALTHY"` en la última. Abre también `http://IP:8000/docs` en el
-navegador: es la documentación interactiva de FastAPI, la misma que en local.
+**Qué debes ver** (salida real): las mismas tres respuestas de la sección 1.3, pero
+desde una IP pública, y `"salud": "HEALTHY"` en la última. Abre también
+`http://IP:8000/docs` en el navegador: es la documentación interactiva de FastAPI, la
+misma que en local.
 
 ```text
+responde en 2 intentos, 2 s tras RUNNING
 {"status":"ok","model_loaded":true,"model_name":"nyc-taxi-duration","model_version":"desconocida","model_uri":"/app/modelo","version_api":"1.0.0"}
-{"duration_min":14.2,"viaje_largo":false,"model_name":"nyc-taxi-duration","model_version":"desconocida","latencia_ms":6.1}
+{"model_name":"nyc-taxi-duration","model_version":"desconocida","model_uri":"/app/modelo"}
+{"duration_min":14.2,"viaje_largo":false,"model_name":"nyc-taxi-duration","model_version":"desconocida","latencia_ms":3.455}
+docs: HTTP 200
+{
+    "estado": "RUNNING",
+    "salud": "HEALTHY",
+    "cpu": "1024",
+    "memoria": "2048"
+}
 ```
+
+El `healthStatus` empieza en `UNKNOWN` y pasa a `HEALTHY` cuando el primer check de la
+task definition responde; puede tardar hasta un minuto después de que la API ya
+contesta.
 
 **La predicción es la misma que en tu máquina (14,2 minutos).** Es el argumento
 completo de la sesión 5 comprobado en la nube: mismo digest, mismos bytes, misma
@@ -612,10 +665,17 @@ respuesta. Lo único que cambió es dónde corre.
 aws logs tail "/ecs/${DEMO}" --since 10m --region "$AWS_REGION"
 ```
 
-**Qué debes ver:** las mismas líneas que `docker logs` mostraba en local, incluidas
-las peticiones que acabas de hacer y el aviso `La URI '/app/modelo' no referencia el
-Model Registry`. Si la tarea hubiera muerto al arrancar, **aquí** estaría el motivo. En
-la consola: *CloudWatch → Log groups → /ecs/taxi-demo*.
+**Qué debes ver** (salida real, recortada): las mismas líneas que `docker logs`
+mostraba en local, con el prefijo del stream y la tarea delante:
+
+```text
+2026-09-03T15:38:17 api/api/bbe49c2d... WARNING taxi.api.modelo La URI '/app/modelo' no referencia el Model Registry. Funciona, pero la prediccion no queda atribuible a una version registrada.
+2026-09-03T15:38:17 api/api/bbe49c2d... INFO taxi.api.modelo Modelo cargado: uri=/app/modelo nombre=nyc-taxi-duration version=desconocida
+2026-09-03T15:38:18 api/api/bbe49c2d... INFO:     38.225.57.173:53054 - "POST /predict HTTP/1.1" 200 OK
+```
+
+Si la tarea hubiera muerto al arrancar, **aquí** estaría el motivo. En la consola:
+*CloudWatch → Log groups → /ecs/taxi-demo*.
 
 ---
 
@@ -681,7 +741,8 @@ inverso al de creación: tareas, cluster, task definitions, log group, security 
 repositorio de ECR con sus imágenes. Es **idempotente** (correrlo dos veces no falla) y
 **termina verificando**: la sección 8 de su salida lista lo que quedó.
 
-**Qué debes ver** al final:
+**Qué debes ver** al final (salida real; el borrado completo tardó 65 segundos y el
+security group se soltó al primer intento):
 
 ```text
 ========================================================================
@@ -697,7 +758,8 @@ repositorio de ECR con sus imágenes. Es **idempotente** (correrlo dos veces no 
 
 Seis listas vacías. **Esa salida es la evidencia**, no la frase "corrí el teardown".
 Si la sección 5 avisa que el security group todavía tiene una interfaz asociada, espera
-dos minutos y vuelve a correr el script: es idempotente.
+dos minutos y vuelve a correr el script: es idempotente. Una segunda pasada sobre la
+cuenta ya vacía imprime `--  no hay ...` en cada sección y termina con exit 0.
 
 Y al día siguiente, la verificación que de verdad cierra el ciclo: Cost Explorer con la
 curva en cero. El propio script imprime el comando de `aws ce get-cost-and-usage` con
@@ -715,6 +777,7 @@ producción.
 | Lo que ves | Causa | Arreglo |
 |---|---|---|
 | `Unable to locate credentials` | la CLI no tiene credenciales configuradas | `aws configure` con las de tu usuario IAM |
+| `Error parsing parameter '--network-configuration': Expected: ',', received: ']'` | se pasó la red con la sintaxis abreviada `awsvpcConfiguration={subnets=[...],...}`; el parser de la CLI no la acepta con esta estructura | pásala en un archivo JSON con `file://`, como en la sección 8.1 |
 | `denied: Your authorization token has expired` al hacer push | el token de ECR dura 12 h | repite el `get-login-password \| docker login` |
 | `tag invalid: The image tag 'v1-modelo1' already exists in the 'mlops-curso/taxi-demo' repository and cannot be overwritten` | el repositorio es `IMMUTABLE` y el tag ya existe | usa otra etiqueta. **Es la protección funcionando** |
 | la tarea pasa a `STOPPED` con `CannotPullContainerError` | el rol de ejecución no tiene la política, o la tarea no tiene salida a internet (`assignPublicIp=DISABLED`) | revisa la sección 3 y el `assignPublicIp` |

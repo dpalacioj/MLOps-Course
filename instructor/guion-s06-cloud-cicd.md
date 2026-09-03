@@ -45,7 +45,7 @@ make mlflow          # en una terminal aparte; queda corriendo toda la clase
 uv run python -c "
 from taxi.models import registry
 mv = registry.version_por_alias('nyc-taxi-duration', 'champion')
-print('champion ->', mv.version if mv else 'NO HAY. Corre: taxi data && taxi train --hpo && taxi promote')
+print('champion ->', mv.version if mv else 'NO HAY. Corre: taxi data && taxi train --registrar && taxi promote')
 "
 
 # 2. El holdout tiene que estar preparado, o el gate devuelve exit 2.
@@ -531,8 +531,9 @@ pausando en cinco momentos:
 5. **La predicción desde la IP pública responde `14.2`** (sección 8.3). Mismo digest,
    mismos bytes, misma respuesta. Es la sesión 5 comprobada en la nube.
 
-Y el `wait tasks-running` con su tiempo: comparar con el `docker run` local. Esa
-diferencia es el precio de que la imagen viaje con el modelo.
+Y el `wait tasks-running` con su tiempo (48 s en la grabación de referencia, frente a
+4 s del `docker run` local): esa diferencia es el precio de que la imagen viaje con el
+modelo.
 
 **Si la grabación falla:** proyectar las salidas reales guardadas y seguir. Nunca
 depurar AWS en vivo más de dos minutos.

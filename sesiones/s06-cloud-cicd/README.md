@@ -94,12 +94,14 @@ destruye, la nube cobra por segundo de existencia hasta que alguien se acuerde.
 ```bash
 make data        # las particiones, incluido el holdout del gate
 make mlflow      # el registry de la sesión 3, en otra terminal: queda corriendo
-uv run python -c "from taxi.models import registry; mv = registry.version_por_alias('nyc-taxi-duration', 'champion'); print('champion ->', mv.version if mv else 'NO HAY: corre taxi train --hpo y taxi promote')"
+uv run python -c "from taxi.models import registry; mv = registry.version_por_alias('nyc-taxi-duration', 'champion'); print('champion ->', mv.version if mv else 'NO HAY: corre taxi train --registrar y taxi promote')"
 ```
 
-Hace falta un modelo con alias `champion`. Si no lo hay, `uv run taxi train --hpo
---trials 10` seguido de `uv run taxi promote` lo crea (el primer modelo se promueve
-solo, porque no hay contra qué compararlo).
+Hace falta un modelo con alias `champion`. Si no lo hay, dos comandos de segundos lo
+crean: `uv run taxi train --registrar` (el modelo lineal) y `uv run taxi promote`. El
+primer modelo se promueve solo, porque no hay contra qué compararlo. Con ese champion,
+el baseline de la media se rechaza y un XGBoost afinado (`taxi train --hpo --trials 10`)
+se acepta: las dos demostraciones del paso 01 funcionan.
 
 ---
 
@@ -172,9 +174,10 @@ entrenamiento termina en verde:
 uv run taxi train --modelo media --registrar
 ```
 
-**Qué debes ver:** `media: valid_rmse=9.6457` y `Registrado como nyc-taxi-duration v6
-con alias @candidate y validation_status=pending`. Un RMSE del doble que el del
-champion, y el pipeline verde. Con el atajo de arriba, ese modelo estaría sirviendo
+**Qué debes ver:** `media: valid_rmse=9.6457` y `Registrado como nyc-taxi-duration vN
+con alias @candidate y validation_status=pending` (N es el número que siga en tu
+registry). Un RMSE de más o menos el doble que el de cualquier modelo entrenado, y el
+pipeline verde. Con el atajo de arriba, ese modelo estaría sirviendo
 tráfico ahora mismo.
 
 La conclusión que hay que dejar escrita en el tablero:

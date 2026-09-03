@@ -335,7 +335,11 @@ Honestidad sobre este caso: **no es determinista.** Si tu `@champion` ya es un m
 bien afinado, diez trials de Optuna pueden no superarlo en un 1% y el gate,
 correctamente, rechaza. Eso no es un fallo de la demo, es el gate haciendo su trabajo.
 El caso que sí es determinista es el del **primer modelo**: si no hay `@champion`, el
-criterio 2 aprueba y el veredicto dice que es el primero en producción.
+criterio 2 aprueba y el veredicto dice que es el primero en producción. Sobre un
+registry vacío, la secuencia media → lineal → media produce, en ese orden, un
+`PROMOVIDO` por ser el primero, un `PROMOVIDO` por mejora real y un `RECHAZADO`, en
+menos de un minuto y sin HPO. Es la receta que usa el [taller](taller.md) para dejar el
+gate en un log de Actions.
 
 ---
 
