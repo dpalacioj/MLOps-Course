@@ -373,7 +373,7 @@ repositorio el **3 de septiembre de 2026**:
 | Action | Versión | Para qué |
 |---|---|---|
 | `actions/checkout` | v7 | clonar el repositorio en el runner |
-| `astral-sh/setup-uv` | v10 | instalar `uv` con cache |
+| `astral-sh/setup-uv` | v10.0.1 | instalar `uv` con cache. Va con la etiqueta exacta porque el proyecto **no publica la etiqueta mayor `v10`**: con `@v10` el job falla al arrancar con `Unable to resolve action` |
 | `actions/cache` | v6 | cache de las particiones fijas |
 | `actions/upload-artifact` · `actions/download-artifact` | v7 · v8 | pasar el log del gate entre jobs |
 | `actions/github-script` | v9 | el comentario del PR y el issue del nightly |
