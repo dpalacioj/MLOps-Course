@@ -1,40 +1,46 @@
 # Guion de clase — Sesión 6: Cloud y CI/CD
 
-Guion minutado para las **4 horas** del formato de sesión del curso. Cada bloque indica
-qué archivo abrir, qué comando correr y qué salida esperar.
+Guion minutado para **3 horas**, no las 4 del formato del curso. La sesión tiene un
+concepto central (el gate) y su plomería (los workflows, la nube); estirarla a cuatro
+horas la llenaría de detalles de AWS que envejecen en meses. Si el grupo tiene la cuarta
+hora, va entera al taller, con el instructor circulando.
 
-**Duración total:** 240 min (4 h), con pausa de 15 min.
-**Terminales:** 2 (una para el gate, una para AWS o Compose). 3 si se abre la UI de MLflow.
+**Duración total:** 180 min, con pausa de 10 min.
+**Terminales:** 2 (una con `make mlflow` corriendo, una para los comandos). Navegador
+con GitHub y con la grabación de la demo.
 **Directorio base:** la **raíz del repositorio**.
 **Material del estudiante:** [`sesiones/s06-cloud-cicd/`](../sesiones/s06-cloud-cicd/).
 
 | Tramo | Min | Bloques |
 |---|---|---|
-| Arranque | 0-15 | 1 |
-| El dolor | 15-40 | 2 |
-| Bloque A — el gate de promoción | 40-95 | 3, 4, 5 |
-| Pausa | 95-110 | — |
-| Bloque B — CI/CD y nube | 110-165 | 6, 7, 8, 9 |
-| Taller | 165-220 | 10 |
-| Cierre | 220-240 | 11 |
+| Arranque | 0-10 | 1 |
+| El dolor | 10-30 | 2 |
+| Bloque A — el gate de promoción | 30-80 | 3, 4, 5 |
+| Pausa | 80-90 | — |
+| Bloque B — los workflows y la seguridad | 90-127 | 6, 7 |
+| Bloque C — la nube: traducción, demo grabada, costo, teardown | 127-160 | 8, 9 |
+| Cierre y arranque del taller | 160-180 | 10 |
 
 ---
 
 ## Lo primero que hay que decir, en el minuto 0
 
-**Local es el default y nada evaluable depende de la nube.** Decirlo antes de cualquier
-otra cosa, porque baja la ansiedad de media clase:
+**Todo lo evaluable es local y nadie necesita una cuenta de AWS.** Decirlo antes de
+cualquier otra cosa, porque baja la ansiedad de media clase:
 
-> "El taller de hoy se aprueba con Docker Compose y GitHub Actions. AWS es una demo mía y
-> un laboratorio opcional. Nadie necesita una tarjeta de crédito para pasar esta sesión."
+> "El taller de hoy se aprueba con MLflow, Docker y GitHub Actions, que ya tienen. AWS
+> es una demo mía, grabada, sobre mi cuenta. Nadie necesita una tarjeta de crédito para
+> pasar esta sesión."
 
 ---
 
-## Antes de clase (checklist del instructor)
+## Antes de clase (lista de verificación del instructor)
 
 ### El gate tiene que poder demostrarse
 
 ```bash
+make mlflow          # en una terminal aparte; queda corriendo toda la clase
+
 # 1. Debe existir un @champion, y debe ser un modelo decente.
 uv run python -c "
 from taxi.models import registry
@@ -43,7 +49,7 @@ print('champion ->', mv.version if mv else 'NO HAY. Corre: taxi data && taxi tra
 "
 
 # 2. El holdout tiene que estar preparado, o el gate devuelve exit 2.
-uv run taxi data
+make data
 
 # 3. Ensayar el rechazo ANTES de la clase. Es la demo central del bloque 4.
 uv run taxi promote --mejora-minima 0.99 --dry-run   # debe salir RECHAZADO, exit 1
@@ -51,28 +57,34 @@ uv run taxi promote --mejora-minima 0.99 --dry-run   # debe salir RECHAZADO, exi
 
 ### La demo de AWS
 
-- **Grabar la demo con antelación** (bloque 8): ECR + App Runner, desde el `docker push`
-  hasta el `curl /health`, con el teardown al final. Si la consola falla en vivo, se
-  proyecta la grabación y la clase no pierde el hilo. **Es plan A, no plan B: se graba
-  siempre.**
-- Verificar que el **presupuesto de 10 USD** existe en la cuenta del curso:
+- **Grabar la demo con antelación** siguiendo
+  [`04-demo-ecr-fargate/README.md`](../sesiones/s06-cloud-cicd/04-demo-ecr-fargate/README.md)
+  de punta a punta: desde el `mlflow artifacts download` hasta la sección 8 del
+  `teardown.sh` con las seis listas vacías. **Es plan A, no plan B: se graba siempre.**
+  En clase no se depura AWS en vivo.
+- **Correr el teardown al terminar de grabar** y verificar al día siguiente en Cost
+  Explorer que la curva bajó a cero. Anotar el costo real de la grabación: es el número
+  que se lee en el bloque 9.
+- Tener a mano la salida real del `curl .../predict` contra la IP pública y la del
+  teardown, para proyectarlas si la grabación falla.
 
-```bash
-aws budgets describe-budgets --account-id "$(aws sts get-caller-identity --query Account --output text)" \
-  --query 'Budgets[].{Nombre:BudgetName,Limite:BudgetLimit.Amount}'
-```
+### El repositorio en GitHub
 
-- Tener el IAM user de cada equipo creado, con la política de
-  [`scripts/politica-iam-minima.json`](../sesiones/s06-cloud-cicd/scripts/politica-iam-minima.json)
-  rellenada.
-- Tener la sesión de terminal **con `AWS_REGION` y `EQUIPO` ya exportadas**, y el
-  `aws sts get-caller-identity` ya corrido. Perder cuatro minutos en la proyección
-  configurando credenciales es la forma más rápida de perder a la clase.
+- **Crear los environments** `staging` y `production` en *Settings → Environments*, con
+  un *required reviewer* en `production`. Si no existen, el bloque 7.1 no tiene qué
+  mostrar: `cd.yml` los declara, pero GitHub los crea vacíos al primer uso y sin
+  protección.
+- Abrir la última corrida de `nightly-smoke.yml` en Actions y comprobar que está en
+  verde. Es el único workflow del curso donde el gate corre de verdad (el de `cd.yml`
+  está detrás de la variable `GATE_ACTIVO`, que no está puesta a propósito). Si está en
+  rojo, leer el paso que falló antes de clase: se proyecta en el bloque 6.4.
+- Tener abiertos dos PR de talleres de la sesión 5 con su CI, para el arranque.
 
 ### La regla de proyección
 
-**Nunca proyectar la salida de `get-secret-value`, `create-access-key` ni el contenido de
-un `.env`.** Tener una segunda terminal, sin historial, para lo que sí se puede mostrar.
+**Nunca proyectar la salida de `aws configure`, ni un archivo `~/.aws/credentials`, ni
+el contenido de un `.env`.** Tener una segunda terminal, sin historial, para lo que sí se
+puede mostrar.
 
 ---
 
@@ -84,54 +96,53 @@ un `.env`.** Tener una segunda terminal, sin historial, para lo que sí se puede
 ├── cd.yml                    # Bloques 6 y 7: ¿esto debe atender tráfico?
 └── nightly-smoke.yml         # Bloque 6: ¿el caso guía sigue funcionando?
 
-scripts/promote.py            # Bloques 3, 4 y 5: el gate (presentación)
+scripts/promote.py            # Bloques 3, 4 y 5: el gate (presentación y exit codes)
 src/taxi/models/evaluate.py   # Bloques 3 y 4: el gate (política pura)
-src/taxi/models/registry.py   # Bloque 5: aliases, tags y rollback
-tests/unit/test_gate.py       # Bloque 4: la política, sin infraestructura
+src/taxi/models/registry.py   # Bloque 5: aliases, tags, fallar_rapido y rollback
+tests/unit/test_gate.py       # Bloque 3: la política, sin infraestructura
 
 sesiones/s06-cloud-cicd/
-├── README.md                 # Bloques 2, 8 y 11
-├── cicd.md                   # Bloques 3, 4, 5, 6, 7
-├── guia-aws.md               # Bloque 8
-├── taller.md                 # Bloque 10
-├── scripts/
-│   ├── teardown.sh           # Bloque 9 (obligatorio)
-│   ├── politica-iam-minima.json          # Bloque 8
-│   ├── presupuesto.json                  # Bloque 9
-│   └── presupuesto-notificaciones.json   # Bloque 9
-├── _soluciones/              # no publicar antes del taller
-│   ├── solucion-taller.md
-│   └── evidencia.sh
-└── _contraejemplo-insegure-aws/          # Bloque 7 (seguridad)
+├── README.md                     # Bloques 2 y 10
+├── 01-el-gate-de-promocion.md    # Bloques 3, 4, 5
+├── 02-los-tres-workflows.md      # Bloques 6, 7
+├── 03-de-compose-a-la-nube.md    # Bloque 8
+├── 04-demo-ecr-fargate/          # Bloques 8 y 9
+│   ├── README.md                 #   la demo paso a paso (grabada)
+│   ├── Dockerfile                #   la imagen de S05 + el modelo
+│   └── teardown.sh               #   obligatorio al final
+├── taller.md                     # Bloque 10
+├── _contraejemplo-insegure-aws/  # Bloque 7.3 (seguridad)
+└── _soluciones/                  # solo en tu disco
 
-docs/adr/007-gate-de-promocion.md         # Bloque 5
+docs/adr/007-gate-de-promocion.md # Bloque 5
 ```
 
 ---
 
-## BLOQUE 1 — Arranque (0-15 min)
+## BLOQUE 1 — Arranque (0-10 min)
 
 **Archivos:** ninguno. **Terminales:** 0.
 
-1. **Arranque directo** (5 min): dudas sueltas de S05 si las hay, y en una frase propia lo que quedó — el servicio, la
-   imagen, la carga por alias, el digest. La pregunta de cierre que conecta con hoy:
-   *"desplegaron a mano. ¿Cuántos pasos eran y en cuáles se pueden equivocar?"*
-2. **Revisión del CI de los talleres entregados** (7 min): abrir dos PR y mirar el
-   workflow. Hoy tiene un valor extra: **el CI es el tema de la sesión**. Aprovechar para
-   señalar qué job responde qué pregunta.
-3. **Encuadre y la regla de la nube** (3 min): la frase del minuto 0, más el mapa: "la
-   primera mitad es el gate —la decisión— y la segunda es la plomería que la ejecuta."
+1. **Recuento de la sesión 5** (4 min): en una frase propia lo que quedó: el servicio, la
+   imagen, la carga por alias, el digest. La pregunta que conecta con hoy: *"desplegaron
+   a mano. ¿Cuántos pasos eran y en cuáles se pueden equivocar?"*
+2. **Revisión del CI de los talleres entregados** (4 min): abrir dos PR y mirar el
+   workflow. Hoy tiene un valor extra: **el CI es el tema de la sesión**. Señalar qué
+   job responde qué pregunta.
+3. **Encuadre** (2 min): la frase del minuto 0, más el mapa: "la primera mitad es el
+   gate, la decisión; la segunda es la plomería que la ejecuta; la nube es una
+   plataforma más para esa plomería."
 
 ---
 
-## BLOQUE 2 — El dolor (15-40 min)
+## BLOQUE 2 — El dolor (10-30 min)
 
-**Terminales:** 1. **No se abre la consola de AWS en este bloque.**
+**Archivo:** [README sección 1](../sesiones/s06-cloud-cicd/README.md). **Terminales:** 1.
+**No se abre ninguna consola de nube.**
 
-### Acto 1 — Los doce minutos y las tres oportunidades de error (11 min)
+### Acto 1 — Los cinco pasos y las cinco oportunidades de error (9 min)
 
-Desplegar una versión a mano, en vivo, **con cronómetro a la vista**. Contra el registro
-local o contra ECR, da igual:
+Desplegar una versión a mano, en vivo, **con cronómetro a la vista**:
 
 ```bash
 docker build -t mlops-curso/api:v2 .
@@ -141,61 +152,47 @@ docker tag mlops-curso/api:v2 mlops-curso/api:latest
 curl -fsS http://127.0.0.1:8000/health
 ```
 
-**Mide el tiempo real y escríbelo en el tablero.** No hay una cifra en este material a
-propósito: depende de la red del salón, del tamaño de la imagen y del cache. Lo que
-importa es que la clase vea el número **suyo** y lo compare con lo que tarda un `git push`
-en el bloque 6.
+**Mide el tiempo real y escríbelo en el tablero.** No hay una cifra en el material a
+propósito. Mientras corre el build, la pregunta: *"¿en cuáles de estos cinco pasos se
+pueden equivocar?"* Recoger respuestas y completar con la tabla del README. La que casi
+nadie dice: **construir con cambios sin comitear**.
 
-Mientras corre el build, la pregunta: *"¿en cuáles de estos cinco pasos se pueden
-equivocar?"* Recoger respuestas y completar con la tabla del
-[README sección 1](../sesiones/s06-cloud-cicd/README.md). La que casi nadie dice: **construir con
-cambios sin comitear** — la imagen contiene código que no está en ningún commit.
-
-Y la pregunta que cierra el acto, escrita en el tablero:
+La pregunta que cierra el acto, escrita en el tablero:
 
 > **¿Qué imagen exacta está corriendo ahora en producción, y quién aprobó que estuviera
 > ahí?**
 
-Con este procedimiento no hay respuesta. `latest` no dice qué bytes son, y de la decisión
-solo queda el historial de bash de alguien.
+### Acto 2 — El pipeline verde que promovió un modelo peor (9 min)
 
-### Acto 2 — El pipeline verde que promovió un modelo peor (12 min)
-
-**Es el acto que da sentido a la sesión.** Proyectar el código del repositorio original:
-
-```python
-client.transition_model_version_stage(
-    name=model_name,
-    version=version,
-    stage="Production",
-    archive_existing_versions=True,
-)
-```
-
-Leerlo despacio y preguntar: *"¿cuándo se ejecutaba esto?"* Respuesta: **al final de cada
-corrida del entrenamiento.** Y el `cron` era `*/2 * * * *`: 720 promociones al día.
+**Es el acto que da sentido a la sesión.** Proyectar el atajo del README, sección 1,
+acto 2 (la llamada a `transition_model_version_stage` con `archive_existing_versions`)
+y preguntar: *"¿dónde pondrían esto en su pipeline de la sesión 4?"* Respuesta honesta:
+al final del entrenamiento, sin `if`. Y si el pipeline corre cada dos minutos, 720
+promociones al día.
 
 La demostración en vivo. Registrar un modelo deliberadamente peor:
 
 ```bash
-# El baseline de la media: peor por construcción que cualquier @champion.
 uv run taxi train --modelo media --registrar
 ```
 
-**Salida esperada:** el entrenamiento termina en verde y registra la versión con el alias
-`@candidate` y `validation_status=pending`.
+**Salida esperada** (unos 7 s):
 
-Ahí está el momento didáctico. Preguntar: *"con el código de arriba, ¿dónde estaría este
-modelo ahora?"* Respuesta: **en producción, y el anterior archivado.**
+```text
+media: valid_rmse=9.6457 (run c12066ab)
+Registrado como nyc-taxi-duration v6 con alias @candidate y validation_status=pending. Corre `taxi promote` para el gate.
+```
+
+Ahí está el momento didáctico. Preguntar: *"con el atajo de arriba, ¿dónde estaría este
+modelo ahora?"* Respuesta: **en producción, y el anterior archivado.** Un RMSE del doble
+que el del champion (compararlo con el `rmse_valid` del champion en la UI de MLflow), y
+el pipeline en verde.
 
 Escribir en el tablero la frase de la sesión:
 
 > **Un pipeline verde significa "el proceso corrió", no "el resultado es bueno".** CI/CD
 > automatiza la *ejecución* de una decisión. Si la decisión no está codificada en ninguna
 > parte, lo que se automatiza es no decidir.
-
-Y el `archive_existing_versions=True`, que es la parte que más duele: **archivar al
-anterior destruye el camino de vuelta.** No solo promueve mal; además impide el rollback.
 
 ### Cierre del bloque (2 min)
 
@@ -204,14 +201,16 @@ holdout fijo y donde el resultado **puede ser "no"**. Es la primera mitad de la 
 
 ---
 
-## BLOQUE 3 — El gate: las tres preguntas y la política pura (40-58 min)
+## BLOQUE 3 — El gate: las tres preguntas y la política pura (30-45 min)
 
-**Archivos:** [`scripts/promote.py`](../scripts/promote.py) (docstring),
+**Archivos:** [`01-el-gate-de-promocion.md`](../sesiones/s06-cloud-cicd/01-el-gate-de-promocion.md)
+secciones 1 a 4, [`scripts/promote.py`](../scripts/promote.py) (docstring),
 [`src/taxi/models/evaluate.py`](../src/taxi/models/evaluate.py). **Terminales:** 1.
 
-### 3.1 Las tres preguntas (5 min)
+### 3.1 Qué es un gate, y las tres preguntas (5 min)
 
-Antes del código, el razonamiento. Leer el docstring de `promote.py`:
+La analogía del examen de conducir (una sola: no agregar otra). Luego leer el docstring
+de `promote.py`:
 
 1. Los datos con los que se midió, ¿son válidos?
 2. ¿La mejora es real, o cabe dentro del ruido de muestreo?
@@ -219,80 +218,63 @@ Antes del código, el razonamiento. Leer el docstring de `promote.py`:
 
 *"'El modelo nuevo tiene mejor RMSE, subámoslo' no responde ninguna de las tres."*
 
-### 3.2 Los cinco pasos (6 min)
+### 3.2 Los cinco pasos (5 min)
 
-Proyectar la tabla de [`cicd.md`](../sesiones/s06-cloud-cicd/cicd.md#el-gate-de-promoción).
-Insistir en la estructura: **tres criterios que se evalúan y dos escrituras en un orden que
-importa.**
+Proyectar la tabla del 01, sección 2. Insistir en la estructura: **tres criterios que
+se evalúan y dos escrituras en un orden que importa.**
 
-### 3.3 La política es una función pura (7 min)
+### 3.3 La política es una función pura (5 min)
 
-Abrir `evaluate.py` y mostrar la firma:
-
-```python
-def decidir_promocion(holdout, metricas_candidato, subgrupos_candidato,
-                      metricas_champion=None, subgrupos_champion=None, *,
-                      mejora_minima=..., umbral_subgrupo=...) -> DecisionGate:
-```
-
-**No toca MLflow, no escribe tags, no mueve aliases.** `promote.py` es la capa de
-presentación.
-
-Por qué importa, y es un argumento de ingeniería de software, no de ML:
+Abrir `evaluate.py` y mostrar la firma de `decidir_promocion`. **No toca MLflow, no
+escribe tags, no mueve aliases.** `promote.py` es la capa de presentación.
 
 ```bash
-uv run pytest tests/unit/test_gate.py -q
+uv run pytest tests/unit/test_gate.py
 ```
 
-"Estos tests corren sin MLflow. Si la política y la infraestructura estuvieran mezcladas,
-necesitarían un registry, alguien los marcaría `skip` y **el criterio de promoción quedaría
-sin cobertura**. Es lo que pasa en la mayoría de los repositorios."
+**Salida esperada:** `21 passed in 1.77s`, sin MLflow. "Si la política y la
+infraestructura estuvieran mezcladas, estos tests necesitarían un registry, alguien los
+marcaría `skip` y **el criterio de promoción quedaría sin cobertura**. Es lo que pasa en
+la mayoría de los repositorios."
 
-Mostrar también `DecisionGate.motivo` y la distinción `NO EVALUADO` vs `FALLA`: *"no lo
-revisé"* y *"lo revisé y falló"* son diagnósticos distintos a las tres de la mañana.
+Mostrar también la distinción `NO EVALUADO` vs `FALLA`: *"no lo revisé"* y *"lo revisé
+y falló"* son diagnósticos distintos a las tres de la mañana.
 
 ---
 
-## BLOQUE 4 — El gate en vivo: rechaza y acepta (58-80 min)
+## BLOQUE 4 — El gate en vivo: rechaza, no puede medir, acepta (45-70 min)
 
-**Terminales:** 1. Es el bloque que hay que ensayar antes de clase.
+**Archivo:** 01, sección 5. **Terminales:** 1. Es el bloque que hay que ensayar antes de
+clase.
 
 ### 4.1 El rechazo (8 min)
 
 El candidato del bloque 2 (baseline de la media) ya está registrado:
 
 ```bash
-uv run taxi promote --dry-run
+uv run taxi promote
 echo "exit code: $?"
 ```
 
-**Salida esperada:** dos tablas y un veredicto rojo.
+**Salida esperada** (unos 10 s; estos números son de una corrida real, los tuyos
+dependen de tu `@champion`):
 
 ```text
-Candidato: nyc-taxi-duration version 9
-Holdout: particion fija 2023-05 con NNNNN filas. No se uso para seleccionar hiperparametros.
-Champion actual: version 8
-
-        Candidato vs @champion en el holdout fijo
-metrica  candidato  champion  delta rel.
-rmse     <mayor>    <menor>   +XX.XX%    empeora
+Candidato: nyc-taxi-duration version 6
+Holdout: particion fija 2023-05 con 60000 filas. No se uso para seleccionar hiperparametros.
+Champion actual: version 1
 ...
-
-              Criterios del gate
-1  contrato_de_datos           PASA   NNNNN filas del holdout cumplen ViajesProcesados
-2  mejora_global               FALLA  rmse candidato=... vs champion=...; objetivo <= ...
-3  sin_regresion_por_subgrupo  FALLA  N de M subgrupos se degradan mas de 5.0%: ...
+│ 1 │ contrato_de_datos          │ PASA   │ 60000 filas del holdout cumplen ViajesProcesados
+│ 2 │ mejora_global              │ FALLA  │ rmse candidato=9.9962 vs champion=4.9104 (+103.57%); objetivo <= 4.8613 (mejora minima 1.0%)
+│ 3 │ sin_regresion_por_subgrupo │ FALLA  │ 8 de 8 subgrupos se degradan mas de 5.0%: ...
 
 RECHAZADO — criterios no superados: mejora_global, sin_regresion_por_subgrupo
-@champion sigue en version 8. El modelo que ya estaba sirviendo no se toco.
+@champion sigue en version 1. El modelo que ya estaba sirviendo no se toco.
 exit code: 1
 ```
 
-**No cites números concretos en clase**: dependen del `@champion` de tu máquina. Lo que se
-señala es la **estructura** de la salida: qué criterio falló, con qué número, y qué NO
-pasó.
-
-Y la comprobación que cierra el criterio, que es la mitad que se olvida:
+Señalar la **estructura**, no los números: qué criterio falló, con qué número, y qué NO
+pasó. Y la comprobación que cierra el criterio, que es la mitad que se olvida:
 
 ```bash
 uv run python -c "
@@ -302,442 +284,315 @@ print('champion sigue en la version', mv.version if mv else 'ninguna')
 "
 ```
 
-### 4.2 Los tres criterios, uno por uno (9 min)
+Y en la UI de MLflow (*Models → nyc-taxi-duration → versión 6*): el tag
+`validation_status = failed`. **El paso 4 se ejecutó aunque el 5 no**: hay registro.
 
-**Criterio 1 — el dato primero.** Preguntar: *"¿por qué validar el holdout antes de mirar
-métricas?"* Respuesta: un RMSE sobre datos inválidos no significa nada, y **promover en
-base a él es peor que no promover, porque el gate habría dado una garantía falsa.**
+### 4.2 Los tres criterios, uno por uno (8 min)
 
-**Criterio 2 — el margen.** Preguntar: *"¿por qué no basta `rmse_cand < rmse_champ`?"*
-Dejar que lo piensen. Respuesta: el **churn de modelos** — con ruido de muestreo, dos
-modelos equivalentes se alternan indefinidamente, y cada rotación cuesta un despliegue y
-rompe la comparabilidad de las métricas de negocio.
+**Criterio 1, el dato primero.** *"¿Por qué validar el holdout antes de mirar
+métricas?"* Un RMSE sobre datos inválidos no significa nada, y **promover en base a él
+es peor que no promover, porque el gate habría dado una garantía falsa.**
 
-Y decir la verdad sobre el número: **el 1% es un umbral elegido, no derivado.** Lo riguroso
-sería un test estadístico con el tamaño del holdout. Está en `config.py` para poder
-discutirlo.
+**Criterio 2, el margen.** *"¿Por qué no basta `rmse_cand < rmse_champ`?"* Dejar que lo
+piensen. Respuesta: el **churn de modelos**. Y decir la verdad sobre el número: **el 1%
+es un umbral elegido, no derivado.** Está en `config.py` para poder discutirlo.
 
 Aquí también el detalle que hace que muchos gates reales no sirvan: **el champion se
-reevalúa** sobre el holdout actual, no se leen sus métricas guardadas. Mostrar la línea en
-`promote.py`. "Si su holdout cambió, los números viejos no son comparables — y un gate que
-compara números incomparables es peor que no tener gate."
+reevalúa** sobre el holdout actual. Mostrar la línea en `promote.py`.
 
-**Criterio 3 — la regresión silenciosa.** El caso: el RMSE global baja porque el modelo
-mejora en viajes cortos en hora valle y se degrada en viajes largos de madrugada. El
-promedio dice "mejor".
+**Criterio 3, la regresión silenciosa.** El promedio dice "mejor"; el usuario del
+segmento afectado dice "peor". Y el argumento que hay que decir en voz alta: **es la
+misma técnica que detecta inequidad.**
 
-Y el argumento que hay que decir en voz alta: **es la misma técnica que detecta
-inequidad.** Cuando el segmento que se degrada corresponde a un grupo de personas en lugar
-de a un rango de millas, el mecanismo es idéntico; cambia la consecuencia.
+### 4.3 "No pude medir" no es "el modelo es peor" (5 min)
 
-Tres decisiones honestas del criterio: umbral por subgrupo (5%) **más laxo** que el global
-(1%) porque hay menos datos y más varianza; `MIN_FILAS_SUBGRUPO = 50` porque por debajo
-manda el ruido; y **si no hay subgrupos comparables, FALLA** — *el gate no aprueba lo que
-no puede verificar.*
-
-### 4.3 La aceptación (5 min)
+Apagar MLflow con `Ctrl-C` en su terminal, y:
 
 ```bash
-uv run taxi train --hpo --trials 10
 uv run taxi promote
-echo "exit code: $?"     # 0
+echo "exit code: $?"
 ```
 
-**Salida esperada:** los tres criterios en `PASA`, `PROMOVIDO`, el alias movido, y la línea
-que imprime el comando exacto de rollback con la versión anterior.
+**Salida esperada** (menos de 2 s):
 
-Señalar esa última línea: **el propio gate te dice cómo volver atrás.** Es una decisión de
-diseño: el momento de escribir el procedimiento de rollback es cuando despliegas, no
-durante el incidente.
+```text
+No se pudo hablar con MLflow en http://127.0.0.1:5001 (MlflowException).
+No es un problema del modelo: es infraestructura. Levanta el tracking server (make mlflow, o make up) y vuelve a correr el gate.
+exit code: 2
+```
+
+**No hay tabla de criterios.** No se midió nada, y el mensaje lo dice. La frase:
+
+> **"El modelo no es lo bastante bueno" es un resultado exitoso del gate; "no pude
+> medir" es una falla del gate.** Confundirlos hace que un MLflow caído se lea como un
+> modelo malo, y que alguien reentrene para arreglar un problema de red.
+
+Los dos hacen fallar el pipeline. Mostrar `registry.fallar_rapido()`: **un fallback que
+tarda cuatro minutos en activarse no es un fallback.** Volver a levantar MLflow
+(`make mlflow`) antes de seguir.
+
+### 4.4 La aceptación (4 min)
+
+```bash
+uv run taxi train --hpo --trials 10     # minutos: lanzarlo y seguir hablando
+uv run taxi promote
+echo "exit code: $?"
+```
+
+**Salida esperada:** los tres criterios en `PASA`, `PROMOVIDO`, el alias movido, y la
+última línea con el comando exacto de rollback. **El propio gate te dice cómo volver
+atrás.** Decir la verdad si rechaza: si el champion ya está bien afinado, diez trials
+pueden no superarlo en un 1%, y eso es el gate haciendo su trabajo, no una demo fallida.
 
 ---
 
-## BLOQUE 5 — Exit codes, tag antes que alias, y rollback (80-95 min)
+## BLOQUE 5 — El orden de las escrituras y el rollback (70-80 min)
 
 **Archivos:** [`registry.py`](../src/taxi/models/registry.py),
 [ADR 007](../docs/adr/007-gate-de-promocion.md). **Terminales:** 1.
 
-### 5.1 Tres exit codes, no dos (6 min)
-
-```bash
-docker compose stop mlflow
-uv run taxi promote
-echo "exit code: $?"      # 2
-docker compose start mlflow
-```
-
-**Salida esperada:** un mensaje de infraestructura, **no** una tabla de criterios.
-
-La distinción, que es la parte fina de la sesión:
-
-> **"El modelo no es lo bastante bueno" es un resultado exitoso del gate; "no pude medir"
-> es una falla del gate.** Confundirlos hace que un MLflow caído se lea como un modelo
-> malo, y que alguien reentrene para arreglar un problema de red.
-
-Los dos hacen fallar el pipeline, eso sí. No se despliega un modelo cuyo gate no corrió.
-
-Mostrar `registry.fallar_rapido()` y decir la frase: **un fallback que tarda cuatro minutos
-en activarse no es un fallback.** Con los defaults de mlflow (7 reintentos con backoff,
-120 s) el job se colgaría antes de devolver el 2.
-
-### 5.2 El orden de las dos escrituras (4 min)
+### 5.1 Tag antes que alias (4 min)
 
 Leer el docstring de `marcar_validacion`. La pregunta: *"¿qué pasa si el proceso muere
 entre escribir el tag y mover el alias?"*
 
 - Orden actual: *"validada pero no promovida"*. **Seguro.**
-- Orden inverso: un modelo sirviendo tráfico **sin registro de haber sido validado**. Es el
-  incidente que se quiere evitar.
+- Orden inverso: un modelo sirviendo tráfico **sin registro de haber sido validado**.
 
-Regla transferible, y sirve fuera de MLOps: **cuando dos escrituras no son atómicas, se
-ordenan para que el estado intermedio sea el seguro.**
+Regla transferible: **cuando dos escrituras no son atómicas, se ordenan para que el
+estado intermedio sea el seguro.**
 
-### 5.3 El rollback, en vivo (5 min)
+### 5.2 El rollback, en vivo (6 min)
 
 ```bash
-# Ver dónde está el champion
 uv run python -c "from taxi.models import registry; print(registry.version_por_alias('nyc-taxi-duration','champion').version)"
-
-# Volver a la versión anterior
-time uv run python -c "from taxi.models import registry; registry.asignar_alias('nyc-taxi-duration', 'champion', '7')"
+time uv run python -c "from taxi.models import registry; registry.asignar_alias('nyc-taxi-duration', 'champion', '1')"
 ```
 
-**Mide el tiempo.** Es una escritura de metadatos.
+**Mide el tiempo.** Es una escritura de metadatos. *"¿Por qué funciona?"* **Las
+versiones del registry son inmutables.** Por eso no se archiva al champion anterior.
 
-Y la pregunta: *"¿por qué funciona?"* Respuesta: **las versiones del registry son
-inmutables.** La versión anterior sigue intacta y el artefacto es bit a bit el que estaba
-sirviendo. Es la razón por la que el modelo se referencia por alias y no se copia — y por
-la que **no** se archiva al champion anterior.
-
-Cerrar con los **dos rollbacks independientes**: el del modelo (mover el alias) y el de la
-imagen (desplegar el digest previo). Dos artefactos, dos rollbacks.
+Cerrar con los **dos rollbacks independientes**: el del modelo (mover el alias) y el de
+la imagen (desplegar el digest previo). Dos artefactos, dos rollbacks. Y dejar el alias
+donde estaba antes de la clase.
 
 ---
 
-## PAUSA (95-110 min)
+## PAUSA (80-90 min)
 
-Nada que dejar corriendo. Si vas a hacer la demo de AWS en vivo, este es el momento de
-verificar que la consola responde y que las credenciales están cargadas.
+Nada que dejar corriendo salvo `make mlflow`. Comprobar que la grabación de la demo
+abre y que GitHub carga.
 
 ---
 
-## BLOQUE 6 — Los tres workflows (110-128 min)
+## BLOQUE 6 — Los tres workflows (90-115 min)
 
-**Archivos:** [`ci.yml`](../.github/workflows/ci.yml),
-[`cd.yml`](../.github/workflows/cd.yml),
-[`nightly-smoke.yml`](../.github/workflows/nightly-smoke.yml). **Terminales:** 0 (navegador).
+**Archivos:** [`02-los-tres-workflows.md`](../sesiones/s06-cloud-cicd/02-los-tres-workflows.md),
+[`ci.yml`](../.github/workflows/ci.yml), [`cd.yml`](../.github/workflows/cd.yml),
+[`nightly-smoke.yml`](../.github/workflows/nightly-smoke.yml). **Terminales:** 0
+(navegador).
 
 ### 6.1 Tres archivos, tres preguntas (4 min)
 
-Proyectar la tabla de [`cicd.md`](../sesiones/s06-cloud-cicd/cicd.md). "Meterlas en un solo
-workflow hace que un fallo de lint bloquee un despliegue urgente."
+Proyectar la tabla del 02. "Meterlas en un solo workflow hace que un fallo de lint
+bloquee un despliegue urgente."
 
-Y aquí se cierra el acto 1 del dolor: **abrir una corrida real del CI en GitHub y comparar
-su duración con el número del tablero.** Es el remate del cronómetro.
+Y aquí se cierra el acto 1 del dolor: **abrir una corrida real del CI en GitHub y
+comparar su duración con el número del tablero.** Es el remate del cronómetro.
 
-### 6.2 `ci.yml`: el job `imagen` (5 min)
+### 6.2 `ci.yml`: el job `imagen` y el paso que no puede fallar (6 min)
 
-Leer los dos pasos de verificación. La frase: *"un criterio que verifica una persona se
-deja de verificar en la tercera semana."*
+Leer los dos pasos de verificación de la imagen. La frase: *"un criterio que verifica
+una persona se deja de verificar en la tercera semana."*
 
-Y las tres decisiones de diseño: `TAXI_MODELO_URI=ninguno` (verifica sin registry),
-`docker logs` antes del `exit 1` (un job que falla sin log obliga a reproducir en local), y
-el bucle con `sleep 1` en lugar de un `sleep 30` fijo.
+Las tres decisiones de diseño: `TAXI_MODELO_URI=ninguno`, `docker logs` antes del
+`exit 1`, y el bucle con `sleep 1`.
 
-Contar la nota histórica, porque es el mejor argumento de la sesión: el CI anterior
-terminaba en `uv run pytest -q || echo "No tests configured yet"`. **Un pipeline que no
-puede fallar es peor que no tener pipeline.** Y estaba rojo —50 errores de ruff, 67
-archivos sin formatear— sin que nadie lo notara.
+Proyectar el atajo del 02, sección 1: `uv run pytest -q || echo "No tests configured
+yet"`. Preguntar qué pasa con ese job cuando los tests fallan. **Un pipeline que no
+puede fallar es peor que no tener pipeline.**
 
-### 6.3 `cd.yml`: el digest y el orden de los jobs (6 min)
+### 6.3 `cd.yml`: el digest, el orden de los jobs, y la verdad sobre el gate (8 min)
 
-Mostrar el diagrama de cinco jobs y detenerse en dos cosas:
+Mostrar el diagrama de cinco jobs y detenerse en tres cosas:
 
-**1. `latest` no aparece en los tags.** La referencia que viaja a los deploys es
-`${REGISTRY}/${IMAGEN}@${digest}`. "Producción despliega el mismo digest que se verificó en
-staging **por construcción**, no por disciplina."
+**1. `latest` no aparece en los tags.** La referencia que viaja es
+`${REGISTRY}/${IMAGEN}@${digest}`. "Producción despliega el mismo digest que se
+verificó en staging **por construcción**, no por disciplina."
 
-**2. El gate está entre la imagen y el deploy, y su exit code manda.** Sin eso, el CD
-despliega cualquier cosa que compile.
+**2. El gate está entre la imagen y el deploy, y su exit code manda.**
 
-Señalar `provenance: true` y `sbom: true`: es lo que permite responder "¿esta imagen tiene
-la versión vulnerable de X?" sin reconstruirla.
+**3. La verdad de este repositorio.** Abrir una corrida de `cd.yml` en Actions: el job
+del gate aparece `skipped`, y los deploys también. Explicar la condición
+`vars.GATE_ACTIVO == 'true'`: los runners de GitHub no llegan al MLflow de mi máquina,
+y un gate que falla por infraestructura no distingue "peor" de "no pude medir". Por eso
+el gate de verdad corre en el nightly, con MLflow dentro del runner. **Decirlo así, sin
+adornos: un material que finge que el gate corre en cada push enseña a fingir.**
 
-Y decir lo que **no** es real: los pasos de deploy son `echo`s. La estructura es real, la
-ejecución no. El bloque 8 la hace a mano.
+Y decir lo que **no** es real: los pasos de deploy son `echo`s. La estructura es real,
+la ejecución no. El bloque 8 la hace a mano.
 
-### 6.4 `nightly-smoke.yml` (3 min)
+### 6.4 `nightly-smoke.yml` (4 min)
 
-Por qué existe: el diagnóstico del repositorio encontró material que funcionó una vez en la
-máquina de quien lo escribió y se degradó en silencio. **Nada de eso lo detecta un CI de
-lint y tests unitarios.**
+Abrir la última corrida. Por qué existe: el material funciona una vez en la máquina de
+quien lo escribió y se degrada en silencio; **nada de eso lo detecta un CI de lint y
+tests unitarios.** Las dos piezas que lo hacen útil: abre un issue si falla (y no lo
+duplica), y `timeout-minutes: 30`.
 
-Las dos piezas que lo hacen útil: **abre un issue si falla** (y no lo duplica), y tiene
-`timeout-minutes: 30`. *"Un nightly que nadie mira es peor que no tenerlo: crea la
-sensación de estar cubierto."*
+Señalar en el log el paso `Gate de promocion`: ahí está el gate en un log de Actions, y
+es lo que el taller pide replicar.
+
+### 6.5 Las actions envejecen (3 min)
+
+La tabla de versiones del 02, sección 5. Node 20 sale de los runners el 23 de septiembre
+de 2026; desde entonces toda action en una versión mayor vieja deja de arrancar. "Es el lockfile de la
+sesión 1 en la otra dirección: fijar protege, pero obliga a actualizar a propósito."
 
 ---
 
-## BLOQUE 7 — Ambientes, aprobación y el comentario del PR (128-142 min)
+## BLOQUE 7 — Ambientes, aprobación y seguridad (115-127 min)
 
-**Archivos:** `cd.yml` (jobs 3, 4 y 5), Settings del repositorio. **Terminales:** 0.
+**Archivos:** `cd.yml` (jobs 3, 4 y 5), Settings del repositorio,
+[`_contraejemplo-insegure-aws/`](../sesiones/s06-cloud-cicd/_contraejemplo-insegure-aws/).
 
-### 7.1 La barrera vive en el Environment (6 min)
+### 7.1 La barrera vive en el Environment (4 min)
 
-Mostrar en el navegador **Settings → Environments → production → Required reviewers**.
-
-La pregunta: *"¿por qué aquí y no con un `if:` en el YAML?"*
+Mostrar en el navegador **Settings → Environments → production → Required reviewers**
+(creado antes de clase). La pregunta: *"¿por qué aquí y no con un `if:` en el YAML?"*
 
 > Un `if:` lo puede cambiar **cualquiera con permiso de push**, en el mismo PR que
 > introduce el cambio que debía revisarse. **La barrera no debe estar en el archivo que la
 > barrera protege.**
 
-Las tres razones por las que producción se aprueba y staging no: alguien asume la decisión,
-se introduce una ventana, y obliga a que staging signifique algo.
+Y el detalle práctico: con el plan gratuito, esto solo existe en repositorios públicos.
+Está en el taller.
 
-Y lo que **no** justifica una aprobación manual: usarla como sustituto de tests. "Si el
-único filtro real es que alguien haga clic, el pipeline no tiene calidad, tiene ceremonia."
+### 7.2 El comentario del PR, y por qué no CML (3 min)
 
-### 7.2 El comentario del PR, y por qué no CML (5 min)
-
-Abrir el job `comentario`. Dos detalles, los dos transferibles:
-
-**El marcador HTML** para actualizar en lugar de acumular. "Un PR con quince pushes
-acumula quince comentarios y nadie sabe cuál es el vigente."
-
-**Los valores entran por `env:`**, nunca interpolados en el script. Explicar el ataque:
-basta una comilla o un backtick en un valor para romper el JavaScript, y si el valor viene
-del título de un PR —que cualquiera puede escribir— para **ejecutar código con el token del
-workflow**.
-
-Y por qué no CML: **su última release es la 0.20.6, de octubre de 2024.** Una acción sin
-mantenimiento activo en el camino crítico del despliegue es deuda con fecha de vencimiento.
-Se reemplaza por veinte líneas de la API de GitHub.
+Abrir el job `comentario`. El marcador HTML para actualizar en lugar de acumular, y los
+valores por `env:`, nunca interpolados (*script injection*). Por qué no CML: última
+release octubre de 2024; una acción sin mantener en el camino crítico es deuda con fecha
+de vencimiento.
 
 ### 7.3 El bloque de seguridad: el contraejemplo (5 min, en parejas)
 
-Abrir [`_contraejemplo-insegure-aws/`](../sesiones/s06-cloud-cicd/_contraejemplo-insegure-aws/)
-y **no** explicar nada todavía. En parejas, 3 minutos:
+Abrir la carpeta y **no** explicar nada todavía. En parejas, 3 minutos:
 
-> "Abran `predict.py`, `Dockerfile` y `GUIA_AWS_EC2.md`. Escriban todo lo que este
-> despliegue expondría a internet, ordenado por gravedad."
+> "Abran `predict.py`, `Dockerfile` y `guia-despliegue-ec2.md`. Escriban todo lo que
+> este despliegue expondría a internet, ordenado por gravedad."
 
-Después, la puesta en común. El que hay que subrayar:
+Puesta en común. El que hay que subrayar: `app.run(debug=True, host="0.0.0.0")` más
+*"Origen: Anywhere (0.0.0.0/0)"* en la guía. **El debugger de Werkzeug expuesto a
+internet es una shell remota potencial.**
 
-```python
-app.run(debug=True, host="0.0.0.0", port=9696)
-```
-
-más lo que dice la guía: *"Rango de puertos: 9696. Origen: Anywhere (0.0.0.0/0)"*.
-
-> **El debugger de Werkzeug expuesto a internet es una shell remota potencial.** En una
-> guía que un estudiante iba a seguir paso a paso.
-
-Y la pregunta de cierre, que es la lección real:
-
-> **¿Cuál de estos defectos habría detectado el CI de este repositorio?**
-
-`gitleaks` no ve ninguno. `ruff` tampoco. El del usuario root **sí** lo detecta el job
-`imagen`. Los otros cinco requieren revisión humana. **Ese es el argumento para tener una
-lista de verificación de despliegue.**
+La pregunta de cierre: **¿cuál de estos defectos habría detectado el CI de este
+repositorio?** `gitleaks` no ve ninguno; `ruff` tampoco; el del usuario root **sí** lo
+detecta el job `imagen`. Los otros cinco requieren revisión humana.
 
 ---
 
-## BLOQUE 8 — La nube: la traducción y la demo (142-158 min)
+## BLOQUE 8 — La nube: la traducción y la demo grabada (127-150 min)
 
-**Archivos:** [README sección 2](../sesiones/s06-cloud-cicd/README.md),
-[`guia-aws.md`](../sesiones/s06-cloud-cicd/guia-aws.md). **Terminales:** 2.
+**Archivos:** [`03-de-compose-a-la-nube.md`](../sesiones/s06-cloud-cicd/03-de-compose-a-la-nube.md),
+[`04-demo-ecr-fargate/README.md`](../sesiones/s06-cloud-cicd/04-demo-ecr-fargate/README.md),
+la grabación. **Terminales:** 0.
 
 ### 8.1 La tabla que hace la sesión transferible (5 min)
 
-Proyectar la tabla necesidad / AWS / local. **Las columnas de la izquierda son
-necesidades; las de la derecha, implementaciones.**
+Proyectar la tabla del 03, sección 1. **Las columnas de la izquierda son necesidades;
+las de la derecha, implementaciones.** La fila que hay que subrayar: **MinIO habla S3.**
 
-La fila que hay que subrayar: **MinIO habla el protocolo S3.** El código no cambia entre
-local y AWS; cambia un endpoint. "Es por eso que su taller es local y esta demo es
-opcional sin que se pierda nada conceptual."
+Y la fila de cómputo, con la noticia: **App Runner está cerrado a clientes nuevos**
+(leerlo de su documentación, con fecha). Por eso la demo usa ECS con Fargate, y por eso
+hay que mirar la documentación antes de cada cohorte: la nube cambia debajo del
+material.
 
-Y por qué App Runner y no ECS: **criterio declarado — cuánta ceremonia hay entre "tengo una
-imagen" y "hay una URL que responde".** Con ECS hay que crear cluster, task definition,
-service, target group, ALB, listener y security groups. En cuatro horas, esa ceremonia se
-paga con el tiempo de los conceptos. Decir también sus límites: menos control de red, no
-está en todas las regiones, y cobra por memoria provisionada aunque no haya tráfico.
+### 8.2 Dos formas de llevar el modelo al servicio (4 min)
 
-Mostrar la tabla de GCP/Azure en diez segundos: **Cloud Run y Container Apps son el
-equivalente directo.** Cambian los comandos, no cambia una idea.
+La tabla del 03, sección 3. La pregunta: *"¿por qué la demo mete el modelo en la imagen,
+si la sesión 5 dijo que no?"* Respuesta: la sesión 5 dijo que no se copia **a mano un
+run sin saber cuál es**; aquí se exporta del registry por alias y la versión queda en la
+etiqueta de la imagen. El costo (rebuild para cambiar de modelo, `version=desconocida`
+en `/modelo`) está dicho y se ve en la grabación.
 
-### 8.2 La demo (9 min) — o la grabación
+### 8.3 La grabación (12 min)
 
-Seguir [`guia-aws.md`](../sesiones/s06-cloud-cicd/guia-aws.md) sección 3 y sección 4, con las variables
-ya exportadas. Los comandos, en orden:
+Proyectar la grabación de [`04-demo-ecr-fargate/README.md`](../sesiones/s06-cloud-cicd/04-demo-ecr-fargate/README.md),
+pausando en cinco momentos:
 
-```bash
-aws sts get-caller-identity                    # con qué identidad opero
+1. **La imagen local responde `14.2` minutos** (sección 1.3). Anotarlo en el tablero.
+2. **El push y su tiempo** (sección 2.2). "Cada versión de modelo es un push de la capa
+   nueva; la base ya está arriba."
+3. **El digest** (sección 2.3): *"esto, con `@sha256`, es lo que se despliega. El tag es
+   para nosotros."*
+4. **La task definition** (sección 7): señalar `image` por digest, `runtimePlatform`, y
+   que **ECS ignora el `HEALTHCHECK` del Dockerfile**: solo vigila el que está declarado
+   ahí.
+5. **La predicción desde la IP pública responde `14.2`** (sección 8.3). Mismo digest,
+   mismos bytes, misma respuesta. Es la sesión 5 comprobada en la nube.
 
-aws ecr create-repository --repository-name "$REPO_ECR" --region "$AWS_REGION" \
-  --image-tag-mutability IMMUTABLE --image-scanning-configuration scanOnPush=true
+Y el `wait tasks-running` con su tiempo: comparar con el `docker run` local. Esa
+diferencia es el precio de que la imagen viaje con el modelo.
 
-aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$REGISTRO"
-docker build -t "${REGISTRO}/${REPO_ECR}:v1" .
-docker push "${REGISTRO}/${REPO_ECR}:v1"
+**Si la grabación falla:** proyectar las salidas reales guardadas y seguir. Nunca
+depurar AWS en vivo más de dos minutos.
 
-DIGEST="$(aws ecr describe-images --repository-name "$REPO_ECR" \
-  --image-ids imageTag=v1 --query 'imageDetails[0].imageDigest' --output text)"
-echo "${REGISTRO}/${REPO_ECR}@${DIGEST}"       # LA unidad de despliegue
+### 8.4 IAM en dos minutos (2 min)
 
-aws apprunner create-service --service-name "$SERVICIO" --region "$AWS_REGION" \
-  --source-configuration "file:///tmp/source-config.json" \
-  --instance-configuration Cpu="1 vCPU",Memory="2 GB" \
-  --health-check-configuration Protocol=HTTP,Path=/health,Interval=10,Timeout=5,HealthyThreshold=1,UnhealthyThreshold=5
-```
+Los dos roles de la tarea (03, sección 4): el de **ejecución** (la plataforma baja la
+imagen y escribe logs) y el de **tarea** (tu código), que la demo **no crea** porque la
+API no llama a ninguna API de AWS. Privilegio mínimo es también no dar un rol.
 
-**Mide y comenta el tiempo de creación del servicio.** No hay una cifra aquí a propósito:
-varía. Aprovecha la espera para las tres explicaciones que caben:
-
-1. **`--image-tag-mutability IMMUTABLE`**: un `push` a un tag ya usado **falla** en lugar
-   de reescribir la historia. Es la lección del bloque 5 de la sesión 5, reforzada por el
-   registro.
-2. **`Path=/health`**: el default de App Runner es `Protocol=TCP` y `Path=/`. Con TCP basta
-   que el puerto acepte conexiones — un proceso que devuelve 500 en todo pasaría el check.
-   **La diferencia entre "el puerto está abierto" y "el servicio funciona".**
-3. **`AutoDeploymentsEnabled: false`**: con un digest no tendría sentido, porque el digest
-   no cambia. Con un tag, App Runner redespliega solo cuando el tag se repunta — cómodo, y
-   exactamente lo que la sesión 5 argumenta que **no** se quiere en producción.
-
-Y la verificación:
-
-```bash
-URL="https://$(aws apprunner describe-service --service-arn "$SERVICIO_ARN" \
-  --query 'Service.ServiceUrl' --output text)"
-curl -fsS "$URL/health" | jq
-```
-
-**Salida esperada:** `"status": "degradado"`, `"model_loaded": false` — porque se despliega
-con `TAXI_MODELO_URI=ninguno` a propósito, para verificar la plataforma antes de meter el
-registry en la ecuación. **Decirlo antes de que alguien crea que falló.**
-
-Señalar el `https://`: App Runner sirve TLS con certificado gestionado sin haber
-configurado nada. Montarlo a mano en una EC2 —lo que el contraejemplo directamente no
-hacía— es media hora de trabajo.
-
-**Plan B, sin dramatizar:** si algo falla, decir "proyecto la grabación" y seguir. Nunca
-depurar AWS en vivo más de dos minutos: es tiempo del que la clase no aprende nada.
-
-### 8.3 IAM en dos minutos (2 min)
-
-Abrir [`politica-iam-minima.json`](../sesiones/s06-cloud-cicd/scripts/politica-iam-minima.json)
-y mostrar **un solo statement**: `PasarSoloElRolDeAccesoAEcr`.
-
-```json
-"Action": "iam:PassRole",
-"Resource": "arn:aws:iam::<ACCOUNT_ID>:role/AppRunnerECRAccess-<EQUIPO>",
-"Condition": { "StringEquals": { "iam:PassedToService": "build.apprunner.amazonaws.com" } }
-```
-
-> **`PassRole` sin restringir permite escalar privilegios.** Quien pueda pasar un rol de
-> administrador a un servicio que ejecuta código, es administrador.
-
-Y el secreto en la imagen, en una frase con el `Dockerfile` proyectado:
-
-```dockerfile
-COPY .env .     # capa N
-RUN rm .env     # capa N+1 — el secreto SIGUE AHÍ
-```
-
-"Una imagen es una pila de capas inmutables. `docker history` lo muestra."
+Y el secreto en la imagen, en una frase con el `Dockerfile` proyectado: `COPY .env` +
+`RUN rm .env` **no borra nada**. Una imagen es una pila de capas inmutables.
 
 ---
 
-## BLOQUE 9 — Costo y teardown (158-165 min)
+## BLOQUE 9 — Costo y teardown (150-160 min)
 
-**Archivos:** [`teardown.sh`](../sesiones/s06-cloud-cicd/scripts/teardown.sh).
-**Terminales:** 1 (+ navegador en la consola de facturación).
+**Archivos:** 03 sección 5, 04 secciones 9 y 11, [`teardown.sh`](../sesiones/s06-cloud-cicd/04-demo-ecr-fargate/teardown.sh).
 
-### 9.1 El costo se lee en la consola (4 min)
+### 9.1 El costo se lee en la consola (5 min)
 
-Abrir **Billing → Cost Explorer**, agrupar por servicio, **y leer los números reales en
-voz alta.** No es un anexo: *"un ingeniero de ML que no sabe qué cuesta lo que despliega
-toma malas decisiones de arquitectura con total confianza."*
+Proyectar Cost Explorer del día de la grabación, agrupado por servicio, **y leer los
+números reales en voz alta.** Después la tabla del 03, sección 5, con fecha.
 
-La pregunta clave: *"¿qué se sigue cobrando si nadie manda un request?"*
+La pregunta clave: *"¿qué se sigue cobrando si nadie manda un request?"* La tarea de
+Fargate y su IP, por segundo. El repositorio, por GB. Y las cifras que se llevan: **la
+demo corriendo cuesta unos 0,045 USD por hora; olvidada un mes, unos 33 USD.** El costo
+no está en usar la nube, está en no apagarla.
 
-Las dos dimensiones de App Runner: **memoria provisionada** (se cobra mientras el servicio
-exista) y **CPU/memoria activas** (mientras atiende). Los números se leen en la página de
-precios y en la consola, no de memoria.
+Y la limitación del presupuesto: **avisa, no frena.** Por eso el teardown es
+obligatorio.
 
-Y la sorpresa que hay que nombrar: **RDS cobra por hora de existencia**, más
-almacenamiento y backups. Una instancia olvidada de un laboratorio es la causa número uno
-de facturas inesperadas en cursos de nube.
+### 9.2 El teardown (5 min)
 
-Mostrar el presupuesto de 10 USD y decir la limitación: **un presupuesto avisa, no
-frena.** No existe un "corta el gasto" en AWS. Por eso el teardown es obligatorio.
+Proyectar el final de la grabación: la sección 8 del `teardown.sh` con las seis listas
+vacías. Tres cosas que señalar en el script, transferibles a cualquier teardown:
 
-### 9.2 El teardown (3 min)
-
-```bash
-EQUIPO=demo bash sesiones/s06-cloud-cicd/scripts/teardown.sh --dry-run
-EQUIPO=demo bash sesiones/s06-cloud-cicd/scripts/teardown.sh
-```
-
-Tres cosas que señalar en el script, y las tres son transferibles a cualquier teardown:
-
-1. **El orden es inverso al de creación.** App Runner antes que ECR, porque un servicio en
-   marcha mantiene una referencia a la imagen.
-2. **Es idempotente.** Correrlo dos veces no falla. "Un teardown que aborta a la mitad deja
-   lo peor: la mitad caro."
-3. **Termina verificando.** La sección 7 lista lo que quedó. *"'Corrí el teardown' no es
-   evidencia; la salida de los `list` sí."*
-
-Y el detalle que hay que explicar: **se borra el servicio, no se pausa.** `pause-service`
-reduce el cómputo a cero pero el servicio sigue existiendo. El objetivo es dejar la cuenta
-como estaba.
+1. **El orden es inverso al de creación.** Tareas antes que cluster; cluster antes que
+   security group, porque la interfaz de red de la tarea vive en ese grupo.
+2. **Es idempotente.** Correrlo dos veces no falla. "Un teardown que aborta a la mitad
+   deja lo peor: la mitad cara."
+3. **Termina verificando.** *"'Corrí el teardown' no es evidencia; la salida de los
+   `list` sí."*
 
 Cerrar con el argumento pedagógico: *"en un proyecto real el teardown es lo que hace
-posible experimentar. Un equipo que no sabe destruir su infraestructura no crea entornos de
-prueba, y sin entornos de prueba prueba en producción."*
+posible experimentar. Un equipo que no sabe destruir su infraestructura no crea entornos
+de prueba, y sin entornos de prueba prueba en producción."*
 
 ---
 
-## BLOQUE 10 — Taller (165-220 min)
+## BLOQUE 10 — Cierre y arranque del taller (160-180 min)
 
-**Archivo:** [`sesiones/s06-cloud-cicd/taller.md`](../sesiones/s06-cloud-cicd/taller.md).
+### 10.1 Autoverificación (6 min)
 
-**Arranque (5 min).** Repetir la regla: **los criterios 1 a 7 no necesitan AWS.** El 8 es
-opcional, y **descuenta** si se hizo el despliegue y no el teardown.
+Las cinco preguntas del [README sección 2](../sesiones/s06-cloud-cicd/README.md), con 30
+segundos de silencio cada una. **No las respondas.** Si nadie sabe la 1 (*"su pipeline
+terminó en verde y desplegó: ¿qué garantiza eso sobre el modelo?"*), vuelve al bloque 2.
+Es la sesión entera.
 
-Subrayar el criterio 3, que es el núcleo: *"los dos casos —rechazo y aceptación— en el log
-del workflow. Un gate que solo se ha visto aprobar es indistinguible de un `echo 'todo
-bien'`."*
-
-Mencionar que `_soluciones/evidencia.sh` genera la evidencia del PR, sin abrir las
-soluciones.
-
-**Circulación (45 min).** Los cuatro problemas que vas a encontrar, en orden de frecuencia:
-
-| Lo que verás | Qué preguntar |
-|---|---|
-| El gate siempre aprueba | "¿de dónde salen las métricas del champion?" (leídas del run en lugar de reevaluadas) |
-| Exit 1 cuando MLflow está caído | "¿cómo distinguen 'modelo malo' de 'no pude medir'?" |
-| Solo el enlace verde en el PR | "muéstrenme el rechazo. Sin él, no sé si el gate existe" |
-| Tests del gate que necesitan MLflow | "la política, ¿es una función pura?" |
-
-**Cierre (5 min).** Pedir a dos estudiantes que proyecten el log de **su** rechazo. Ver la
-tabla de criterios con un `FALLA` y el número que lo justifica, en el repositorio de otro,
-es lo que fija la sesión.
-
----
-
-## BLOQUE 11 — Cierre (220-240 min)
-
-### 11.1 Autoverificación (7 min)
-
-Las cinco preguntas del [README sección 7](../sesiones/s06-cloud-cicd/README.md), con 30 segundos
-de silencio cada una. **No las respondas.**
-
-Si nadie sabe la 1 —*"su pipeline terminó en verde y desplegó: ¿qué garantiza eso sobre el
-modelo?"*— vuelve al bloque 2. Es la sesión entera.
-
-### 11.2 Trade-offs, dicho honestamente (5 min)
+### 10.2 Trade-offs, dicho honestamente (4 min)
 
 | Ganamos | Nos costó |
 |---|---|
@@ -747,31 +602,39 @@ modelo?"*— vuelve al bloque 2. Es la sesión entera.
 | despliegue por digest, auditable | más ceremonia que un `docker push latest` |
 | aprobación humana en producción | una ventana de espera en cada release |
 
-Y los huecos declarados, que es lo que hace honesto el cierre: **no hay despliegue
-progresivo, ni smoke test real contra staging, ni rollback automático por métricas.** El
-orden en que se agregarían: primero el smoke test (evita desplegar algo roto), después el
-canary, y el rollback automático al final — porque mal calibrado revierte despliegues
-buenos.
+Y los huecos declarados: **no hay despliegue progresivo, ni smoke test real contra
+staging, ni rollback automático por métricas, ni el gate corre en el CD del propio
+repositorio.** El orden en que se agregarían está en el 02, sección 6.
 
-### 11.3 Qué NO usar (5 min)
+### 10.3 Arranque del taller (7 min)
 
-Recorrer la tabla del README sección 8. Detenerse en tres:
+**Archivo:** [`taller.md`](../sesiones/s06-cloud-cicd/taller.md).
 
-- **auto-promoción al final del entrenamiento** → el acto 2 del dolor;
-- **`latest` como referencia de despliegue** → el acto 1;
-- **dejar el laboratorio "pausado"** → un servicio pausado y una RDS parada **siguen
-  cobrando** por existir.
+Repetir la regla: **los criterios 1 a 7 no necesitan AWS.** El 8 es opcional y
+**descuenta** si se hizo el despliegue y no el teardown.
 
-### 11.4 Tarea y puente a la sesión 7 (3 min)
+Subrayar el criterio 3 y su receta: MLflow dentro del runner, dos candidatos en el mismo
+job, y el rechazo **afirmado** con `test "$codigo" -eq 1`, no tragado con `|| true`.
+*"Un gate que solo se ha visto aprobar es indistinguible de un `echo 'todo bien'`."*
 
-**Tarea:** cerrar el PR del taller con los dos enlaces de Actions. Y si hubo laboratorio,
-**la salida del teardown**.
+Los cuatro problemas que vas a encontrar al revisar, en orden de frecuencia:
 
-**El puente**, con la pregunta que abre la sesión de monitoreo:
+| Lo que verás | Qué preguntar |
+|---|---|
+| El gate siempre aprueba | "¿de dónde salen las métricas del champion?" (leídas del run en lugar de reevaluadas) |
+| Exit 1 cuando MLflow está caído | "¿cómo distinguen 'modelo malo' de 'no pude medir'?" |
+| Solo el enlace verde en el PR | "muéstrenme el rechazo. Sin él, no sé si el gate existe" |
+| Tests del gate que necesitan MLflow | "la política, ¿es una función pura?" |
 
-> "Su gate aprobó el modelo con el holdout de mayo de 2023 y su pipeline lo desplegó. Pasan
-> tres meses. **¿Cómo saben que ese modelo sigue siendo válido?** El gate midió una vez, en
-> un dato del pasado, y desde entonces nadie ha vuelto a mirar."
+Si el grupo tiene la cuarta hora, el taller sigue en clase con el instructor circulando.
+Si no, es tarea, y el cierre de la próxima sesión empieza por dos estudiantes proyectando
+el log de **su** rechazo.
+
+### 10.4 Puente a la sesión 7 (3 min)
+
+> "Su gate aprobó el modelo con el holdout de mayo de 2023 y su pipeline lo desplegó.
+> Pasan tres meses. **¿Cómo saben que ese modelo sigue siendo válido?** El gate midió una
+> vez, en un dato del pasado, y desde entonces nadie ha vuelto a mirar."
 
 Dejarla sin responder. Es el dolor de la sesión 7.
 
@@ -784,8 +647,8 @@ from taxi.models import registry
 mv = registry.version_por_alias('nyc-taxi-duration', 'champion')
 print('champion ->', mv.version if mv else 'ninguna')
 "
-docker compose down
+# Ctrl-C en la terminal de `make mlflow`
 
-# Y si se hizo la demo de AWS, esto NO es opcional:
-EQUIPO=demo bash sesiones/s06-cloud-cicd/scripts/teardown.sh
+# Si se volvió a correr la demo de AWS en vivo, esto NO es opcional:
+DEMO=taxi-demo bash sesiones/s06-cloud-cicd/04-demo-ecr-fargate/teardown.sh
 ```
