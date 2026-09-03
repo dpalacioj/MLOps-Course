@@ -157,7 +157,7 @@ client.transition_model_version_stage(
     name=model_name,
     version=version,
     stage="Production",
-    archive_existing_versions=True,   # y archiva al que estaba sirviendo
+    archive_existing_versions=True,  # y archiva al que estaba sirviendo
 )
 ```
 
