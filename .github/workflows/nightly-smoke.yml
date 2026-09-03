@@ -2,12 +2,11 @@ name: Nightly — caso guia end-to-end
 
 # Por que existe este workflow.
 #
-# El diagnostico del repositorio encontro un patron: el material se escribio,
-# funciono una vez en la maquina de quien lo escribio, y se degrado en silencio.
-# Sintomas: rutas absolutas commiteadas (/Users/mdurango/...), artefactos de una
-# corrida unica versionados, un run_id hardcodeado, 875 lineas de guia para un
-# pipeline sin DAG. Nada de eso lo detecta un CI de lint y tests unitarios,
-# porque el fallo esta en la integracion con datos y servicios reales.
+# El material de un curso se escribe, funciona una vez en la maquina de quien lo
+# escribio, y se degrada en silencio: una fuente de datos que cambia, una
+# libreria que renombra una funcion, una ruta que solo existia en ese disco.
+# Nada de eso lo detecta un CI de lint y tests unitarios, porque el fallo esta
+# en la integracion con datos y servicios reales.
 #
 # Este job corre el caso guia completo —descarga datos de la TLC, entrena,
 # registra, evalua el gate y genera el reporte de drift— todas las noches en un
@@ -24,10 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
@@ -35,7 +34,7 @@ jobs:
       - run: uv sync --group dev --locked
 
       - name: Cache de datos crudos
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: data/raw
           key: tlc-raw-${{ hashFiles('src/taxi/config.py') }}
@@ -67,7 +66,11 @@ jobs:
           done
 
       - name: Entrenar y registrar
-        run: uv run taxi train
+        # --registrar es explicito: sin --hpo ni --comparar, `taxi train` entrena
+        # y NO registra, y el gate del paso siguiente responde "no hay ninguna
+        # version registrada" con exit 2. En un runner limpio no hay @champion,
+        # asi que este candidato es el primero y el gate lo promueve.
+        run: uv run taxi train --registrar
 
       - name: Gate de promocion
         run: uv run taxi promote
@@ -80,7 +83,7 @@ jobs:
 
       - name: Subir artefactos de la corrida
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nightly-${{ github.run_number }}
           path: |
@@ -91,7 +94,13 @@ jobs:
 
       - name: Abrir issue si el nightly falla
         if: failure()
-        uses: actions/github-script@v7
+        # continue-on-error: este paso solo corre cuando el job YA fallo. Si
+        # ademas falla el (por ejemplo, con "Issues has been disabled in this
+        # repository" cuando el repositorio no tiene Issues activados), el log
+        # muestra dos errores y el segundo tapa al primero, que es el que
+        # importa. Un paso de reporte no debe poder esconder el fallo que reporta.
+        continue-on-error: true
+        uses: actions/github-script@v9
         with:
           script: |
             const titulo = `Nightly roto — ${new Date().toISOString().slice(0, 10)}`;

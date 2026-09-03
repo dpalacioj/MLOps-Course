@@ -1,10 +1,17 @@
 name: CI
 
-# El CI anterior terminaba en:
-#     uv run pytest -q || echo "No tests configured yet"
-# Un pipeline que no puede fallar es peor que no tener pipeline: produce
-# confianza injustificada. Ademas estaba rojo (50 errores de ruff y 67 archivos
-# sin formatear) y nadie lo notaba porque el paso de tests nunca fallaba.
+# Regla de este archivo: ningun paso termina en `|| true` ni en
+# `|| echo "..."`. Es el atajo tentador cuando un paso falla y no hay tiempo de
+# arreglarlo, y produce un pipeline que no puede fallar: siempre verde, aunque
+# el lint acumule errores y los tests no corran. Un pipeline que no puede fallar
+# es peor que no tener pipeline, porque da confianza injustificada.
+#
+# Versiones de las actions verificadas el 3 de septiembre de 2026. GitHub retira
+# Node 20 de los runners el 23 de septiembre de 2026; desde esa fecha, las
+# versiones mayores anteriores de estas actions no arrancan. Si un job avisa
+# "Node.js 20 is deprecated",
+# el arreglo es subir la version mayor de la action, no fijar una variable de
+# entorno que la deje correr con un runtime sin soporte.
 
 on:
   push:
@@ -25,10 +32,10 @@ jobs:
     name: Lint, formato y tipos
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
@@ -56,10 +63,10 @@ jobs:
         # especificos de esa plataforma.
         os: [ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
@@ -74,12 +81,12 @@ jobs:
     name: Smoke test del entorno
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           lfs: true # aqui SI: verifica que los punteros LFS se resuelven
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
@@ -94,11 +101,11 @@ jobs:
     name: Escaneo de secretos
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: gitleaks
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -107,12 +114,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: [calidad]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       - name: Build (sin push)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
