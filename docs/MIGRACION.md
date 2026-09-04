@@ -114,7 +114,7 @@ la API vigente de MLflow 3.15:
 | `deploy/batch-deploy/` | reimplementado en `src/taxi/flows/batch.py` |
 | `deploy/intro-dockers/` | `sesiones/s05-deployment/intro-dockers/` (actualizado a `uv`) |
 | `deploy/web-service-aws/` | `sesiones/s06-cloud-cicd/_contraejemplo-insegure-aws/` (se conserva **como contraejemplo de seguridad documentado**) |
-| `deploy/web-service/GUIA_USO.md` | `referencia/deployment-guia-uso.md` (material opcional) |
+| `deploy/web-service/GUIA_USO.md` | retirada: describía la API anterior (`copy_model.py`, clave `trips`); la sustituye `sesiones/s05-deployment/api-contract.md` |
 | `deploy/intro-dockers/COMANDOS_DOCKER.md` | `referencia/docker-comandos.md` (material opcional) |
 
 ### `05-Monitoring/` → `sesiones/s07-monitoreo/`

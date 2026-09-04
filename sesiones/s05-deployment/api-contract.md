@@ -27,7 +27,7 @@ Esquema vivo: <http://127.0.0.1:8000/docs> · <http://127.0.0.1:8000/openapi.jso
 corre en `localhost` y en un laboratorio efímero. Un servicio real expuesto a
 internet necesita al menos una API key por cliente o un token verificado en un
 *gateway*, más *rate limiting* — y ambos son responsabilidad de la capa de entrada,
-no de este código. Lo que **no** es aceptable es lo que hacía el contraejemplo de la
+no de este código. Lo que **no** es aceptable es lo que hace el contraejemplo de la
 sesión 6: publicar el puerto a `0.0.0.0/0` sin ninguna de las dos cosas.
 
 ---
@@ -166,9 +166,9 @@ Entre 1 y **500** viajes en una sola llamada de inferencia.
 }
 ```
 
-> **Cambio respecto a la versión anterior de la API:** la clave es `viajes`, no
-> `trips`. Si vienes de la colección de Postman antigua, ese es el 422 que estás
-> viendo. La colección de [`postman/`](postman/) ya está actualizada.
+> La clave del lote es `viajes`. Si mandas `trips`, `data` o cualquier otro nombre,
+> el 422 que recibes dice `Field required` para `viajes` y `Extra inputs are not
+> permitted` para la clave que mandaste: es `extra="forbid"` haciendo su trabajo.
 
 ### Response 200
 
@@ -203,8 +203,9 @@ DoS) y acota la latencia de cola, porque un lote gigante bloquea al worker.
 
 ## `GET /metrics`
 
-Formato de exposición de Prometheus. Es una sub-app ASGI montada, así que **no
-aparece en el esquema OpenAPI**; no es un error.
+Formato de exposición de Prometheus: texto plano, una métrica por línea. **No
+aparece en el esquema OpenAPI** a propósito (`include_in_schema=False`): lo consume
+Prometheus, no un cliente de la API.
 
 | Métrica | Tipo | Labels | Qué responde |
 |---|---|---|---|
@@ -254,10 +255,12 @@ El 422 es la única excepción y tiene razón de ser: ese detalle describe lo qu
 cliente mandó, no el interior del servidor. Es información que necesita para
 corregirse.
 
-Anti-patrón corregido: tres endpoints de la versión anterior devolvían
-`detail=f"Error: {str(e)}"`. Eso filtra rutas del filesystem, cadenas de conexión,
-nombres de columnas y trazas del ORM a cualquiera que sepa mandar un request
-malformado.
+El atajo tentador es `HTTPException(detail=f"Error: {str(e)}")`: una línea, y el
+cliente "ve qué pasó". Lo que ve son rutas del filesystem, cadenas de conexión con
+credenciales, nombres de columnas y trazas del ORM, y lo ve cualquiera que sepa
+mandar un request malformado. El test `test_error_interno_no_filtra_el_mensaje_de_la_excepcion`
+en [`tests/api/test_prediccion.py`](../../tests/api/test_prediccion.py) es el que
+impide que ese atajo vuelva a entrar.
 
 ---
 

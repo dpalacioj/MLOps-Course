@@ -1,11 +1,11 @@
 """Configuracion unica del caso guia del curso.
 
 Este modulo es la **unica fuente de verdad** para particiones de datos, nombres
-de experimento, nombres de modelo registrado y rutas. Antes del rediseno la
-misma informacion estaba duplicada (y en desacuerdo) en cuatro lugares:
-`02-Experiment-Tracking` usaba datos de 2023, `03-Orchestration` calculaba el
-periodo con `datetime.now()` y pedia 2025-01 —un parquet que puede no estar
-publicado— y Mage usaba features distintas para el mismo problema.
+de experimento, nombres de modelo registrado y rutas. El atajo tentador es que
+cada sesion declare lo suyo: una usa datos de un ano, otra calcula el periodo
+con `datetime.now()` y pide un parquet que puede no estar publicado, y una
+tercera deriva features distintas para el mismo problema. Cuatro copias de la
+misma informacion terminan en desacuerdo sin que nadie lo note.
 
 Decision de diseno (ver docs/adr/001-caso-guia-y-particiones.md): las
 particiones son **fijas y del pasado**. Un curso no puede depender de que la
@@ -113,13 +113,25 @@ UMBRAL_VIAJE_LARGO_MIN: Final[float] = 30.0
 # =============================================================================
 # MLflow — puerto 5001 en TODO el curso
 # =============================================================================
-# El 5000 lo ocupa AirPlay Receiver en macOS. Antes del rediseno el repo
-# mezclaba 5000 y 5001 entre scripts, notebooks y .env.example, y en Windows
-# el estudiante acababa con el servidor en un puerto y el .env en el otro.
+# El 5000 lo ocupa AirPlay Receiver en macOS. Si el puerto se escribe en cada
+# script, notebook y .env por separado, tarde o temprano uno dice 5000 y otro
+# 5001, y el estudiante acaba con el servidor en un puerto y el .env en el otro.
 MLFLOW_PORT: Final[int] = 5001
 MLFLOW_TRACKING_URI: Final[str] = os.getenv(
     "MLFLOW_TRACKING_URI", f"http://127.0.0.1:{MLFLOW_PORT}"
 )
+
+# Los artefactos viajan SIEMPRE a traves del tracking server (artifact store
+# proxiado), nunca directo al object store. MLflow 3.x, cuando el servidor guarda
+# en S3/MinIO, le ofrece al cliente URLs prefirmadas para descargar los archivos
+# en paralelo saltandose el servidor. Con el stack de Compose esas URLs apuntan a
+# `http://minio:9000`, un nombre que solo existe dentro de la red de Docker: un
+# cliente en el host (`taxi promote`, `make serve`, `make batch`) se queda un
+# minuto por archivo esperando a ese host y despues cae al camino proxiado. Con
+# la variable en `false` va directo al camino proxiado: siete archivos en tres
+# segundos en vez de en siete minutos. `setdefault` respeta a quien la fije
+# explicitamente en su entorno.
+os.environ.setdefault("MLFLOW_ENABLE_PROXY_MULTIPART_DOWNLOAD", "false")
 
 #: Convencion de nombres de experimento: s0X-proposito.
 EXPERIMENTOS: Final[dict[str, str]] = {
@@ -130,7 +142,7 @@ EXPERIMENTOS: Final[dict[str, str]] = {
     "gate": "s06-gate-de-promocion",
 }
 
-#: Un solo nombre por problema. Antes habia cuatro nombres para dos modelos.
+#: Un solo nombre por problema. Dos nombres para el mismo modelo son dos registries.
 MODELO_REGRESION: Final[str] = "nyc-taxi-duration"
 MODELO_CLASIFICACION: Final[str] = "nyc-taxi-long-trip"
 
@@ -145,9 +157,10 @@ TAG_VALIDACION: Final[str] = "validation_status"
 def uri_modelo(nombre: str = MODELO_REGRESION, alias: str = ALIAS_PRODUCCION) -> str:
     """URI del modelo por alias.
 
-    Es la unica forma correcta de referirse al modelo en produccion. El repo
-    anterior copiaba directorios con `shutil.copytree` entre los modulos 03 y
-    04, lo que rompia toda la trazabilidad que el modulo 02 ensena a construir.
+    Es la unica forma correcta de referirse al modelo en produccion. El atajo
+    tentador es copiar el directorio del modelo con `shutil.copytree` de un
+    modulo a otro: funciona un dia y rompe toda la trazabilidad que la sesion de
+    tracking ensena a construir (nadie puede decir que version se esta sirviendo).
 
     >>> uri_modelo()
     'models:/nyc-taxi-duration@champion'

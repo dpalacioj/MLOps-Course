@@ -46,7 +46,7 @@ from typing import Any, Final
 import pandas as pd
 
 from taxi.api.schemas import ViajeRequest
-from taxi.config import ALIAS_PRODUCCION, MODELO_REGRESION, uri_modelo
+from taxi.config import ALIAS_PRODUCCION, MLFLOW_TRACKING_URI, MODELO_REGRESION, uri_modelo
 from taxi.features.contract import (
     COL_DROPOFF,
     COL_PICKUP,
@@ -92,8 +92,16 @@ def _cargar_pyfunc(uri: str) -> Any:
     ``TAXI_MODELO_URI=ninguno`` no hace falta pagarlo. El arranque del contenedor
     en CI es medible mas rapido por esto.
     """
+    import mlflow
     import mlflow.pyfunc
 
+    # El tracking URI se fija aqui, explicitamente, igual que en `flows/batch.py`.
+    # Sin esta linea mlflow usa su default, `./mlruns` (un file store sin
+    # registry), y la carga por alias falla con `No such artifact: ''` aunque el
+    # servidor de MLflow este arriba en el 5001. El valor sale de `taxi.config`,
+    # que lee `MLFLOW_TRACKING_URI` del entorno y, si no esta, usa el puerto del
+    # curso; la imagen de Compose lo sobreescribe con `http://mlflow:5001`.
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
     return mlflow.pyfunc.load_model(uri)
 
 
@@ -114,7 +122,10 @@ def _resolver_identidad(uri: str) -> tuple[str, str]:
         try:
             from mlflow import MlflowClient
 
-            mv = MlflowClient().get_model_version_by_alias(nombre, alias)
+            cliente = MlflowClient(
+                tracking_uri=MLFLOW_TRACKING_URI, registry_uri=MLFLOW_TRACKING_URI
+            )
+            mv = cliente.get_model_version_by_alias(nombre, alias)
             return nombre, str(mv.version)
         except Exception:
             # No se aborta: el modelo ya se cargo y puede servir. Solo se pierde
@@ -241,10 +252,11 @@ class CargadorModelo:
         Recibe la salida de ``taxi.features.contract.a_diccionarios``, que es el
         formato que espera el ``DictVectorizer`` del pipeline entrenado. La API
         no construye features por su cuenta: reusa el contrato. Ese reuso es lo
-        que evita el training/serving skew, y es la correccion directa del
-        anti-patron donde la API armaba ``{'PU_DO': ..., 'trip_distance': ...}``
-        a mano y se olvidaba de `hora_pickup` y `dia_semana_pickup`, dos features
-        con las que el modelo si habia sido entrenado.
+        que evita el training/serving skew. El atajo tentador es armar
+        ``{'PU_DO': ..., 'trip_distance': ...}`` a mano en la API: funciona hasta
+        que alguien olvida `hora_pickup` o `dia_semana_pickup`, dos features con
+        las que el modelo si fue entrenado, y la prediccion se degrada sin
+        ningun error.
 
         Raises:
             RuntimeError: si no hay modelo cargado. El endpoint lo traduce a 503.

@@ -1,0 +1,708 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deployment · Sesión 5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #EDEFEC;
+    --surface: #FBFCFA;
+    --ink: #191C1A;
+    --muted: #5D6560;
+    --line: #D2D7D2;
+    --line-soft: #E2E6E1;
+    --accent: #256B58;
+    --accent-bg: #DCEBE5;
+    --warn: #A9481C;
+    --warn-bg: #F3E1D7;
+    --display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+    --body: "Literata", Georgia, serif;
+    --mono: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #141816; --surface: #1C211E; --ink: #E7EAE7; --muted: #99A29C;
+      --line: #333C37; --line-soft: #262E2A; --accent: #63BFA1; --accent-bg: #1E3A32;
+      --warn: #E09364; --warn-bg: #38241A;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #141816; --surface: #1C211E; --ink: #E7EAE7; --muted: #99A29C;
+    --line: #333C37; --line-soft: #262E2A; --accent: #63BFA1; --accent-bg: #1E3A32;
+    --warn: #E09364; --warn-bg: #38241A;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--ground); color: var(--ink);
+    font-family: var(--body); font-size: 17px; line-height: 1.55; margin: 0;
+    -webkit-font-smoothing: antialiased; overflow: hidden;
+  }
+
+  /* ---- diapositivas ---- */
+  .deck { position: relative; height: 100vh; width: 100vw; }
+  .slide {
+    position: absolute; inset: 0; display: none; flex-direction: column;
+    padding: 40px clamp(24px, 5vw, 80px) 64px; max-width: 1180px; margin: 0 auto;
+  }
+  .slide.active { display: flex; }
+  .slide .num {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em;
+    color: var(--accent); margin: 0 0 8px; text-transform: uppercase;
+  }
+  .slide h2 {
+    font-family: var(--display); font-weight: 700; font-size: clamp(24px, 3vw, 38px);
+    line-height: 1.1; letter-spacing: -0.015em; margin: 0 0 6px; text-wrap: balance;
+  }
+  .slide .body { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+  figure {
+    margin: 10px 0 0; padding: 18px 22px 14px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  figure svg { display: block; width: 100%; height: auto; max-height: 56vh; flex: 0 1 auto; }
+  figcaption {
+    font-size: 16px; line-height: 1.5; color: var(--ink);
+    margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line-soft); max-width: 90ch;
+  }
+  .idea {
+    margin: 14px 0 0; padding: 10px 18px; border-left: 3px solid var(--accent);
+    font-family: var(--display); font-weight: 500; font-size: clamp(17px, 1.6vw, 21px); line-height: 1.35;
+  }
+  .idea .lbl {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); display: block; margin-bottom: 4px; font-weight: 400;
+  }
+  code, .mono { font-family: var(--mono); font-size: 0.9em; }
+  code { background: var(--accent-bg); padding: 0.1em 0.35em; border-radius: 3px; }
+
+  svg text { font-family: var(--mono); font-size: 12px; fill: var(--ink); }
+  svg .ss { font-size: 11px; fill: var(--muted); }
+  svg .sh { font-size: 13px; font-weight: 500; }
+  svg .sk { font-size: 11px; fill: var(--accent); letter-spacing: 0.08em; }
+  svg .box { fill: var(--surface); stroke: var(--line); stroke-width: 1.2; }
+  svg .box-a { fill: var(--accent-bg); stroke: var(--accent); stroke-width: 1.2; }
+  svg .box-w { fill: var(--warn-bg); stroke: var(--warn); stroke-width: 1.2; }
+  svg .edge { stroke: var(--muted); stroke-width: 1.4; fill: none; }
+  svg .edge-a { stroke: var(--accent); stroke-width: 1.4; fill: none; }
+  svg .head { fill: var(--muted); stroke: none; }
+  svg .head-a { fill: var(--accent); stroke: none; }
+  svg .dash { stroke: var(--muted); stroke-width: 1; fill: none; stroke-dasharray: 4 4; opacity: 0.7; }
+  svg .rule { stroke: var(--line); stroke-width: 1; }
+  svg .plus { fill: var(--accent); font-size: 11px; }
+  svg .minus { fill: var(--warn); font-size: 11px; }
+
+  /* portada */
+  .cover { justify-content: center; }
+  .cover .kicker {
+    font-family: var(--mono); font-size: 13px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 18px;
+  }
+  .cover h1 {
+    font-family: var(--display); font-weight: 700; font-size: clamp(40px, 7vw, 84px);
+    line-height: 1.0; letter-spacing: -0.02em; margin: 0 0 22px; text-wrap: balance;
+  }
+  .cover .standfirst { font-size: clamp(18px, 1.8vw, 23px); color: var(--muted); max-width: 60ch; margin: 0 0 32px; }
+  .cover ol { font-size: 17px; columns: 2; column-gap: 48px; max-width: 900px; margin: 0; padding-left: 22px; }
+  .cover li { margin: 0 0 6px; break-inside: avoid; }
+  .cover .hint { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 32px; }
+
+  /* tarjetas */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  .card h3 {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 8px; font-weight: 400;
+  }
+  .card p { margin: 0; font-size: 16px; }
+
+  /* barra */
+  .bar {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; font-family: var(--mono); font-size: 12px; color: var(--muted);
+    border-top: 1px solid var(--line-soft); background: var(--ground);
+  }
+  .bar button {
+    font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+    border-radius: 6px; padding: 4px 12px; cursor: pointer;
+  }
+  .bar button:disabled { opacity: 0.35; cursor: default; }
+  .progress { position: fixed; left: 0; bottom: 40px; height: 3px; background: var(--accent); transition: width 0.2s; }
+
+  @media print {
+    body { overflow: visible; }
+    .deck { height: auto; }
+    .slide { display: flex; position: static; page-break-after: always; height: 100vh; }
+    .bar, .progress { display: none; }
+  }
+</style>
+
+<div class="deck">
+
+<!-- 0 -->
+<section class="slide cover active">
+  <p class="kicker">Curso de MLOps · Sesión 5</p>
+  <h1>Deployment: del modelo registrado al servicio que responde</h1>
+  <p class="standfirst">Cómo convertir un modelo del registry en algo que otro sistema puede consumir, y cómo saber qué versión respondió.</p>
+  <ol>
+    <li>Dos resoluciones de dependencias, un solo pickle</li>
+    <li>Receta, paquete, plato: qué hace Docker</li>
+    <li>Capas: la receta guardada por pasos</li>
+    <li>Dos puertos, un túnel</li>
+    <li>Un nombre que se mueve sobre bytes que no cambian</li>
+    <li>El restaurante: cliente, uvicorn, FastAPI, modelo</li>
+    <li>La sintaxis: una función, un letrero en la puerta</li>
+    <li>Tres formas de ser el cliente</li>
+    <li>Vivo no es lo mismo que listo</li>
+    <li>Consultorio y laboratorio: online y batch</li>
+    <li>El hilo conductor es el registry</li>
+    <li>Preguntas frecuentes</li>
+  </ol>
+  <p class="hint">→ / espacio: siguiente · ← : anterior · Inicio / Fin · también con clic o deslizando</p>
+</section>
+
+<!-- 1 -->
+<section class="slide">
+  <p class="num">01 · el problema</p>
+  <h2>Dos resoluciones de dependencias, un solo pickle</h2>
+  <div class="body">
+  <figure>
+    <svg viewBox="0 0 720 300" role="img" aria-label="El entrenamiento resuelve versiones desde uv.lock; una imagen con pines a mano instala otras; el mismo pickle cargado en las dos produce un aviso o, peor, otra predicción.">
+      <rect class="box-a" x="30" y="30" width="290" height="96" rx="6"/>
+      <text class="sk" x="46" y="52">ENTRENAMIENTO</text>
+      <text class="sh" x="46" y="76">uv.lock</text>
+      <text class="ss" x="46" y="96">mlflow 3.15 · xgboost 3.2 · sklearn 1.9</text>
+      <text class="plus" x="46" y="115">+ una sola resolución</text>
+      <rect class="box-w" x="400" y="30" width="290" height="96" rx="6"/>
+      <text class="sk" x="416" y="52" style="fill:var(--warn)">IMAGEN, ATAJO</text>
+      <text class="sh" x="416" y="76">RUN pip install sklearn==1.5.2</text>
+      <text class="ss" x="416" y="96">pines a mano; el lock se ignora</text>
+      <text class="minus" x="416" y="115">− otra resolución, escrita dos veces</text>
+      <path class="dash" d="M175 126 V170"/>
+      <path class="dash" d="M545 126 V170"/>
+      <rect class="box" x="230" y="170" width="260" height="50" rx="6"/>
+      <text class="sh" x="360" y="192" text-anchor="middle">model.pkl</text>
+      <text class="ss" x="360" y="210" text-anchor="middle">el MISMO artefacto, cargado en los dos</text>
+      <path class="edge" d="M300 220 V250 H190"/>
+      <polygon class="head" points="190,246 182,250 190,254"/>
+      <path class="edge-a" d="M420 220 V250 H530"/>
+      <polygon class="head-a" points="530,246 538,250 530,254"/>
+      <text class="ss" x="40" y="244">falla al cargar</text>
+      <text class="plus" x="40" y="262">+ el caso bueno: es ruidoso</text>
+      <text class="ss" x="520" y="244">carga y predice distinto</text>
+      <text class="minus" x="520" y="262">− nadie lo ve: el caso malo</text>
+      <text class="ss" x="230" y="288">InconsistentVersionWarning: ¿quién lee los warnings de un contenedor?</text>
+    </svg>
+    <figcaption>El modelo se entrenó con las versiones que resolvió <code>uv.lock</code>. Si la imagen instala otras a mano, el mismo archivo se deserializa en un entorno distinto. A veces falla al cargar, y ese es el caso bueno porque hace ruido. A veces carga y predice otra cosa, sin un solo error en los logs: un modelo aprobado en CI y una imagen que sirve algo distinto.</figcaption>
+  </figure>
+  <p class="idea"><span class="lbl">Idea clave</span>Las versiones se resuelven una vez, en <code>uv.lock</code>. Ningún pin a mano en un Dockerfile.</p>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <p class="num">02 · la analogía</p>
+  <h2>Receta, paquete sellado, plato servido</h2>
+  <div class="body">
+  <figure>
+    <svg viewBox="0 0 720 250" role="img" aria-label="Dockerfile como receta, imagen como paquete sellado y contenedor como plato servido, unidos por docker build y docker run.">
+      <rect class="box" x="20" y="40" width="210" height="150" rx="6"/>
+      <text class="sk" x="36" y="62">DOCKERFILE = RECETA</text>
+      <text class="ss" x="36" y="86">1. usa python:3.11-slim</text>
+      <text class="ss" x="36" y="104">2. copia pyproject + uv.lock</text>
+      <text class="ss" x="36" y="122">3. uv sync --locked</text>
+      <text class="ss" x="36" y="140">4. copia el código</text>
+      <text class="ss" x="36" y="158">5. arranca uvicorn</text>
+      <text class="minus" x="36" y="180">− no copia el modelo</text>
+      <path class="edge" d="M230 115 H255"/>
+      <polygon class="head" points="255,111 263,115 255,119"/>
+      <text class="sk" x="247" y="100" text-anchor="middle">build</text>
+      <rect class="box-a" x="265" y="40" width="190" height="150" rx="6"/>
+      <text class="sk" x="281" y="62">IMAGEN = PAQUETE</text>
+      <text class="ss" x="281" y="86">intérprete ✓</text>
+      <text class="ss" x="281" y="104">dependencias ✓</text>
+      <text class="ss" x="281" y="122">tu código ✓</text>
+      <text class="ss" x="281" y="140">modelo ✗ (lo pide)</text>
+      <text class="plus" x="281" y="180">+ inmutable: sha256</text>
+      <path class="edge" d="M455 115 H480"/>
+      <polygon class="head" points="480,111 488,115 480,119"/>
+      <text class="sk" x="472" y="100" text-anchor="middle">run</text>
+      <rect class="box" x="490" y="40" width="210" height="150" rx="6"/>
+      <text class="sk" x="506" y="62">CONTENEDOR = PLATO</text>
+      <text class="ss" x="506" y="86">un proceso corriendo</text>
+      <text class="ss" x="506" y="104">su propio filesystem y red</text>
+      <text class="ss" x="506" y="122">hostname = id del contenedor</text>
+      <text class="ss" x="506" y="140">varios del mismo paquete</text>
+      <text class="plus" x="506" y="180">+ aislado, no virtualizado</text>
+      <text class="ss" x="360" y="228" text-anchor="middle">no importa dónde se sirva el plato: sabe igual. Eso es todo lo que hace Docker, y es suficiente.</text>
+    </svg>
+    <figcaption>El <code>Dockerfile</code> es la receta; <code>docker build</code> la ejecuta y produce la imagen, un paquete sellado con intérprete, dependencias y código; <code>docker run</code> sirve un plato a partir del paquete. No es una máquina virtual: no hay otro kernel. Un contenedor es un proceso al que se le muestra otro sistema de archivos, otra red y otra lista de procesos. Y en este curso la receta no copia el modelo: la imagen lo pide al registry al arrancar.</figcaption>
+  </figure>
+  <p class="idea"><span class="lbl">Idea clave</span>El contenedor convierte el entorno completo en el artefacto que se despliega.</p>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <p class="num">03 · el mecanismo</p>
+  <h2>Capas: la receta guardada por pasos</h2>
+  <div class="body">
+  <figure>
+    <svg viewBox="0 0 720 280" role="img" aria-label="Dos pilas de capas. En la correcta, cambiar el código reutiliza las capas de base y dependencias; en la invertida, un cambio de código reinstala todo.">
+      <text class="sk" x="40" y="30">LOCK ANTES QUE CÓDIGO</text>
+      <rect class="box" x="40" y="44" width="290" height="34" rx="4"/>
+      <text class="sh" x="56" y="66">FROM python:3.11-slim</text>
+      <text class="plus" x="240" y="66">CACHED</text>
+      <rect class="box" x="40" y="84" width="290" height="34" rx="4"/>
+      <text class="sh" x="56" y="106">COPY pyproject uv.lock</text>
+      <text class="plus" x="240" y="106">CACHED</text>
+      <rect class="box" x="40" y="124" width="290" height="34" rx="4"/>
+      <text class="sh" x="56" y="146">RUN uv sync --locked</text>
+      <text class="plus" x="240" y="146">CACHED</text>
+      <rect class="box-a" x="40" y="164" width="290" height="34" rx="4"/>
+      <text class="sh" x="56" y="186">COPY app.py</text>
+      <text class="ss" x="240" y="186">se rehace</text>
+      <rect class="box-a" x="40" y="204" width="290" height="34" rx="4"/>
+      <text class="sh" x="56" y="226">USER, HEALTHCHECK, CMD</text>
+      <text class="ss" x="240" y="226">se rehace</text>
+      <text class="plus" x="40" y="264">+ editar código no reinstala nada</text>
+      <text class="sk" x="390" y="30" style="fill:var(--warn)">CÓDIGO ANTES QUE LOCK</text>
+      <rect class="box" x="390" y="44" width="290" height="34" rx="4"/>
+      <text class="sh" x="406" y="66">FROM python:3.11-slim</text>
+      <text class="plus" x="590" y="66">CACHED</text>
+      <rect class="box-w" x="390" y="84" width="290" height="34" rx="4"/>
+      <text class="sh" x="406" y="106">COPY . .</text>
+      <text class="ss" x="590" y="106">se rehace</text>
+      <rect class="box-w" x="390" y="124" width="290" height="34" rx="4"/>
+      <text class="sh" x="406" y="146">RUN uv sync --locked</text>
+      <text class="ss" x="590" y="146">se rehace</text>
+      <rect class="box-w" x="390" y="164" width="290" height="34" rx="4"/>
+      <text class="sh" x="406" y="186">USER, HEALTHCHECK, CMD</text>
+      <text class="ss" x="590" y="186">se rehace</text>
+      <text class="minus" x="390" y="264">− una línea de Python reinstala 300 MB</text>
+    </svg>
+    <figcaption>Cada instrucción del Dockerfile produce una capa. Una capa se reutiliza si sus entradas no cambiaron, y todas las que vienen después de una capa cambiada se rehacen. Por eso lo que cambia poco (el lock y las dependencias) va antes que lo que cambia en cada commit (el código). Con el orden correcto, editar una línea de Python no reinstala nada; con el orden invertido, reinstala todo.</figcaption>
+  </figure>
+  <p class="idea"><span class="lbl">Idea clave</span>Si cambias el paso 5 de la receta, los pasos 1 a 4 ya están hechos.</p>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <p class="num">04 · el puerto</p>
+  <h2>Dos puertos, un túnel</h2>
+  <div class="body">
+  <figure>
+    <svg viewBox="0 0 720 200" role="img" aria-label="Tu equipo con el puerto 8080 conectado por un túnel al puerto 5000 dentro del contenedor, donde uvicorn escucha en 0.0.0.0.">
+      <rect class="box" x="30" y="40" width="270" height="120" rx="6"/>
+      <text class="sk" x="46" y="62">TU EQUIPO</text>
+      <text class="sh" x="46" y="90">localhost:8080</text>
+      <text class="ss" x="46" y="110">lo que escribes en el navegador</text>
+      <text class="ss" x="46" y="128">AirPlay ya usa el 5000 en macOS:</text>
+      <text class="ss" x="46" y="146">por eso el 8080 afuera</text>
+      <rect class="box-a" x="420" y="40" width="270" height="120" rx="6"/>
+      <text class="sk" x="436" y="62">CONTENEDOR</text>
+      <text class="sh" x="436" y="90">0.0.0.0:5000</text>
+      <text class="ss" x="436" y="110">donde uvicorn escucha</text>
+      <text class="ss" x="436" y="128">0.0.0.0 es correcto AQUÍ y solo aquí:</text>
+      <text class="ss" x="436" y="146">aislamiento: lo da Docker, no el bind</text>
+      <path class="edge-a" d="M300 100 H420"/>
+      <polygon class="head-a" points="412,96 420,100 412,104"/>
+      <polygon class="head-a" points="308,96 300,100 308,104"/>
+      <text class="sk" x="360" y="90" text-anchor="middle">-p 8080:5000</text>
+      <text class="ss" x="360" y="186" text-anchor="middle">izquierda: afuera · derecha: adentro. Siempre en ese orden.</text>
+    </svg>
+    <figcaption>En <code>-p 8080:5000</code>, el número de la izquierda es el puerto de tu equipo (el que escribes en el navegador) y el de la derecha es el puerto donde escucha el proceso dentro del contenedor. Adentro, <code>0.0.0.0</code> significa "escucha en todas las interfaces" y es necesario para que el túnel llegue; el aislamiento lo da Docker. En un proceso local, en cambio, <code>0.0.0.0</code> publica el servicio a toda la red. Por eso <code>app.py</code> escucha en <code>127.0.0.1</code> y el <code>0.0.0.0</code> lo pone el <code>CMD</code> del Dockerfile.</figcaption>
+  </figure>
+  <p class="idea"><span class="lbl">Idea clave</span>Sin <code>0.0.0.0</code> adentro, el <code>-p</code> no llega. Con <code>0.0.0.0</code> afuera, llega toda la red.</p>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <p class="num">05 · la referencia mutable</p>
+  <h2>Un nombre que se mueve sobre bytes que no cambian</h2>
+  <div class="body">
+  <figure>
+    <svg viewBox="0 0 720 326" role="img" aria-label="El alias champion apunta a la versión 7 y luego a la 8; el tag latest apunta a un digest y luego a otro. Las cajas no cambian, solo la flecha.">
+      <text class="sk" x="30" y="32">MODEL REGISTRY</text>
+      <rect class="box-a" x="30" y="46" width="150" height="44" rx="5"/>
+      <text class="sh" x="105" y="73" text-anchor="middle">@champion</text>
+      <rect class="box" x="290" y="46" width="130" height="44" rx="5"/>
+      <text class="sh" x="355" y="73" text-anchor="middle">versión 7</text>
+      <rect class="box" x="470" y="46" width="130" height="44" rx="5"/>
+      <text class="sh" x="535" y="73" text-anchor="middle">versión 8</text>
+      <path class="dash" d="M180 68 H290"/>
+      <path class="edge-a" d="M180 62 Q330 20 470 60"/>
+      <polygon class="head-a" points="463,54 471,60 463,64"/>
+      <text class="ss" x="612" y="73">el gate lo mueve</text>
+      <text class="sk" x="30" y="142">REGISTRO DE IMÁGENES</text>
+      <rect class="box-a" x="30" y="156" width="150" height="44" rx="5"/>
+      <text class="sh" x="105" y="183" text-anchor="middle">:latest</text>
+      <rect class="box" x="290" y="156" width="130" height="44" rx="5"/>
+      <text class="sh" x="355" y="183" text-anchor="middle">sha256:eaa2…</text>
+      <rect class="box" x="470" y="156" width="130" height="44" rx="5"/>
+      <text class="sh" x="535" y="183" text-anchor="middle">sha256:91f0…</text>
+      <path class="dash" d="M180 178 H290"/>
+      <path class="edge-a" d="M180 172 Q330 130 470 170"/>
+      <polygon class="head-a" points="463,164 471,170 463,174"/>
+      <text class="ss" x="612" y="183">un push lo mueve</text>
+      <path class="rule" d="M30 226 H690"/>
+      <text class="ss" x="30" y="250">izquierda: referencia MUTABLE, sirve para enrutar</text>
+      <text class="ss" x="30" y="268">derecha: contenido INMUTABLE, sirve para desplegar y auditar</text>
+      <text class="plus" x="30" y="292">+ cambiar de modelo: mover el alias y reiniciar el proceso</text>
+      <text class="minus" x="30" y="310">− desplegar :latest: no sabes qué bytes corren</text>
+    </svg>
+    <figcaption>La misma estructura dos veces. En el registry, <code>@champion</code> es un nombre que apunta a una versión y se puede mover; la versión 7 no cambia nunca. En el registro de imágenes, <code>:latest</code> es un nombre que apunta a un digest y se mueve con cada push; el digest <code>sha256:…</code> es el contenido. Por eso cada respuesta de la API lleva <code>model_version</code> y no "champion", y por eso el despliegue se hace por digest y nunca por <code>latest</code>.</figcaption>
+  </figure>
+  <p class="idea"><span class="lbl">Idea clave</span><code>:latest</code> es a <code>sha256</code> lo que <code>@champion</code> es a versión 7. Para enrutar, el nombre; para auditar, el contenido.</p>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <p class="num">06 · el restaurante</p>
+  <h2>Mesero, chef y una despensa que no está en la cocina</h2>
+  <div class="body">
+  <figure>
+    <svg viewBox="0 0 720 300" role="img" aria-label="Un cliente manda una petición HTTP a uvicorn, que la pasa a FastAPI; FastAPI valida con Pydantic, construye features y llama al modelo, que fue pedido al registry al arrancar.">
+      <rect class="box" x="20" y="60" width="130" height="90" rx="6"/>
+      <text class="sk" x="36" y="82">CLIENTE</text>
+      <text class="ss" x="36" y="104">app o curl</text>
+      <text class="ss" x="36" y="122">manda JSON</text>
+      <text class="ss" x="36" y="140">no ve el modelo</text>
+      <path class="edge" d="M150 105 H180"/>
+      <polygon class="head" points="180,101 188,105 180,109"/>
+      <text class="ss" x="169" y="94" text-anchor="middle">HTTP</text>
+      <rect class="box" x="190" y="60" width="140" height="90" rx="6"/>
+      <text class="sk" x="206" y="82">UVICORN · mesero</text>
+      <text class="ss" x="206" y="104">abre el puerto</text>
+      <text class="ss" x="206" y="122">recibe conexiones</text>
+      <text class="ss" x="206" y="140">no cocina</text>
+      <path class="edge" d="M330 105 H360"/>
+      <polygon class="head" points="360,101 368,105 360,109"/>
+      <rect class="box-a" x="370" y="40" width="200" height="130" rx="6"/>
+      <text class="sk" x="386" y="62">FASTAPI · chef</text>
+      <text class="ss" x="386" y="84">1. valida (Pydantic) → 422</text>
+      <text class="ss" x="386" y="102">2. features del contrato</text>
+      <text class="ss" x="386" y="120">3. model.predict</text>
+      <text class="ss" x="386" y="138">4. responde + model_version</text>
+      <text class="plus" x="386" y="160">+ def, no async def</text>
+      <path class="edge" d="M570 105 H600"/>
+      <polygon class="head" points="600,101 608,105 600,109"/>
+      <rect class="box" x="610" y="60" width="90" height="90" rx="6"/>
+      <text class="sk" x="626" y="82">MODELO</text>
+      <text class="ss" x="626" y="104">en memoria</text>
+      <text class="ss" x="626" y="122">desde el</text>
+      <text class="ss" x="626" y="140">arranque</text>
+      <rect class="box" x="480" y="220" width="220" height="60" rx="6"/>
+      <text class="sk" x="496" y="242">REGISTRY · despensa</text>
+      <text class="ss" x="496" y="262">models:/&lt;nombre&gt;@champion</text>
+      <path class="edge-a" d="M655 220 V150"/>
+      <polygon class="head-a" points="651,158 655,150 659,158"/>
+      <text class="ss" x="470" y="200">lifespan: se pide al abrir</text>
+      <text class="ss" x="20" y="200">frontera de confianza: del otro lado mandan lo que sea.</text>
+      <text class="ss" x="20" y="218">PULocationID=9999 no da error sin validación: da 12 minutos.</text>
+      <text class="ss" x="20" y="250">el mesero es uno solo (event loop): si se pone a cocinar,</text>
+      <text class="ss" x="20" y="268">nadie toma pedidos. Por eso predict va con def, a otro hilo.</text>
+    </svg>
+    <figcaption><strong>uvicorn</strong> es el servidor: abre el puerto y recibe conexiones, pero no cocina. <strong>FastAPI</strong> es el chef: valida el JSON con Pydantic (si algo está mal, 422), construye las features con el mismo contrato del entrenamiento, llama al modelo y responde con la predicción y el <code>model_version</code>. El modelo no vive dentro de la API: se pide al registry al arrancar (<code>lifespan</code>), y el registry sabe qué versión entregó. La API tiene cinco puertas: <code>/predict</code> y <code>/predict/batch</code> para el cliente, <code>/health</code> para el orquestador, <code>/modelo</code> para una persona y <code>/metrics</code> para Prometheus.</figcaption>
+  </figure>
+  <p class="idea"><span class="lbl">Idea clave</span>La imagen no contiene el modelo. Contiene el código que sabe pedirlo.</p>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <p class="num">07 · la sintaxis</p>
+  <h2>Una función, un letrero en la puerta</h2>
+  <div class="body">
+  <figure>
+    <svg viewBox="0 0 720 330" role="img" aria-label="La línea @app.post('/predict') desmontada: el símbolo del decorador, la app, el método HTTP y la ruta. Debajo, la misma estructura en la app de gatitos y en la API real, y de dónde sale /docs.">
+      <rect class="box-a" x="120" y="24" width="480" height="46" rx="6"/>
+      <text class="sh" x="360" y="53" text-anchor="middle" style="font-size:17px">@app.post("/predict")</text>
+      <path class="edge" d="M172 70 V104"/>
+      <path class="edge" d="M262 70 V104"/>
+      <path class="edge" d="M352 70 V104"/>
+      <path class="edge" d="M500 70 V104"/>
+      <rect class="box" x="110" y="104" width="120" height="58" rx="5"/>
+      <text class="sh" x="170" y="126" text-anchor="middle">@</text>
+      <text class="ss" x="170" y="146" text-anchor="middle">conecta la función</text>
+      <rect class="box" x="238" y="104" width="100" height="58" rx="5"/>
+      <text class="sh" x="288" y="126" text-anchor="middle">app</text>
+      <text class="ss" x="288" y="146" text-anchor="middle">tu FastAPI()</text>
+      <rect class="box" x="346" y="104" width="100" height="58" rx="5"/>
+      <text class="sh" x="396" y="126" text-anchor="middle">.post</text>
+      <text class="ss" x="396" y="146" text-anchor="middle">manda datos</text>
+      <rect class="box" x="454" y="104" width="150" height="58" rx="5"/>
+      <text class="sh" x="529" y="126" text-anchor="middle">"/predict"</text>
+      <text class="ss" x="529" y="146" text-anchor="middle">la URL, la puerta</text>
+      <text class="ss" x="360" y="186" text-anchor="middle">.get pide algo (leer); .post manda algo (el JSON del viaje va en el cuerpo)</text>
+      <path class="rule" d="M30 204 H690"/>
+      <text class="sk" x="30" y="228">GATITOS · intro-dockers</text>
+      <text class="sh" x="30" y="250">@app.get("/health")</text>
+      <text class="sh" x="30" y="270">def salud():</text>
+      <text class="ss" x="30" y="290">    return {"status": "ok"}</text>
+      <text class="plus" x="30" y="316">+ ya era FastAPI, sin decirlo</text>
+      <text class="sk" x="270" y="228">API REAL · src/taxi/api</text>
+      <text class="sh" x="270" y="250">@app.post("/predict")</text>
+      <text class="sh" x="270" y="270">def predecir(viaje: ViajeRequest):</text>
+      <text class="ss" x="270" y="290">    ...  # valida solo, por el tipo</text>
+      <text class="plus" x="270" y="316">+ el tipo del parámetro ES el contrato</text>
+      <rect class="box-a" x="556" y="216" width="134" height="90" rx="6"/>
+      <text class="sk" x="570" y="238">/docs · gratis</text>
+      <text class="ss" x="570" y="260">FastAPI lee estas</text>
+      <text class="ss" x="570" y="278">líneas y arma la</text>
+      <text class="ss" x="570" y="296">página de pruebas</text>
+    </svg>
+    <figcaption>Una línea desmontada en cuatro partes: el <code>@</code> es el decorador, que conecta la función a una URL; <code>app</code> es tu objeto <code>FastAPI()</code>; <code>.post</code> es el método HTTP (<code>.get</code> pide algo, <code>.post</code> manda algo en el cuerpo); <code>"/predict"</code> es la ruta. La app de gatitos ya era FastAPI con <code>@app.get("/health")</code>. Lo único nuevo en la API real es el parámetro con tipo: <code>viaje: ViajeRequest</code> es lo que hace que un request malo dé 422 sin escribir un solo <code>if</code>. Y de esas mismas líneas FastAPI arma la página <code>/docs</code>.</figcaption>
+  </figure>
+  <p class="idea"><span class="lbl">Idea clave</span>El decorador es el letrero en la puerta: dice qué función atiende cuando alguien toca en <code>/predict</code>.</p>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <p class="num">08 · el cliente</p>
+  <h2>Tres formas de tocar la misma puerta</h2>
+  <div class="body">
+  <figure>
+    <svg viewBox="0 0 720 230" role="img" aria-label="Tres clientes distintos, curl, la página /docs y Postman, mandan el mismo JSON a la misma API y reciben la misma respuesta. Postman además guarda los requests y sus tests.">
+      <rect class="box" x="20" y="30" width="180" height="120" rx="6"/>
+      <text class="sk" x="36" y="52">CURL · la terminal</text>
+      <text class="ss" x="36" y="76">un request, a mano</text>
+      <text class="ss" x="36" y="94">se copia y se pega</text>
+      <text class="ss" x="36" y="112">sirve para un script</text>
+      <text class="minus" x="36" y="138">− no recuerda nada</text>
+      <rect class="box" x="220" y="30" width="180" height="120" rx="6"/>
+      <text class="sk" x="236" y="52">/DOCS · el navegador</text>
+      <text class="ss" x="236" y="76">formulario generado</text>
+      <text class="ss" x="236" y="94">del contrato</text>
+      <text class="ss" x="236" y="112">ideal para probar</text>
+      <text class="minus" x="236" y="138">− un request a la vez</text>
+      <rect class="box-a" x="420" y="30" width="190" height="120" rx="6"/>
+      <text class="sk" x="436" y="52">POSTMAN · colección</text>
+      <text class="ss" x="436" y="76">11 requests guardados</text>
+      <text class="ss" x="436" y="94">con un test cada uno</text>
+      <text class="ss" x="436" y="112">Run collection = test</text>
+      <text class="plus" x="436" y="138">+ el contrato de un clic</text>
+      <path class="edge" d="M110 150 V180 H360"/>
+      <path class="edge" d="M310 150 V180"/>
+      <path class="edge" d="M510 150 V180 H360"/>
+      <path class="edge" d="M360 180 V196"/>
+      <polygon class="head" points="356,192 360,200 364,192"/>
+      <rect class="box" x="250" y="200" width="220" height="26" rx="5"/>
+      <text class="sh" x="360" y="218" text-anchor="middle">la misma API, el mismo JSON</text>
+      <text class="ss" x="626" y="76">newman corre</text>
+      <text class="ss" x="626" y="94">la colección</text>
+      <text class="ss" x="626" y="112">en la terminal</text>
+    </svg>
+    <figcaption><code>curl</code>, la página <code>/docs</code> y Postman mandan el mismo JSON a la misma API y reciben la misma respuesta. Postman no es parte del servicio: es un cliente que además guarda los requests y sus aserciones. En el taller, <em>Run collection</em> en verde es la evidencia de que el contrato se cumple, y <code>newman</code> permite correr la misma colección desde la terminal.</figcaption>
+  </figure>
+  <p class="idea"><span class="lbl">Idea clave</span><code>/docs</code>, <code>curl</code> y Postman tocan la misma puerta. Postman es el único que se acuerda de lo que preguntó.</p>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <p class="num">09 · liveness y readiness</p>
+  <h2>Vivo no es lo mismo que listo</h2>
+  <div class="body">
+  <figure>
+    <svg viewBox="0 0 720 210" role="img" aria-label="Dos preguntas separadas: ¿está vivo? decide reiniciar; ¿está listo? decide mandar tráfico. Con model_loaded=false la respuesta es no reiniciar y no mandar tráfico.">
+      <rect class="box-a" x="30" y="30" width="300" height="60" rx="6"/>
+      <text class="sk" x="46" y="52">LIVENESS · ¿late el corazón?</text>
+      <text class="ss" x="46" y="74">GET /health → 200 · lo mira el orquestador</text>
+      <path class="edge" d="M180 90 V120"/>
+      <polygon class="head" points="176,112 180,120 184,112"/>
+      <rect class="box" x="30" y="120" width="300" height="60" rx="6"/>
+      <text class="sh" x="46" y="144">si es no → reiniciar el contenedor</text>
+      <text class="ss" x="46" y="164">si es sí → dejarlo, aun sin modelo</text>
+      <rect class="box-a" x="390" y="30" width="300" height="60" rx="6"/>
+      <text class="sk" x="406" y="52">READINESS · ¿puede atender?</text>
+      <text class="ss" x="406" y="74">model_loaded · lo mira el balanceador</text>
+      <path class="edge" d="M540 90 V120"/>
+      <polygon class="head" points="536,112 540,120 544,112"/>
+      <rect class="box" x="390" y="120" width="300" height="60" rx="6"/>
+      <text class="sh" x="406" y="144">si es no → no mandarle tráfico</text>
+      <text class="ss" x="406" y="164">tampoco reiniciarlo: no trae el modelo</text>
+      <text class="ss" x="360" y="202" text-anchor="middle">si /health devolviera 503 sin modelo: reinicio en bucle, y nadie lee el diagnóstico que está justo ahí</text>
+    </svg>
+    <figcaption>Son dos preguntas distintas. <strong>Liveness</strong>: ¿el proceso está vivo? La responde <code>/health</code> con 200, y si es no, el orquestador reinicia el contenedor. <strong>Readiness</strong>: ¿puede atender tráfico? La responde el campo <code>model_loaded</code>, y si es no, el balanceador no le manda requests. Con <code>200</code> y <code>model_loaded: false</code>, la respuesta a las dos es no, por razones distintas: reiniciarlo no le trae el modelo, y si <code>/health</code> devolviera 503, el reinicio en bucle impediría leer el diagnóstico que está justo ahí. La analogía: un médico de guardia despierto al que le falta el historial.</figcaption>
+  </figure>
+  <p class="idea"><span class="lbl">Idea clave</span>200 con <code>model_loaded=false</code>: ni reiniciar ni mandar tráfico. Confundir los dos checks es el error más caro.</p>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <p class="num">10 · las dos formas</p>
+  <h2>Consultorio y laboratorio</h2>
+  <div class="body">
+  <figure>
+    <svg viewBox="0 0 720 316" role="img" aria-label="Online: un usuario pide un viaje, la API responde en milisegundos. Batch: un disparador programado lee una partición, el modelo predice todo de una vez y cada fila se guarda con su model_version.">
+      <text class="sk" x="30" y="30">ONLINE · el consultorio: un paciente a la vez</text>
+      <rect class="box" x="30" y="44" width="170" height="60" rx="6"/>
+      <text class="sh" x="115" y="70" text-anchor="middle">un viaje</text>
+      <text class="ss" x="115" y="90" text-anchor="middle">POST /predict</text>
+      <path class="edge" d="M200 74 H240"/>
+      <polygon class="head" points="240,70 248,74 240,78"/>
+      <rect class="box-a" x="250" y="44" width="200" height="60" rx="6"/>
+      <text class="sh" x="350" y="70" text-anchor="middle">API + modelo</text>
+      <text class="ss" x="350" y="90" text-anchor="middle">siempre encendida</text>
+      <path class="edge" d="M450 74 H490"/>
+      <polygon class="head" points="490,70 498,74 490,78"/>
+      <rect class="box" x="500" y="44" width="190" height="60" rx="6"/>
+      <text class="sh" x="595" y="70" text-anchor="middle">respuesta en ms</text>
+      <text class="ss" x="595" y="90" text-anchor="middle">+ model_version</text>
+      <text class="minus" x="30" y="126">− pagas por tenerla disponible; vigilas p95</text>
+      <text class="sk" x="30" y="166">BATCH · el laboratorio: mil muestras cada noche</text>
+      <rect class="box" x="30" y="180" width="170" height="60" rx="6"/>
+      <text class="sh" x="115" y="206" text-anchor="middle">schedule</text>
+      <text class="ss" x="115" y="226" text-anchor="middle">una partición completa</text>
+      <path class="edge" d="M200 210 H240"/>
+      <polygon class="head" points="240,206 248,210 240,214"/>
+      <rect class="box-a" x="250" y="180" width="200" height="60" rx="6"/>
+      <text class="sh" x="350" y="206" text-anchor="middle">el mismo modelo</text>
+      <text class="ss" x="350" y="226" text-anchor="middle">un predict, todo el DataFrame</text>
+      <path class="edge" d="M450 210 H490"/>
+      <polygon class="head" points="490,206 498,210 490,214"/>
+      <rect class="box" x="500" y="180" width="190" height="60" rx="6"/>
+      <text class="sh" x="595" y="206" text-anchor="middle">una fila por viaje</text>
+      <text class="ss" x="595" y="226" text-anchor="middle">batch_id · model_version</text>
+      <text class="plus" x="30" y="262">+ si falla, se re-corre; sin servicio arriba</text>
+      <text class="ss" x="30" y="288">empieza en batch: si el consumidor puede esperar al próximo corte,</text>
+      <text class="ss" x="30" y="304">un job es más barato de operar y más auditable que un servicio.</text>
+    </svg>
+    <figcaption><strong>Online</strong> es el consultorio: un viaje a la vez, respuesta en milisegundos, y un servicio que hay que tener encendido y vigilar. <strong>Batch</strong> es el laboratorio: un disparador programado lee una partición completa, el mismo modelo predice todo de una vez y cada fila se guarda con su <code>batch_id</code> y su <code>model_version</code>. Esa última columna es lo que convierte un modelo en un sistema: ante un rollback, las predicciones a revisar son una cláusula <code>WHERE</code>, no "todas o ninguna". Los cinco criterios para elegir: latencia tolerada, volumen, frescura de features, costo y complejidad operativa.</figcaption>
+  </figure>
+  <p class="idea"><span class="lbl">Idea clave</span>Empieza en batch. Si el consumidor puede esperar al próximo corte, un job es más barato y más auditable que un servicio.</p>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="slide">
+  <p class="num">11 · el panorama</p>
+  <h2>El hilo conductor es el registry, no Docker</h2>
+  <div class="body">
+  <figure>
+    <svg viewBox="0 0 720 240" role="img" aria-label="S03 registra, S04 entrena y registra orquestado, S05 sirve online y batch, S06 promueve con un gate y despliega por digest. Las cuatro hablan con el Model Registry.">
+      <rect class="box" x="20" y="40" width="150" height="70" rx="6"/>
+      <text class="sk" x="36" y="62">S03</text>
+      <text class="sh" x="36" y="84">registrar</text>
+      <text class="ss" x="36" y="102">nombre + versión</text>
+      <path class="edge" d="M170 75 H190"/>
+      <polygon class="head" points="190,71 198,75 190,79"/>
+      <rect class="box" x="200" y="40" width="150" height="70" rx="6"/>
+      <text class="sk" x="216" y="62">S04</text>
+      <text class="sh" x="216" y="84">orquestar</text>
+      <text class="ss" x="216" y="102">entrena y registra</text>
+      <path class="edge" d="M350 75 H370"/>
+      <polygon class="head" points="370,71 378,75 370,79"/>
+      <rect class="box-a" x="380" y="40" width="150" height="70" rx="6"/>
+      <text class="sk" x="396" y="62">S05 · HOY</text>
+      <text class="sh" x="396" y="84">servir por alias</text>
+      <text class="ss" x="396" y="102">online y batch</text>
+      <path class="edge" d="M530 75 H550"/>
+      <polygon class="head" points="550,71 558,75 550,79"/>
+      <rect class="box" x="560" y="40" width="140" height="70" rx="6"/>
+      <text class="sk" x="576" y="62">S06</text>
+      <text class="sh" x="576" y="84">promover</text>
+      <text class="ss" x="576" y="102">gate → alias</text>
+      <rect class="box-a" x="200" y="170" width="320" height="50" rx="6"/>
+      <text class="sh" x="360" y="192" text-anchor="middle">Model Registry</text>
+      <text class="ss" x="360" y="210" text-anchor="middle">versión, run de origen, quién, cuándo</text>
+      <path class="edge-a" d="M95 110 V150 H230 V170"/>
+      <path class="edge-a" d="M275 110 V170"/>
+      <path class="edge-a" d="M455 110 V170"/>
+      <path class="edge-a" d="M630 110 V150 H500 V170"/>
+      <polygon class="head-a" points="226,162 230,170 234,162"/>
+      <polygon class="head-a" points="271,162 275,170 279,162"/>
+      <polygon class="head-a" points="451,162 455,170 459,162"/>
+      <polygon class="head-a" points="496,162 500,170 504,162"/>
+    </svg>
+    <figcaption>"Deployment" no empieza cuando aparece un Dockerfile: empieza cuando el modelo tiene nombre y versión. La sesión 3 lo registra, la 4 lo reentrena y registra orquestado, la 5 lo sirve por alias en línea y en batch, y la 6 decide con un gate cuándo mover el alias y despliega la imagen por digest. Docker aparece en dos sesiones y es intercambiable; el registry aparece en las cuatro, y es lo que permite atribuir una predicción de hace tres semanas a un artefacto concreto.</figcaption>
+  </figure>
+  <p class="idea"><span class="lbl">Pregunta abierta para la sesión 6</span>Un pipeline termina en verde y despliega. ¿Qué garantiza eso sobre el modelo que está sirviendo?</p>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="slide">
+  <p class="num">12 · preguntas frecuentes</p>
+  <h2>Lo que suele preguntarse a destiempo</h2>
+  <div class="body">
+  <div class="cards">
+    <div class="card"><h3>¿Qué es pickle?</h3><p>No es un formato de datos. Es un programa que se ejecuta al abrirlo. Solo se deserializa lo que tiene procedencia conocida.</p></div>
+    <div class="card"><h3>¿Por qué 503 y no 500 sin modelo?</h3><p>500 dice "falló el servidor". 503 dice "no disponible, vuelve a intentar": un cliente con reintentos lo entiende.</p></div>
+    <div class="card"><h3>¿Por qué el 422 sí lleva detalle?</h3><p>Describe el request del cliente, no el interior del servidor. Es la única excepción a "no filtrar internals".</p></div>
+    <div class="card"><h3>¿Por qué <code>def</code> y no <code>async def</code>?</h3><p><code>model.predict</code> bloquea. En una corrutina congela el event loop y el servidor atiende un request a la vez. Con <code>def</code> va a otro hilo.</p></div>
+    <div class="card"><h3>¿Por qué no <code>curl</code> en el healthcheck?</h3><p>No existe en <code>python:slim</code>. El check falla siempre y el contenedor queda <code>unhealthy</code> para siempre. Se usa el intérprete de la imagen.</p></div>
+    <div class="card"><h3>¿Cuándo no hace falta nada de esto?</h3><p>Si el consumidor es un reporte diario, el batch alcanza. No se monta una API para eso.</p></div>
+    <div class="card"><h3>¿Por qué FastAPI en el curso?</h3><p>No porque sea mejor: porque es la capa donde se ven los conceptos. Con volumen real, el paso siguiente es BentoML.</p></div>
+    <div class="card"><h3>¿Por qué hay dos MLflow?</h3><p><code>make mlflow</code> (SQLite) y <code>make up</code> (Postgres y MinIO) comparten el puerto 5001 y no comparten el champion. Se usa uno a la vez.</p></div>
+  </div>
+  </div>
+</section>
+
+</div>
+
+<div class="progress" id="progress"></div>
+<div class="bar">
+  <button id="prev" type="button">← anterior</button>
+  <span id="counter"></span>
+  <button id="next" type="button">siguiente →</button>
+</div>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var counter = document.getElementById('counter');
+  var progress = document.getElementById('progress');
+  var prevBtn = document.getElementById('prev');
+  var nextBtn = document.getElementById('next');
+  var actual = 0;
+
+  function ir(n) {
+    n = Math.max(0, Math.min(slides.length - 1, n));
+    slides[actual].classList.remove('active');
+    actual = n;
+    slides[actual].classList.add('active');
+    counter.textContent = (actual + 1) + ' / ' + slides.length;
+    progress.style.width = ((actual + 1) / slides.length * 100) + '%';
+    prevBtn.disabled = actual === 0;
+    nextBtn.disabled = actual === slides.length - 1;
+    if (history.replaceState) history.replaceState(null, '', '#' + (actual + 1));
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); ir(actual + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); ir(actual - 1); }
+    else if (e.key === 'Home') { ir(0); }
+    else if (e.key === 'End') { ir(slides.length - 1); }
+  });
+  prevBtn.addEventListener('click', function () { ir(actual - 1); });
+  nextBtn.addEventListener('click', function () { ir(actual + 1); });
+
+  // clic en la mitad derecha avanza, en la izquierda retrocede (fuera de la barra)
+  document.querySelector('.deck').addEventListener('click', function (e) {
+    if (e.target.closest('a, button, code')) return;
+    ir(e.clientX > window.innerWidth / 2 ? actual + 1 : actual - 1);
+  });
+
+  // deslizar en pantalla táctil
+  var x0 = null;
+  document.addEventListener('touchstart', function (e) { x0 = e.changedTouches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    if (x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 50) ir(dx < 0 ? actual + 1 : actual - 1);
+    x0 = null;
+  }, { passive: true });
+
+  var inicial = parseInt((location.hash || '#1').slice(1), 10);
+  ir(isNaN(inicial) ? 0 : inicial - 1);
+})();
+</script>
