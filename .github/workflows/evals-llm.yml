@@ -58,10 +58,10 @@ jobs:
     name: Evals deterministas (ProveedorFake)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
@@ -133,7 +133,7 @@ jobs:
 
       - name: Subir los reportes como artefacto
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: reportes-evals-llm
           path: reports/llmops/
@@ -148,7 +148,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [evals-deterministas]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Comprobar si hay credenciales
         id: credenciales
@@ -186,7 +186,7 @@ jobs:
 
       - name: Setup uv
         if: steps.credenciales.outputs.disponible == 'true'
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
@@ -212,7 +212,7 @@ jobs:
 
       - name: Subir los reportes
         if: always() && steps.credenciales.outputs.disponible == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: reportes-evals-modelo-real
           path: reports/llmops/

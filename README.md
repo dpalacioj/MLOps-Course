@@ -163,7 +163,7 @@ fija; el nightly avisa si alguna se rompe.
 | Orquestación | Prefect 3.8 | Airflow 3.3, Dagster 1.13, ZenML, Metaflow |
 | Serving | FastAPI 0.141 + Pydantic 2.13 | BentoML, KServe, Ray Serve |
 | Contenedores | Docker + Compose | — |
-| Cloud | AWS (ECR, App Runner, S3, RDS) | Cloud Run, Container Apps |
+| Cloud | AWS (ECR, ECS Fargate) | Cloud Run, Container Apps |
 | Monitoreo | Evidently 0.7 + Prometheus | Arize Phoenix, Langfuse |
 | CI/CD | GitHub Actions | — |
 

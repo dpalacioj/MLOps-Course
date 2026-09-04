@@ -1,17 +1,18 @@
 <!-- CONTRAEJEMPLO — NO COPIAR -->
 # CONTRAEJEMPLO — NO COPIAR
 
-> **Esta guía se conserva como material didáctico de la sesión 6, no como
-> instructivo.** Lo que describe funciona, y precisamente por eso es útil: enseña a
-> desplegar en EC2 un servicio con el debugger de Werkzeug expuesto, sin validación
-> de entrada, sin `/health` y con el puerto abierto a `0.0.0.0/0`.
+> **Esta guía es material didáctico de la sesión 6, no un instructivo.** Lo que
+> describe funciona, y precisamente por eso es útil: enseña a desplegar en una máquina
+> virtual de AWS un servicio con el debugger de Werkzeug expuesto, sin validación de
+> entrada, sin `/health` y con el puerto abierto a `0.0.0.0/0`. Es el tipo de guía que
+> se encuentra en internet y se sigue paso a paso sin que nada avise.
 >
 > Lee primero [`README.md`](README.md), que enumera qué está mal y por qué. La forma
-> correcta de desplegar el servicio del curso está en
-> [`../guia-aws.md`](../guia-aws.md).
+> correcta de llevar el servicio del curso a la nube está en
+> [`../04-demo-ecr-fargate/`](../04-demo-ecr-fargate/).
 >
-> El texto original sigue sin editar a partir de aquí. Sus rutas
-> (`04-Deployment/deploy/web-service-docker`) ya no existen en este repositorio.
+> El texto de la guía sigue tal cual a partir de aquí. Las rutas de repositorio que
+> menciona son las de otro proyecto: léelas como parte del ejercicio, no las busques.
 
 ---
 
