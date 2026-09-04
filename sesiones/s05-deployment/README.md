@@ -35,6 +35,7 @@ está en [El recorrido](#el-recorrido), y va por secciones de este README.
 | Ruta | Qué hay |
 |---|---|
 | [`intro-dockers/`](intro-dockers/) | Primer contacto con contenedores: la misma app en local y en Docker |
+| [`notebooks/`](notebooks/) | El `pipeline_bicis.py` de la sesión 4 dentro de un contenedor, celda por celda: build context, lockfile, y tres corridas que muestran aislamiento, red y volúmenes |
 | [`api-contract.md`](api-contract.md) | El contrato de la API: endpoints, códigos, errores y ejemplos |
 | [`postman/`](postman/) | Colección y entorno de Postman para el taller |
 | [`taller.md`](taller.md) | Enunciado del taller, con criterios de aceptación medibles |
@@ -68,6 +69,7 @@ primeras es elegir con una tabla en vez de con experiencia.
 |---|---|---|---|
 | 1 | [sección 1](#1-el-dolor-dos-formas-de-romper-un-despliegue-sin-que-nada-avise) | las dos formas de romper un despliegue sin que nada avise | no: solo se lee y se corre un comando corto |
 | 2 | [`intro-dockers/`](intro-dockers/) (sección 2) | la misma app en local y en un contenedor, para ver qué cambia y qué no | `uv run app.py` **sí** (Ctrl+C para salir); `docker run -d` no |
+| 2b | [`notebooks/01`](notebooks/01-el-flow-en-un-contenedor.ipynb) | tu propio pipeline de S04 en una imagen: qué cambia (hostname, red, datos) y qué no (el código) | `docker build` tarda minutos la primera vez; nada bloquea |
 | 3 | [sección 3](#3-empaquetar-del-contenedor-al-digest), con el [`Dockerfile`](../../Dockerfile) de la raíz al lado del de `intro-dockers` | el Dockerfile real, el tag mutable contra el digest inmutable, el stack de Compose | `docker build` no bloquea pero tarda minutos la primera vez; `make up` no |
 | 4 | [sección 4](#4-el-servicio-online-fastapi--pydantic-v2), [`api-contract.md`](api-contract.md) y [`src/taxi/api/`](../../src/taxi/api/) | el contrato, la carga por alias, los endpoints operativos, la traducción de errores | `make serve` **sí**: va en su propia terminal |
 | 5 | [sección 5](#5-batch-la-misma-inferencia-con-trazabilidad-por-fila) | la misma inferencia en batch, con trazabilidad por fila | `make batch` **sí**, hasta que termina (segundos con los datos ya descargados) |

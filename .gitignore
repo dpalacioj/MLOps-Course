@@ -179,3 +179,9 @@ sesiones/*/_soluciones/
 # --- Demo de nube (S06): el modelo exportado del registry para meterlo en la imagen
 # Es un artefacto: se regenera con `mlflow artifacts download` y no se versiona.
 sesiones/s06-cloud-cicd/04-demo-ecr-fargate/modelo-exportado/
+
+# Lo que el notebook de S05 genera en su build context al ejecutarse: la copia de
+# `pipeline_bicis.py` (la fuente de verdad es sesiones/s04-orquestacion/notebooks/) y
+# el `uv.lock` que produce `uv lock` en la celda 3 (581 KB, sobre el limite del hook).
+sesiones/s05-deployment/notebooks/contenedor-bicis/pipeline_bicis.py
+sesiones/s05-deployment/notebooks/contenedor-bicis/uv.lock
