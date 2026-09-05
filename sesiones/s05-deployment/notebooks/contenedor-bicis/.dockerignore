@@ -1,0 +1,11 @@
+# Lo que NO entra al build context. Aqui el contexto es diminuto y la regla esta por
+# el habito: en un repositorio real es lo que evita mandar datos, entornos virtuales
+# y secretos al demonio de Docker en cada build (y, peor, dentro de una capa de la
+# imagen, de donde ya no salen).
+.venv/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+Dockerfile
+.dockerignore

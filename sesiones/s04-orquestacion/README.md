@@ -32,6 +32,7 @@ Las carpetas van en el orden en que se abren:
 | [`00-escalera/`](00-escalera/) | **Se abre primero.** Los tres peldaños ejecutables: script → cron → orquestador, con el mismo pipeline en los tres y la medición de qué se repite en cada uno |
 | [`00-intro-prefect/`](00-intro-prefect/) | Progresión escalonada de Prefect: `@flow` → `@task` → retries → `serve` → cron → parámetros → varios flows → `deploy` → `prefect.yaml` |
 | [`01-pipeline-ml/`](01-pipeline-ml/) | Ejecución y análisis del pipeline del caso guía, medición del caching, consultas SQL sobre las predicciones y el ejercicio de clasificación |
+| [`notebooks/`](notebooks/) | Prefect **celda por celda** sobre un dataset ajeno al curso (alquiler de bicis por hora, 1,2 MB, se descarga solo): la mecánica en el [`01`](notebooks/01-prefect-paso-a-paso.ipynb) y el pipeline de ML completo en el [`02`](notebooks/02-pipeline-ml-con-prefect.ipynb), que termina en un `.py` listo para servir y para la sesión 5 |
 | [`_soluciones/`](_soluciones/) | Soluciones de referencia del ejercicio y del taller |
 | [`diagrams/`](diagrams/) | 12 diagramas, en cinco fases pedagógicas |
 | [`taller.md`](taller.md) | Enunciado del taller, con criterios de aceptación medibles |
@@ -59,8 +60,10 @@ falta la segunda terminal:
 |---|---|---|
 | 1 | sección 1 de este README y [`00-escalera/`](00-escalera/), con los diagramas [01](diagrams/01_el_problema.png) y [02](diagrams/02_cinco_pilares.png) | tres formas de romper un pipeline hecho a mano, y los tres peldaños corriendo: script, cron y orquestador sobre el mismo código |
 | 2 | [`00-intro-prefect/`](00-intro-prefect/), pasos 1 a 3 | `@flow`, `@task`, el grafo por dependencias de datos, y reintentos con backoff |
+| 2b | [`notebooks/01`](notebooks/01-prefect-paso-a-paso.ipynb) | los mismos conceptos, celda por celda y con datos reales debajo: `@flow`, `@task`, retries, caching medido, artifacts, parámetros, `.submit()` y estados. Para quien quiera verlo despacio antes de seguir |
 | 3 | [`00-intro-prefect/`](00-intro-prefect/), workflows de artifacts, contexto, variables y secretos | qué le queda al orquestador después de correr, y dónde **no** va un secreto |
 | 4 | [`00-intro-prefect/`](00-intro-prefect/), pasos 4 a 7 | `serve()`, el dashboard, los schedules y los parámetros editables. **Aquí empieza la segunda terminal** |
+| 4b | [`notebooks/02`](notebooks/02-pipeline-ml-con-prefect.ipynb) | un pipeline de entrenamiento e inferencia completo, siete tasks sobre el dataset de bicis, corrido dos veces para medir el caching, y volcado a `pipeline_bicis.py` para servirlo desde la terminal |
 | 5 | [`01-pipeline-ml/`](01-pipeline-ml/) | el pipeline del caso guía: caching medido, no afirmado, y trazabilidad de las predicciones en SQL |
 | 6 | [`00-intro-prefect/`](00-intro-prefect/), pasos 8 y 9 | `deploy()` con work pool y los deployments declarativos del `prefect.yaml` |
 | 7 | sección 4 de este README | el trigger de Continuous Training, que es una decisión de diseño y no un cron |
